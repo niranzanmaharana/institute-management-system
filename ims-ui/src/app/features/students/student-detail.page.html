@@ -26,6 +26,12 @@
   } @else if (student(); as row) {
     <app-ui-card>
       <div class="hero">
+        <app-person-photo
+          ownerType="STUDENT"
+          [ownerId]="row.id"
+          [firstName]="row.firstName"
+          [lastName]="row.lastName"
+        />
         <div>
           <h2>{{ row.firstName }} {{ row.lastName }}</h2>
           <p class="meta">
@@ -107,6 +113,8 @@
           </div>
         }
       </section>
+
+      <app-person-documents ownerType="STUDENT" [ownerId]="row.id" />
     </app-ui-card>
   }
 </div>

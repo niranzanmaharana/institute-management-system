@@ -41,7 +41,7 @@ Both processes log every API call (except `/actuator/health`) with:
 
 - Propagation: W3C `traceparent` (automatic) and `X-Request-Id` (gateway generates if missing).
 - Same `traceId` / `requestId` appear in **gateway** and **application** consoles for one user action.
-- OTLP endpoint: `http://localhost:4318/v1/traces` (requires Jaeger from `infra/docker-compose`).
+- OTLP export is **off by default** so missing Jaeger does not spam `Failed to export spans` / `localhost:4318`. Request `traceId` still appears in console logs. To send traces to Jaeger: `docker compose up -d jaeger` in `infra/`, set `MANAGEMENT_OTLP_TRACING_EXPORT_ENABLED=true` on gateway and app, restart both, open http://localhost:16686.
 - Sampling: 100% locally (`management.tracing.sampling.probability=1.0`).
 
 ## Phase 0 tenant header

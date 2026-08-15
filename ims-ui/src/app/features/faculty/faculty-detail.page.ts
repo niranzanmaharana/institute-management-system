@@ -6,11 +6,22 @@ import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
+import { PersonDocumentsSection } from '../people/person-documents.section';
+import { PersonPhotoComponent } from '../people/person-photo.component';
 import { Faculty, FacultyService } from './faculty.service';
 
 @Component({
   selector: 'app-faculty-detail-page',
-  imports: [RouterLink, UiCard, UiButton, LoadingState, ErrorState, StatusBadge],
+  imports: [
+    RouterLink,
+    UiCard,
+    UiButton,
+    LoadingState,
+    ErrorState,
+    StatusBadge,
+    PersonDocumentsSection,
+    PersonPhotoComponent,
+  ],
   templateUrl: './faculty-detail.page.html',
   styleUrl: './faculty-detail.page.scss',
 })

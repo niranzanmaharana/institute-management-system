@@ -1,0 +1,21 @@
+<div class="photo">
+  @if (url(); as src) {
+    <img class="photo__img" [src]="src" [alt]="alt" width="96" height="96" />
+  } @else {
+    <span class="photo__fallback" aria-hidden="true">{{ initials }}</span>
+  }
+  @if (canWrite) {
+    <label class="photo__change">
+      <span class="photo__change-label">{{ uploading() ? 'Uploading…' : url() ? 'Change' : 'Add photo' }}</span>
+      <input
+        type="file"
+        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+        [disabled]="uploading()"
+        (change)="onFile($event)"
+      />
+    </label>
+  }
+  @if (error()) {
+    <p class="photo__error">{{ error() }}</p>
+  }
+</div>

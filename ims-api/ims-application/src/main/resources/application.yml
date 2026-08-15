@@ -37,6 +37,8 @@ management:
   otlp:
     tracing:
       endpoint: http://localhost:4318/v1/traces
+      export:
+        enabled: false
 
 springdoc:
   api-docs:
@@ -50,6 +52,19 @@ ims:
     jwt-secret: ims-dev-jwt-secret-change-me-32chars-min!!
     access-token-minutes: 30
     refresh-token-days: 14
+  storage:
+    type: s3
+    endpoint: http://localhost:9000
+    access-key: minio
+    secret-key: minio12345
+    bucket: ims-private
+    region: us-east-1
+    path-style: true
+    presign-expiry-minutes: 10
+    max-size-bytes: 5242880
+    cors-origins:
+      - http://localhost:4200
+      - http://127.0.0.1:4200
 
 logging:
   level:

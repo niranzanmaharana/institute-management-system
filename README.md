@@ -46,6 +46,7 @@ npm start
 - UI: http://localhost:4200/login  
 - API via **gateway**: http://localhost:8088  
 - App direct (debug): http://localhost:8080/swagger-ui.html  
+- MinIO console (person documents): http://localhost:9001 — `minio` / `minio12345`  
 - Jaeger: http://localhost:16686  
 - Postman: `postman/ims-api.postman_collection.json`  
 

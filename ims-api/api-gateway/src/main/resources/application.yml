@@ -49,6 +49,10 @@ management:
   otlp:
     tracing:
       endpoint: http://localhost:4318/v1/traces
+      # Jaeger is optional. Off by default so logs stay clean when compose jaeger is not running.
+      # Enable with MANAGEMENT_OTLP_TRACING_EXPORT_ENABLED=true and `docker compose up -d jaeger`.
+      export:
+        enabled: false
 
 ims:
   gateway:
