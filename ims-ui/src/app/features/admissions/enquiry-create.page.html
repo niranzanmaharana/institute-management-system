@@ -1,0 +1,41 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>New enquiry</h1>
+      <p>Optional interest capture — convert later into an application</p>
+    </div>
+    <a routerLink="/enquiries">Back to list</a>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (loadError()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="loadError()!" />
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      @if (error()) {
+        <app-error-state title="Create failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <app-ui-input label="Name" inputId="enq-name" formControlName="name" />
+          <app-ui-input label="Phone" inputId="enq-phone" formControlName="phone" />
+          <app-ui-input label="Email" inputId="enq-email" type="email" formControlName="email" />
+          <label class="field" for="enq-course">
+            <span class="field__label">Interested course (optional)</span>
+            <select id="enq-course" class="field__control" formControlName="interestedCourseId">
+              <option value="">None yet</option>
+              @for (c of courses(); track c.id) {
+                <option [value]="c.id">{{ c.code }} — {{ c.name }}</option>
+              }
+            </select>
+          </label>
+          <app-ui-input label="Notes" inputId="enq-notes" formControlName="notes" />
+        </div>
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save enquiry</app-ui-button>
+      </form>
+    </app-ui-card>
+  }
+</div>

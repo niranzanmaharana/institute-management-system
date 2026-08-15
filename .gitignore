@@ -1,0 +1,31 @@
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Java
+**/target/
+*.class
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# Node / Angular
+**/node_modules/
+**/dist/
+.angular/
+*.log
+npm-debug.log*
+
+# Env / secrets
+.env
+.env.local
+*.pem
+
+# Generated OpenAPI dump (collection is kept)
+postman/openapi.json
+
+# Docker
+infra/**/data/

@@ -1,0 +1,68 @@
+<div class="page">
+  <div class="page__title">
+    <h1>Dashboard</h1>
+    <p>
+      Welcome{{ auth.user() ? ', ' + auth.user()!.username : '' }}. Phase 1 auth shell is active.
+    </p>
+  </div>
+
+  <div class="metrics">
+    <article class="metric metric--indigo">
+      <p>Institutes</p>
+      <strong>{{ institutes().length || '—' }}</strong>
+    </article>
+    <article class="metric metric--blue">
+      <p>Students</p>
+      <strong>0</strong>
+      <small>Phase 2</small>
+    </article>
+    <article class="metric metric--green">
+      <p>Collections</p>
+      <strong>₹0</strong>
+      <small>Phase 2</small>
+    </article>
+    <article class="metric metric--orange">
+      <p>Outstanding</p>
+      <strong>₹0</strong>
+      <small>Phase 2</small>
+    </article>
+  </div>
+
+  <div class="grid">
+    <app-ui-card title="Session">
+      <p>Roles: {{ auth.user()?.roles?.join(', ') || '—' }}</p>
+      <p>Institute id: {{ auth.user()?.instituteId ?? 'platform' }}</p>
+    </app-ui-card>
+
+    <app-ui-card title="Institutes">
+      @if (loading()) {
+        <app-loading-state />
+      } @else if (error()) {
+        <app-error-state title="API unavailable" [message]="error()!" />
+      } @else if (institutes().length === 0) {
+        <app-empty-state title="No institutes" message="Run Flyway seeds via ims-application." />
+      } @else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of institutes(); track row.id) {
+              <tr>
+                <td>{{ row.code }}</td>
+                <td>{{ row.name }}</td>
+                <td>
+                  <app-status-badge [label]="row.status" tone="success" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </app-ui-card>
+  </div>
+</div>

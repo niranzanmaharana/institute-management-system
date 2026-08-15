@@ -1,0 +1,64 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit student</h1>
+      <p>
+        {{
+          studentCode
+            ? 'Code ' + studentCode + ' (immutable)'
+            : 'Update contact, guardian, and address'
+        }}
+      </p>
+    </div>
+    @if (studentId) {
+      <a [routerLink]="['/students', studentId]">Back to details</a>
+    } @else {
+      <a routerLink="/students">Back to list</a>
+    }
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error() && !studentCode) {
+      <app-error-state title="Unavailable" [message]="error()!" />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Save failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <app-ui-input label="First name" inputId="edit-fn" formControlName="firstName" />
+          <app-ui-input label="Last name" inputId="edit-ln" formControlName="lastName" />
+          <app-ui-input label="Phone" inputId="edit-phone" formControlName="phone" />
+          <app-ui-input label="Email" inputId="edit-email" type="email" formControlName="email" />
+        </div>
+
+        <h2>Guardian (optional)</h2>
+        <div class="grid">
+          <app-ui-input label="Guardian name" inputId="edit-g-name" formControlName="guardianName" />
+          <app-ui-input
+            label="Guardian phone"
+            inputId="edit-g-phone"
+            formControlName="guardianPhone"
+          />
+          <app-ui-input
+            label="Relation"
+            inputId="edit-g-rel"
+            formControlName="guardianRelation"
+          />
+        </div>
+
+        <h2>Address (optional)</h2>
+        <div class="grid">
+          <app-ui-input label="Line 1" inputId="edit-a-line1" formControlName="addressLine1" />
+          <app-ui-input label="City" inputId="edit-a-city" formControlName="city" />
+          <app-ui-input label="State" inputId="edit-a-state" formControlName="state" />
+          <app-ui-input label="Postal code" inputId="edit-a-postal" formControlName="postalCode" />
+        </div>
+
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save changes</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

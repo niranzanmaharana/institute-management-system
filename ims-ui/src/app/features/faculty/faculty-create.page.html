@@ -1,0 +1,45 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Add faculty</h1>
+      <p>Create a faculty member for the current institute</p>
+    </div>
+    <a routerLink="/faculty">Back to list</a>
+  </header>
+
+  <app-ui-card>
+    @if (error()) {
+      <app-error-state title="Create failed" [message]="error()!" />
+    }
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="code-field">
+        <app-ui-input
+          label="Faculty code (optional)"
+          inputId="fac-code"
+          formControlName="facultyCode"
+        />
+        <app-ui-button type="button" [loading]="generating()" (click)="generateCode()">
+          Generate
+        </app-ui-button>
+        <p class="hint">Leave blank to auto-generate on save (F + institute id + 5-digit sequence).</p>
+      </div>
+      <div class="grid">
+        <app-ui-input label="First name" inputId="fac-fn" formControlName="firstName" />
+        <app-ui-input label="Last name" inputId="fac-ln" formControlName="lastName" />
+        <app-ui-input label="Phone" inputId="fac-phone" formControlName="phone" />
+        <app-ui-input label="Email" inputId="fac-email" type="email" formControlName="email" />
+        <app-ui-input label="Department" inputId="fac-dept" formControlName="department" />
+      </div>
+
+      <h2>Address (optional)</h2>
+      <div class="grid">
+        <app-ui-input label="Line 1" inputId="fac-a-line1" formControlName="addressLine1" />
+        <app-ui-input label="City" inputId="fac-a-city" formControlName="city" />
+        <app-ui-input label="State" inputId="fac-a-state" formControlName="state" />
+        <app-ui-input label="Postal code" inputId="fac-a-postal" formControlName="postalCode" />
+      </div>
+
+      <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save faculty</app-ui-button>
+    </form>
+  </app-ui-card>
+</div>

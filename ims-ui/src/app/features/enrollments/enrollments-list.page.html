@@ -1,0 +1,58 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Enrollments</h1>
+      <p>Student enrollments — view or activate from details</p>
+    </div>
+    <div class="page__actions">
+      @if (auth.hasPermission('course:write') || auth.hasPermission('enrollment:write')) {
+        <a routerLink="/enrollments/new">
+          <app-ui-button type="button">New enrollment</app-ui-button>
+        </a>
+      }
+    </div>
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No enrollments" message="Create an enrollment to get started." />
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Student</th>
+              <th>Batch</th>
+              <th>Course</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.studentId }}</td>
+                <td>{{ row.batchId }}</td>
+                <td>{{ row.courseId }}</td>
+                <td>
+                  <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+                </td>
+                <td class="table__actions">
+                  <a [routerLink]="['/enrollments', row.id]">
+                    <app-ui-button type="button">View</app-ui-button>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </app-ui-card>
+</div>

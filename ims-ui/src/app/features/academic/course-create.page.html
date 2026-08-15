@@ -1,0 +1,29 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Add course</h1>
+      <p>Create a course for the current institute</p>
+    </div>
+    <a routerLink="/courses">Back to list</a>
+  </header>
+
+  <app-ui-card>
+    @if (error()) {
+      <app-error-state title="Create failed" [message]="error()!" />
+    }
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="code-field">
+        <app-ui-input label="Code (optional)" inputId="course-code" formControlName="code" />
+        <app-ui-button type="button" [loading]="generating()" (click)="generateCode()">
+          Generate
+        </app-ui-button>
+        <p class="hint">Leave blank to auto-generate on save (e.g. C1-00001).</p>
+      </div>
+      <div class="grid">
+        <app-ui-input label="Name" inputId="course-name" formControlName="name" />
+        <app-ui-input label="Description" inputId="course-desc" formControlName="description" />
+      </div>
+      <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save course</app-ui-button>
+    </form>
+  </app-ui-card>
+</div>

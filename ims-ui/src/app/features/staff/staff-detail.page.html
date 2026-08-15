@@ -1,0 +1,51 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Staff details</h1>
+      <p>View staff master data</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/staff">Back to list</a>
+      @if (staff(); as row) {
+        <app-ui-button type="button" (click)="edit()">Edit</app-ui-button>
+        @if (row.status === 'ACTIVE') {
+          <app-ui-button type="button" [loading]="deactivating()" (click)="deactivate()">
+            Deactivate
+          </app-ui-button>
+        }
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (staff(); as row) {
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>{{ row.firstName }} {{ row.lastName }}</h2>
+          <p class="meta">
+            <span>{{ row.staffCode }}</span>
+            <app-status-badge
+              [label]="row.status"
+              [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'"
+            />
+          </p>
+        </div>
+      </div>
+
+      <section class="section">
+        <h3>Contact</h3>
+        <dl class="facts">
+          <div><dt>Phone</dt><dd>{{ row.phone || '—' }}</dd></div>
+          <div><dt>Email</dt><dd>{{ row.email || '—' }}</dd></div>
+          <div><dt>Designation</dt><dd>{{ row.designation || '—' }}</dd></div>
+        </dl>
+      </section>
+    </app-ui-card>
+  }
+</div>

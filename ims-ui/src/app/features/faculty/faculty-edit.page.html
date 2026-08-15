@@ -1,0 +1,50 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit faculty</h1>
+      <p>
+        {{
+          facultyCode
+            ? 'Code ' + facultyCode + ' (immutable)'
+            : 'Update contact, department, and address'
+        }}
+      </p>
+    </div>
+    @if (facultyId) {
+      <a [routerLink]="['/faculty', facultyId]">Back to details</a>
+    } @else {
+      <a routerLink="/faculty">Back to list</a>
+    }
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error() && !facultyCode) {
+      <app-error-state title="Unavailable" [message]="error()!" />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Save failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <app-ui-input label="First name" inputId="edit-fac-fn" formControlName="firstName" />
+          <app-ui-input label="Last name" inputId="edit-fac-ln" formControlName="lastName" />
+          <app-ui-input label="Phone" inputId="edit-fac-phone" formControlName="phone" />
+          <app-ui-input label="Email" inputId="edit-fac-email" type="email" formControlName="email" />
+          <app-ui-input label="Department" inputId="edit-fac-dept" formControlName="department" />
+        </div>
+
+        <h2>Address (optional)</h2>
+        <div class="grid">
+          <app-ui-input label="Line 1" inputId="edit-fac-a-line1" formControlName="addressLine1" />
+          <app-ui-input label="City" inputId="edit-fac-a-city" formControlName="city" />
+          <app-ui-input label="State" inputId="edit-fac-a-state" formControlName="state" />
+          <app-ui-input label="Postal code" inputId="edit-fac-a-postal" formControlName="postalCode" />
+        </div>
+
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save changes</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

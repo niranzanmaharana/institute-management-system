@@ -1,0 +1,191 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Enrollment details</h1>
+      <p>Lifecycle actions follow APPLIED → ACTIVE → COMPLETED / WITHDRAWN / SUSPENDED</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/enrollments">Back to list</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error() && !enrollment()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (enrollment(); as row) {
+    @if (error()) {
+      <app-ui-card>
+        <app-error-state title="Action failed" [message]="error()!" />
+      </app-ui-card>
+    }
+
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>Enrollment #{{ row.id }}</h2>
+          <p class="meta">
+            <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+          </p>
+        </div>
+      </div>
+      <dl class="facts">
+        <div><dt>Student id</dt><dd>{{ row.studentId }}</dd></div>
+        <div><dt>Batch id</dt><dd>{{ row.batchId }}</dd></div>
+        <div><dt>Course id</dt><dd>{{ row.courseId }}</dd></div>
+        <div><dt>Fee plan id</dt><dd>{{ row.feePlanId }}</dd></div>
+        <div><dt>Activated at</dt><dd>{{ row.activatedAt || '—' }}</dd></div>
+        <div><dt>Suspended at</dt><dd>{{ row.suspendedAt || '—' }}</dd></div>
+        <div><dt>Withdrawn at</dt><dd>{{ row.withdrawnAt || '—' }}</dd></div>
+        <div><dt>Completed at</dt><dd>{{ row.completedAt || '—' }}</dd></div>
+        <div><dt>Cancelled at</dt><dd>{{ row.cancelledAt || '—' }}</dd></div>
+        <div><dt>Created at</dt><dd>{{ row.createdAt }}</dd></div>
+      </dl>
+
+      <div class="actions">
+        @if (row.status === 'APPLIED') {
+          <app-ui-button type="button" (click)="openPanel('activate')">Activate</app-ui-button>
+          <app-ui-button type="button" (click)="openPanel('cancel')">Cancel</app-ui-button>
+        }
+        @if (row.status === 'ACTIVE') {
+          <app-ui-button type="button" (click)="openPanel('transfer')">Transfer</app-ui-button>
+          <app-ui-button type="button" (click)="openPanel('suspend')">Suspend</app-ui-button>
+          <app-ui-button type="button" (click)="openPanel('complete')">Complete</app-ui-button>
+          <app-ui-button type="button" (click)="openPanel('withdraw')">Withdraw</app-ui-button>
+        }
+        @if (row.status === 'SUSPENDED') {
+          <app-ui-button type="button" (click)="openPanel('resume')">Resume</app-ui-button>
+          <app-ui-button type="button" (click)="openPanel('withdraw')">Withdraw</app-ui-button>
+        }
+      </div>
+    </app-ui-card>
+
+    @if (panel() === 'activate') {
+      <app-ui-card>
+        <h2 class="section-title">Activate enrollment</h2>
+        <p class="hint">Requires approved admission for the course, or ADMIN waiver (BR-EN-04).</p>
+        @if (auth.hasRole('ADMIN')) {
+          <label class="check">
+            <input type="checkbox" [(ngModel)]="admissionWaiver" />
+            Admission waiver (ADMIN)
+          </label>
+          @if (admissionWaiver) {
+            <app-ui-input label="Waiver reason" inputId="waiver-reason" [(ngModel)]="waiverReason" />
+          }
+          <label class="check">
+            <input type="checkbox" [(ngModel)]="capacityOverride" />
+            Capacity override (ADMIN)
+          </label>
+          @if (capacityOverride) {
+            <app-ui-input
+              label="Override reason"
+              inputId="cap-override-reason"
+              [(ngModel)]="overrideReason"
+            />
+          }
+        }
+        <div class="panel-actions">
+          <app-ui-button type="button" [loading]="acting()" (click)="runActivate()">Confirm activate</app-ui-button>
+          <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+        </div>
+      </app-ui-card>
+    }
+
+    @if (panel() === 'cancel' || panel() === 'suspend' || panel() === 'withdraw' || panel() === 'complete') {
+      <app-ui-card>
+        <h2 class="section-title">
+          @switch (panel()) {
+            @case ('cancel') { Cancel enrollment }
+            @case ('suspend') { Suspend enrollment }
+            @case ('withdraw') { Withdraw enrollment }
+            @case ('complete') { Complete enrollment }
+          }
+        </h2>
+        <app-ui-input label="Reason" inputId="lifecycle-reason" [(ngModel)]="reason" />
+        <div class="panel-actions">
+          <app-ui-button type="button" [loading]="acting()" (click)="confirmReasonPanel()">
+            Confirm
+          </app-ui-button>
+          <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+        </div>
+      </app-ui-card>
+    }
+
+    @if (panel() === 'resume') {
+      <app-ui-card>
+        <h2 class="section-title">Resume enrollment</h2>
+        <p class="hint">Re-checks batch capacity. ADMIN may override with a reason.</p>
+        @if (auth.hasRole('ADMIN')) {
+          <label class="check">
+            <input type="checkbox" [(ngModel)]="capacityOverride" />
+            Capacity override (ADMIN)
+          </label>
+          @if (capacityOverride) {
+            <app-ui-input
+              label="Override reason"
+              inputId="resume-override"
+              [(ngModel)]="overrideReason"
+            />
+          }
+        }
+        <div class="panel-actions">
+          <app-ui-button type="button" [loading]="acting()" (click)="runResume()">Confirm resume</app-ui-button>
+          <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+        </div>
+      </app-ui-card>
+    }
+
+    @if (panel() === 'transfer') {
+      <app-ui-card>
+        <h2 class="section-title">Transfer to another batch</h2>
+        <p class="hint">Same course only (BR-TR-01). Fee account stays with current plan by default.</p>
+        @if (transferBatches().length === 0) {
+          <p class="hint">No other OPEN batches for this course.</p>
+        } @else {
+          <label class="field">
+            <span class="field__label">Target batch</span>
+            <select class="field__control" [(ngModel)]="targetBatchId">
+              <option value="">Select batch</option>
+              @for (b of transferBatches(); track b.id) {
+                <option [value]="b.id">{{ b.code }} — {{ b.name }} (cap {{ b.capacity }})</option>
+              }
+            </select>
+          </label>
+          @if (auth.hasRole('ADMIN')) {
+            <label class="check">
+              <input type="checkbox" [(ngModel)]="capacityOverride" />
+              Capacity override (ADMIN)
+            </label>
+            @if (capacityOverride) {
+              <app-ui-input
+                label="Override reason"
+                inputId="xfer-override"
+                [(ngModel)]="overrideReason"
+              />
+            }
+          }
+          <div class="panel-actions">
+            <app-ui-button type="button" [loading]="acting()" (click)="runTransfer()">Confirm transfer</app-ui-button>
+            <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+          </div>
+        }
+      </app-ui-card>
+    }
+
+    @if (activation(); as act) {
+      <app-ui-card>
+        <h2 class="section-title">Activation result</h2>
+        <dl class="facts">
+          <div><dt>Fee account</dt><dd>#{{ act.feeAccount.id }}</dd></div>
+          <div>
+            <dt>Outstanding</dt>
+            <dd>{{ act.feeAccount.currency }} {{ act.feeAccount.outstandingAmount }}</dd>
+          </div>
+          <div><dt>Invoices</dt><dd>{{ act.invoices.length }}</dd></div>
+        </dl>
+      </app-ui-card>
+    }
+  }
+</div>

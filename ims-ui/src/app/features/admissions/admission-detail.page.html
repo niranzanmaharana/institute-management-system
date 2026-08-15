@@ -1,0 +1,107 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Admission details</h1>
+      <p>FRONT_DESK captures applications; ADMIN / Academic Coordinator approve or reject</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/admissions">Back to list</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error() && !admission()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (admission(); as row) {
+    @if (error()) {
+      <app-ui-card>
+        <app-error-state title="Action failed" [message]="error()!" />
+      </app-ui-card>
+    }
+
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>{{ row.applicantName }}</h2>
+          <p class="meta">
+            <span>{{ row.applicationNo || '—' }}</span>
+            <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+          </p>
+        </div>
+      </div>
+      <dl class="facts">
+        <div><dt>Course</dt><dd>{{ courseLabel() }}</dd></div>
+        <div><dt>Phone</dt><dd>{{ row.phone || '—' }}</dd></div>
+        <div><dt>Email</dt><dd>{{ row.email || '—' }}</dd></div>
+        <div><dt>Enquiry</dt><dd>{{ row.enquiryId ? ('#' + row.enquiryId) : '—' }}</dd></div>
+        <div><dt>Student id</dt><dd>{{ row.studentId || '—' }}</dd></div>
+        <div><dt>Decision reason</dt><dd>{{ row.decisionReason || '—' }}</dd></div>
+        <div><dt>Decided at</dt><dd>{{ row.decidedAt || '—' }}</dd></div>
+        <div><dt>Created at</dt><dd>{{ row.createdAt }}</dd></div>
+      </dl>
+
+      <div class="actions">
+        @if (row.status === 'SUBMITTED' && auth.hasPermission('admission:approve')) {
+          <app-ui-button type="button" (click)="openPanel('approve')">Approve</app-ui-button>
+          <app-ui-button type="button" (click)="openPanel('reject')">Reject</app-ui-button>
+        }
+        @if (row.status === 'SUBMITTED' && auth.hasPermission('admission:write')) {
+          <app-ui-button type="button" (click)="openPanel('cancel')">Cancel</app-ui-button>
+        }
+        @if (row.status === 'APPROVED' && (auth.hasPermission('course:write') || auth.hasPermission('enrollment:write'))) {
+          <app-ui-button type="button" (click)="goEnroll()">Enroll student</app-ui-button>
+        }
+      </div>
+    </app-ui-card>
+
+    @if (panel() === 'approve') {
+      <app-ui-card>
+        <h2 class="section-title">Approve and create student</h2>
+        <form class="form" [formGroup]="approveForm" (ngSubmit)="approve()">
+          <div class="grid">
+            <div class="code-field">
+              <app-ui-input
+                label="Student code (optional)"
+                inputId="ap-code"
+                formControlName="studentCode"
+              />
+              <app-ui-button
+                type="button"
+                [loading]="generatingStudent()"
+                (click)="generateStudentCode()"
+              >
+                Generate
+              </app-ui-button>
+            </div>
+            <app-ui-input label="First name" inputId="ap-fn" formControlName="firstName" />
+            <app-ui-input label="Last name" inputId="ap-ln" formControlName="lastName" />
+            <app-ui-input label="Phone" inputId="ap-phone" formControlName="phone" />
+            <app-ui-input label="Email" inputId="ap-email" type="email" formControlName="email" />
+            <app-ui-input label="Reason (optional)" inputId="ap-reason" formControlName="reason" />
+          </div>
+          <div class="panel-actions">
+            <app-ui-button type="submit" [loading]="acting()">Confirm approve</app-ui-button>
+            <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+          </div>
+        </form>
+      </app-ui-card>
+    }
+
+    @if (panel() === 'reject' || panel() === 'cancel') {
+      <app-ui-card>
+        <h2 class="section-title">{{ panel() === 'reject' ? 'Reject application' : 'Cancel application' }}</h2>
+        <p class="hint">Reason is required (at least 5 characters).</p>
+        <form class="form" [formGroup]="reasonForm" (ngSubmit)="panel() === 'reject' ? reject() : cancel()">
+          <app-ui-input label="Reason" inputId="dec-reason" formControlName="reason" />
+          <div class="panel-actions">
+            <app-ui-button type="submit" [loading]="acting()">Confirm</app-ui-button>
+            <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+          </div>
+        </form>
+      </app-ui-card>
+    }
+  }
+</div>

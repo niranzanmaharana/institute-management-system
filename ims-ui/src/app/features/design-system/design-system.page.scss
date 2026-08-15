@@ -1,0 +1,28 @@
+.page__header h1 {
+  margin: 0 0 0.35rem;
+}
+
+.page__header p {
+  margin: 0 0 1.25rem;
+  color: var(--ims-text-muted);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.stack {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.pager-wrap {
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

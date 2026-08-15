@@ -1,0 +1,62 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit fee plan</h1>
+      <p>
+        {{
+          code
+            ? 'Code ' + code + ' / currency ' + currency + ' (immutable)'
+            : 'Update plan name, amount, and installment'
+        }}
+      </p>
+    </div>
+    @if (courseId) {
+      <a [routerLink]="['/courses', courseId]">Back to course</a>
+    } @else {
+      <a routerLink="/courses">Back to courses</a>
+    }
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error() && !code) {
+      <app-error-state title="Unavailable" [message]="error()!" />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Save failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <app-ui-input label="Plan name" inputId="fp-edit-name" formControlName="name" />
+          <app-ui-input
+            label="Total amount"
+            inputId="fp-edit-total"
+            type="number"
+            formControlName="totalAmount"
+          />
+          <label class="field" for="fp-edit-category">
+            <span class="field__label">Fee category</span>
+            <select id="fp-edit-category" class="field__control" formControlName="feeCategoryId">
+              @for (cat of categories(); track cat.id) {
+                <option [value]="cat.id">{{ cat.code }} — {{ cat.name }}</option>
+              }
+            </select>
+          </label>
+          <app-ui-input
+            label="Installment label"
+            inputId="fp-edit-label"
+            formControlName="installmentLabel"
+          />
+          <app-ui-input
+            label="Due offset days"
+            inputId="fp-edit-due"
+            type="number"
+            formControlName="dueOffsetDays"
+          />
+        </div>
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save changes</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

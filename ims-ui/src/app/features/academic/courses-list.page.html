@@ -1,0 +1,65 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Courses</h1>
+      <p>Tenant-scoped academic catalog</p>
+    </div>
+    <a routerLink="/courses/new">
+      <app-ui-button type="button">Add course</app-ui-button>
+    </a>
+  </header>
+
+  <app-ui-card>
+    <div class="toolbar">
+      <app-ui-input label="Search" inputId="course-q" [(ngModel)]="q" />
+      <app-ui-button type="button" (click)="reload()">Search</app-ui-button>
+    </div>
+
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No courses" message="Create the first course for this institute." />
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>
+                  <a [routerLink]="['/courses', row.id]">{{ row.code }}</a>
+                </td>
+                <td>
+                  <a [routerLink]="['/courses', row.id]">{{ row.name }}</a>
+                </td>
+                <td>
+                  <app-status-badge
+                    [label]="row.status"
+                    [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'"
+                  />
+                </td>
+                <td class="table__actions">
+                  <a [routerLink]="['/courses', row.id]">
+                    <app-ui-button type="button">View</app-ui-button>
+                  </a>
+                  <a [routerLink]="['/courses', row.id, 'edit']">
+                    <app-ui-button type="button">Edit</app-ui-button>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </app-ui-card>
+</div>

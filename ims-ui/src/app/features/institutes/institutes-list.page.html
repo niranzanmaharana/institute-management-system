@@ -1,0 +1,56 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Institutes</h1>
+      <p>Platform directory — open an institute for full details</p>
+    </div>
+    <a routerLink="/institutes/new">
+      <app-ui-button type="button">Add institute</app-ui-button>
+    </a>
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No institutes" message="Create the first institute and its admin." />
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ row.code }}</td>
+                <td>{{ row.name }}</td>
+                <td>
+                  <app-status-badge
+                    [label]="row.status"
+                    [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'"
+                  />
+                </td>
+                <td class="table__actions">
+                  <a [routerLink]="['/institutes', row.id]">
+                    <app-ui-button type="button">View</app-ui-button>
+                  </a>
+                  <a [routerLink]="['/institutes', row.id, 'edit']">
+                    <app-ui-button type="button">Edit</app-ui-button>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </app-ui-card>
+</div>

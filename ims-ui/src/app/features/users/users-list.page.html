@@ -1,0 +1,55 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Users & roles</h1>
+      <p>Institute login accounts and role assignments</p>
+    </div>
+    <a routerLink="/users/new">
+      <app-ui-button type="button">Add user</app-ui-button>
+    </a>
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No users" message="Create the first institute user." />
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Roles</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ row.username }}</td>
+                <td>{{ row.email }}</td>
+                <td>{{ row.roles.join(', ') }}</td>
+                <td>
+                  <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+                </td>
+                <td class="table__actions">
+                  <a [routerLink]="['/users', row.id]">
+                    <app-ui-button type="button">View</app-ui-button>
+                  </a>
+                  <a [routerLink]="['/users', row.id, 'edit']">
+                    <app-ui-button type="button">Edit</app-ui-button>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </app-ui-card>
+</div>

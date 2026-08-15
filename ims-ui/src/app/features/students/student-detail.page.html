@@ -1,0 +1,112 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Student details</h1>
+      <p>View student master data</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/students">Back to list</a>
+      @if (student(); as row) {
+        <app-ui-button type="button" (click)="edit()">Edit</app-ui-button>
+        @if (row.status === 'ACTIVE') {
+          <app-ui-button type="button" [loading]="deactivating()" (click)="deactivate()">
+            Deactivate
+          </app-ui-button>
+        }
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (student(); as row) {
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>{{ row.firstName }} {{ row.lastName }}</h2>
+          <p class="meta">
+            <span>{{ row.studentCode }}</span>
+            <app-status-badge
+              [label]="row.status"
+              [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'"
+            />
+          </p>
+        </div>
+      </div>
+
+      <section class="section">
+        <h3>Contact</h3>
+        <dl class="facts">
+          <div><dt>Phone</dt><dd>{{ row.phone || '—' }}</dd></div>
+          <div><dt>Email</dt><dd>{{ row.email || '—' }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="section">
+        <h3>Guardians</h3>
+        @if (row.guardians.length === 0) {
+          <p class="muted">No guardians on file.</p>
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Relation</th>
+                  <th>Phone</th>
+                  <th>Primary</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (g of row.guardians; track g.id ?? g.name) {
+                  <tr>
+                    <td>{{ g.name }}</td>
+                    <td>{{ g.relation }}</td>
+                    <td>{{ g.phone || '—' }}</td>
+                    <td>{{ g.primaryGuardian ? 'Yes' : 'No' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <section class="section">
+        <h3>Addresses</h3>
+        @if (row.addresses.length === 0) {
+          <p class="muted">No addresses on file.</p>
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Line 1</th>
+                  <th>City</th>
+                  <th>State</th>
+                  <th>Postal</th>
+                  <th>Primary</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (a of row.addresses; track a.id ?? a.line1) {
+                  <tr>
+                    <td>{{ a.line1 }}</td>
+                    <td>{{ a.city }}</td>
+                    <td>{{ a.state || '—' }}</td>
+                    <td>{{ a.postalCode || '—' }}</td>
+                    <td>{{ a.primaryAddress ? 'Yes' : 'No' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    </app-ui-card>
+  }
+</div>

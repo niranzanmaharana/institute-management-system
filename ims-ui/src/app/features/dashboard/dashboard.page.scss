@@ -1,0 +1,90 @@
+.page__title h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.page__title p {
+  margin: 0.25rem 0 1.25rem;
+  color: var(--ims-text-muted);
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.metric {
+  border-radius: var(--ims-radius);
+  padding: 1.1rem 1.25rem;
+  color: #fff;
+  box-shadow: var(--ims-shadow);
+}
+
+.metric p {
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 600;
+}
+
+.metric strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.6rem;
+}
+
+.metric small {
+  opacity: 0.85;
+}
+
+.metric--indigo {
+  background: linear-gradient(135deg, #4b49ac, #7978e9);
+}
+
+.metric--blue {
+  background: linear-gradient(135deg, #198ae3, #7da0fa);
+}
+
+.metric--green {
+  background: linear-gradient(135deg, #57b657, #7cde7c);
+}
+
+.metric--orange {
+  background: linear-gradient(135deg, #f2a654, #ffc100);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.65rem 0.25rem;
+  border-bottom: 1px solid var(--ims-border);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 1023px) {
+  .metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+}
