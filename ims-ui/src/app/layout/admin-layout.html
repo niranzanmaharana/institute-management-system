@@ -1,0 +1,245 @@
+<div
+  class="shell"
+  [class.shell--collapsed]="!isMobile() && !sidebarOpen()"
+  [class.shell--drawer-open]="isMobile() && sidebarOpen()"
+>
+  @if (isMobile() && sidebarOpen()) {
+    <button
+      type="button"
+      class="backdrop"
+      aria-label="Close menu"
+      (click)="closeSidebar()"
+    ></button>
+  }
+
+  <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
+    <div class="sidebar__brand">
+      <span class="sidebar__logo">IMS</span>
+      @if (sidebarOpen() || isMobile()) {
+        <span class="sidebar__title">Skydash IMS</span>
+      }
+      @if (isMobile()) {
+        <button
+          type="button"
+          class="icon-btn sidebar__close"
+          (click)="closeSidebar()"
+          aria-label="Close menu"
+        >
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      }
+    </div>
+    <nav class="sidebar__nav">
+      @if (auth.isPlatformAdmin()) {
+        <a
+          routerLink="/institutes"
+          routerLinkActive="is-active"
+          class="nav-item"
+          (click)="onNavClick()"
+        >
+          <i class="fa-solid fa-building-columns nav-item__icon" aria-hidden="true"></i>
+          @if (sidebarOpen() || isMobile()) {
+            <span>Institutes</span>
+          }
+        </a>
+      } @else {
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="is-active"
+          class="nav-item"
+          (click)="onNavClick()"
+        >
+          <i class="fa-solid fa-gauge-high nav-item__icon" aria-hidden="true"></i>
+          @if (sidebarOpen() || isMobile()) {
+            <span>Dashboard</span>
+          }
+        </a>
+        @if (auth.hasPermission('user:manage')) {
+          <a
+            routerLink="/users"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-users-gear nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Users & roles</span>
+            }
+          </a>
+        }
+        <a
+          routerLink="/design-system"
+          routerLinkActive="is-active"
+          class="nav-item"
+          (click)="onNavClick()"
+        >
+          <i class="fa-solid fa-palette nav-item__icon" aria-hidden="true"></i>
+          @if (sidebarOpen() || isMobile()) {
+            <span>Design system</span>
+          }
+        </a>
+        <div class="nav-section">
+          @if (sidebarOpen() || isMobile()) {
+            <span>Academic</span>
+          }
+        </div>
+        @if (auth.hasPermission('student:read')) {
+          <a
+            routerLink="/students"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-user-graduate nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Students</span>
+            }
+          </a>
+        }
+        @if (auth.hasPermission('faculty:read')) {
+          <a
+            routerLink="/faculty"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-chalkboard-user nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Faculty</span>
+            }
+          </a>
+        }
+        @if (auth.hasPermission('staff:read')) {
+          <a
+            routerLink="/staff"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-user-tie nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Staff</span>
+            }
+          </a>
+        }
+        @if (auth.hasPermission('course:read')) {
+          <a
+            routerLink="/courses"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-book-open nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Courses</span>
+            }
+          </a>
+          <a
+            routerLink="/batches"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-layer-group nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Batches</span>
+            }
+          </a>
+        }
+        @if (auth.hasPermission('admission:write') || auth.hasPermission('admission:approve')) {
+          <a
+            routerLink="/admissions"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-file-signature nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Admissions</span>
+            }
+          </a>
+          <a
+            routerLink="/enquiries"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-comments nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Enquiries</span>
+            }
+          </a>
+        }
+        @if (
+          auth.hasPermission('course:write') ||
+          auth.hasPermission('enrollment:write') ||
+          auth.hasPermission('course:read') ||
+          auth.hasPermission('fee:collect')
+        ) {
+          <a
+            routerLink="/enrollments"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-user-plus nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Enrollments</span>
+            }
+          </a>
+        }
+        <div class="nav-section">
+          @if (sidebarOpen() || isMobile()) {
+            <span>Finance</span>
+          }
+        </div>
+        @if (auth.hasPermission('fee:read')) {
+          <a
+            routerLink="/outstanding"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-indian-rupee-sign nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Outstanding</span>
+            }
+          </a>
+        }
+      }
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="header">
+      <button
+        type="button"
+        class="icon-btn header__menu"
+        (click)="toggleSidebar()"
+        [attr.aria-expanded]="sidebarOpen()"
+        aria-controls="app-sidebar"
+        [attr.aria-label]="sidebarOpen() ? 'Collapse menu' : 'Open menu'"
+      >
+        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+      </button>
+      <div class="header__search">
+        <input type="search" placeholder="Search here" aria-label="Search" disabled />
+      </div>
+      <div class="header__actions">
+        <button type="button" class="icon-btn" aria-label="Notifications" disabled>
+          <i class="fa-solid fa-bell" aria-hidden="true"></i>
+        </button>
+        <div class="header__user">
+          <span class="avatar" aria-hidden="true">{{ (auth.user()?.username || 'A').charAt(0).toUpperCase() }}</span>
+          <span class="header__user-name">{{ auth.user()?.username || 'User' }}</span>
+        </div>
+        <button type="button" class="icon-btn" (click)="logout()" aria-label="Sign out" title="Sign out">
+          <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+        </button>
+      </div>
+    </header>
+    <main class="content">
+      <router-outlet />
+    </main>
+  </div>
+</div>

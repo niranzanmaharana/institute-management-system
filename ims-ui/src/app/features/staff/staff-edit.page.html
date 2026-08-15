@@ -1,0 +1,42 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit staff</h1>
+      <p>
+        {{
+          staffCode
+            ? 'Code ' + staffCode + ' (immutable)'
+            : 'Update contact and designation'
+        }}
+      </p>
+    </div>
+    @if (staffId) {
+      <a [routerLink]="['/staff', staffId]">Back to details</a>
+    } @else {
+      <a routerLink="/staff">Back to list</a>
+    }
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error() && !staffCode) {
+      <app-error-state title="Unavailable" [message]="error()!" />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Save failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <app-ui-input label="First name" inputId="edit-stf-fn" formControlName="firstName" />
+          <app-ui-input label="Last name" inputId="edit-stf-ln" formControlName="lastName" />
+          <app-ui-input label="Phone" inputId="edit-stf-phone" formControlName="phone" />
+          <app-ui-input label="Email" inputId="edit-stf-email" type="email" formControlName="email" />
+          <app-ui-input label="Designation" inputId="edit-stf-desig" formControlName="designation" />
+        </div>
+
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save changes</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

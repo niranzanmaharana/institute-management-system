@@ -1,0 +1,80 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Add institute</h1>
+      <p>Create a tenant with contact details and its first institute admin</p>
+    </div>
+    <a routerLink="/institutes">Back to list</a>
+  </header>
+
+  <app-ui-card>
+    @if (error()) {
+      <app-error-state title="Create failed" [message]="error()!" />
+    }
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <h2>Institute</h2>
+      <div class="code-field">
+        <app-ui-input label="Code (optional)" inputId="inst-code" formControlName="code" />
+        <app-ui-button type="button" [loading]="generating()" (click)="generateCode()">
+          Generate
+        </app-ui-button>
+        <p class="hint">Leave blank to auto-generate on save (e.g. I00001).</p>
+      </div>
+      <div class="grid">
+        <app-ui-input label="Name" inputId="inst-name" formControlName="name" />
+        <app-ui-input label="Timezone" inputId="inst-tz" formControlName="timezone" />
+      </div>
+
+      <h2>Contact &amp; branding</h2>
+      <div class="grid">
+        <app-ui-input label="Mobile" inputId="inst-mobile" formControlName="mobile" />
+        <app-ui-input
+          label="Admin / contact email"
+          inputId="inst-contact-email"
+          type="email"
+          formControlName="contactEmail"
+        />
+        <app-ui-input label="Website" inputId="inst-web" formControlName="website" />
+        <app-ui-input
+          label="Icon URL"
+          inputId="inst-icon"
+          hint="Public image URL for now; MinIO upload comes later"
+          formControlName="iconUrl"
+        />
+      </div>
+      <div class="grid">
+        <app-ui-input label="Address line 1" inputId="inst-a1" formControlName="addressLine1" />
+        <app-ui-input label="Address line 2" inputId="inst-a2" formControlName="addressLine2" />
+        <app-ui-input label="City" inputId="inst-city" formControlName="city" />
+        <app-ui-input label="State" inputId="inst-state" formControlName="state" />
+        <app-ui-input label="Postal code" inputId="inst-postal" formControlName="postalCode" />
+        <app-ui-input label="Country" inputId="inst-country" formControlName="country" />
+      </div>
+
+      <h2>First institute admin (login)</h2>
+      <p class="hint">
+        This admin signs in with the institute code above. They manage users and institute data —
+        platform admin does not.
+      </p>
+      <div class="grid">
+        <app-ui-input label="Username" inputId="admin-user" formControlName="adminUsername" />
+        <app-ui-input
+          label="Login email"
+          inputId="admin-email"
+          type="email"
+          formControlName="adminEmail"
+        />
+        <app-ui-input
+          label="Password"
+          inputId="admin-pass"
+          type="password"
+          formControlName="adminPassword"
+        />
+      </div>
+
+      <app-ui-button type="submit" [loading]="submitting()" [block]="true">
+        Create institute
+      </app-ui-button>
+    </form>
+  </app-ui-card>
+</div>

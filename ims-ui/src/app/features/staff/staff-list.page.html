@@ -1,0 +1,76 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Staff</h1>
+      <p>Tenant-scoped staff master data</p>
+    </div>
+    @if (auth.hasPermission('staff:write')) {
+      <a routerLink="/staff/new">
+        <app-ui-button type="button">Add staff</app-ui-button>
+      </a>
+    }
+  </header>
+
+  <app-ui-card>
+    <div class="toolbar">
+      <app-ui-input label="Search" inputId="staff-q" [(ngModel)]="q" />
+      <app-ui-select
+        label="Status"
+        selectId="staff-status"
+        [options]="statusOptions"
+        [(ngModel)]="status"
+      />
+      <app-ui-button type="button" (click)="search()">Search</app-ui-button>
+    </div>
+
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No staff" message="Create the first staff member for this institute." />
+    } @else {
+      <p class="meta">{{ totalElements() }} total</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Designation</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ row.staffCode }}</td>
+                <td>{{ row.firstName }} {{ row.lastName }}</td>
+                <td>{{ row.designation || '—' }}</td>
+                <td>
+                  <app-status-badge [label]="row.status" [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'" />
+                </td>
+                <td class="table__actions">
+                  <a [routerLink]="['/staff', row.id]">
+                    <app-ui-button type="button">View</app-ui-button>
+                  </a>
+                  @if (auth.hasPermission('staff:write') && row.status === 'ACTIVE') {
+                    <a [routerLink]="['/staff', row.id, 'edit']">
+                      <app-ui-button type="button">Edit</app-ui-button>
+                    </a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-ui-pagination
+        [page]="page()"
+        [totalPages]="totalPages()"
+        (pageChange)="onPageChange($event)"
+      />
+    }
+  </app-ui-card>
+</div>

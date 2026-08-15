@@ -1,0 +1,149 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Add batch</h1>
+      <p>Link a course to an academic year</p>
+    </div>
+    <a routerLink="/batches">Back to list</a>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (loadError()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="loadError()!" />
+    </app-ui-card>
+  } @else {
+    @if (courses().length === 0) {
+      <app-ui-card>
+        <app-error-state
+          title="No courses"
+          message="Create a course before adding a batch."
+        />
+        <a routerLink="/courses/new">Go to add course</a>
+      </app-ui-card>
+    } @else if (years().length === 0) {
+      <app-ui-card>
+        <h2 class="section-title">Create academic year first</h2>
+        @if (yearError()) {
+          <app-error-state title="Year failed" [message]="yearError()!" />
+        }
+        <form class="form" [formGroup]="yearForm" (ngSubmit)="createYear()">
+          <div class="code-field">
+            <app-ui-input label="Year code (optional)" inputId="ay-code" formControlName="code" />
+            <app-ui-button type="button" [loading]="generatingYear()" (click)="generateYearCode()">
+              Generate
+            </app-ui-button>
+          </div>
+          <div class="grid">
+            <app-ui-input label="Year name" inputId="ay-name" formControlName="name" />
+            <app-ui-input
+              label="Start date"
+              inputId="ay-start"
+              type="date"
+              formControlName="startDate"
+            />
+            <app-ui-input
+              label="End date"
+              inputId="ay-end"
+              type="date"
+              formControlName="endDate"
+            />
+          </div>
+          <app-ui-button type="submit" [loading]="yearSubmitting()" [block]="true">
+            Create academic year
+          </app-ui-button>
+        </form>
+      </app-ui-card>
+    } @else {
+      <app-ui-card>
+        @if (error()) {
+          <app-error-state title="Create failed" [message]="error()!" />
+        }
+        <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+          <div class="grid">
+            <label class="field" for="batch-course">
+              <span class="field__label">Course</span>
+              <select id="batch-course" class="field__control" formControlName="courseId">
+                @for (c of courses(); track c.id) {
+                  <option [value]="c.id">{{ c.code }} — {{ c.name }}</option>
+                }
+              </select>
+            </label>
+            <label class="field" for="batch-year">
+              <span class="field__label">Academic year</span>
+              <select id="batch-year" class="field__control" formControlName="academicYearId">
+                @for (y of years(); track y.id) {
+                  <option [value]="y.id">{{ y.code }} — {{ y.name }}</option>
+                }
+              </select>
+            </label>
+            <div class="code-field">
+              <app-ui-input label="Batch code (optional)" inputId="batch-code" formControlName="code" />
+              <app-ui-button
+                type="button"
+                [loading]="generatingBatch()"
+                (click)="generateBatchCode()"
+              >
+                Generate
+              </app-ui-button>
+            </div>
+            <app-ui-input label="Batch name" inputId="batch-name" formControlName="name" />
+            <app-ui-input
+              label="Capacity"
+              inputId="batch-capacity"
+              type="number"
+              formControlName="capacity"
+            />
+            <app-ui-input
+              label="Start date"
+              inputId="batch-start"
+              type="date"
+              formControlName="startDate"
+            />
+            <app-ui-input
+              label="End date"
+              inputId="batch-end"
+              type="date"
+              formControlName="endDate"
+            />
+          </div>
+          <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save batch</app-ui-button>
+        </form>
+
+        <details class="more">
+          <summary>Add another academic year</summary>
+          @if (yearError()) {
+            <app-error-state title="Year failed" [message]="yearError()!" />
+          }
+          <form class="form" [formGroup]="yearForm" (ngSubmit)="createYear()">
+            <div class="code-field">
+              <app-ui-input label="Year code (optional)" inputId="ay2-code" formControlName="code" />
+              <app-ui-button type="button" [loading]="generatingYear()" (click)="generateYearCode()">
+                Generate
+              </app-ui-button>
+            </div>
+            <div class="grid">
+              <app-ui-input label="Year name" inputId="ay2-name" formControlName="name" />
+              <app-ui-input
+                label="Start date"
+                inputId="ay2-start"
+                type="date"
+                formControlName="startDate"
+              />
+              <app-ui-input
+                label="End date"
+                inputId="ay2-end"
+                type="date"
+                formControlName="endDate"
+              />
+            </div>
+            <app-ui-button type="submit" [loading]="yearSubmitting()" [block]="true">
+              Create academic year
+            </app-ui-button>
+          </form>
+        </details>
+      </app-ui-card>
+    }
+  }
+</div>

@@ -1,0 +1,92 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Enquiry details</h1>
+      <p>Convert to an application when the prospect is ready</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/enquiries">Back to list</a>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error() && !enquiry()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (enquiry(); as row) {
+    @if (error()) {
+      <app-ui-card>
+        <app-error-state title="Action failed" [message]="error()!" />
+      </app-ui-card>
+    }
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>{{ row.name }}</h2>
+          <p class="meta">
+            <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+          </p>
+        </div>
+      </div>
+      <dl class="facts">
+        <div><dt>Phone</dt><dd>{{ row.phone || '—' }}</dd></div>
+        <div><dt>Email</dt><dd>{{ row.email || '—' }}</dd></div>
+        <div><dt>Interested course</dt><dd>{{ courseLabel(row.interestedCourseId) }}</dd></div>
+        <div><dt>Notes</dt><dd>{{ row.notes || '—' }}</dd></div>
+        <div>
+          <dt>Application</dt>
+          <dd>
+            @if (row.convertedApplicationId) {
+              <a [routerLink]="['/admissions', row.convertedApplicationId]">#{{ row.convertedApplicationId }}</a>
+            } @else {
+              —
+            }
+          </dd>
+        </div>
+        <div><dt>Created</dt><dd>{{ row.createdAt }}</dd></div>
+      </dl>
+      @if (row.status === 'OPEN' && auth.hasPermission('admission:write')) {
+        <div class="actions">
+          <app-ui-button type="button" (click)="openConvert()">Convert to application</app-ui-button>
+          <app-ui-button type="button" (click)="openClose()">Close</app-ui-button>
+        </div>
+      }
+    </app-ui-card>
+
+    @if (panel() === 'convert') {
+      <app-ui-card>
+        <h2 class="section-title">Convert to application</h2>
+        <form class="form" [formGroup]="convertForm" (ngSubmit)="convert()">
+          <label class="field" for="cv-course">
+            <span class="field__label">Course</span>
+            <select id="cv-course" class="field__control" formControlName="courseId">
+              <option value="" disabled>Select course</option>
+              @for (c of courses(); track c.id) {
+                <option [value]="c.id">{{ c.code }} — {{ c.name }}</option>
+              }
+            </select>
+          </label>
+          <div class="actions">
+            <app-ui-button type="submit" [loading]="acting()">Confirm convert</app-ui-button>
+            <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+          </div>
+        </form>
+      </app-ui-card>
+    }
+
+    @if (panel() === 'close') {
+      <app-ui-card>
+        <h2 class="section-title">Close enquiry</h2>
+        <form class="form" [formGroup]="closeForm" (ngSubmit)="closeEnquiry()">
+          <app-ui-input label="Notes (optional)" inputId="cl-notes" formControlName="notes" />
+          <div class="actions">
+            <app-ui-button type="submit" [loading]="acting()">Confirm close</app-ui-button>
+            <app-ui-button type="button" (click)="closePanel()">Close</app-ui-button>
+          </div>
+        </form>
+      </app-ui-card>
+    }
+  }
+</div>

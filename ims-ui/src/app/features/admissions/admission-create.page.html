@@ -1,0 +1,60 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>New admission</h1>
+      <p>Create a SUBMITTED application; optional enquiry conversion is on Enquiries</p>
+    </div>
+    <a routerLink="/admissions">Back to list</a>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (loadError()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="loadError()!" />
+    </app-ui-card>
+  } @else if (courses().length === 0) {
+    <app-ui-card>
+      <app-error-state title="No courses" message="Create a course before adding an admission." />
+      <a routerLink="/courses/new">Go to add course</a>
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      @if (error()) {
+        <app-error-state title="Create failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <div class="code-field">
+            <app-ui-input
+              label="Application no (optional)"
+              inputId="adm-appno"
+              formControlName="applicationNo"
+            />
+            <app-ui-button type="button" [loading]="generating()" (click)="generateApplicationNo()">
+              Generate
+            </app-ui-button>
+          </div>
+          <label class="field" for="adm-course">
+            <span class="field__label">Course</span>
+            <select id="adm-course" class="field__control" formControlName="courseId">
+              @for (c of courses(); track c.id) {
+                <option [value]="c.id">{{ c.code }} — {{ c.name }}</option>
+              }
+            </select>
+          </label>
+          <app-ui-input
+            label="Applicant name"
+            inputId="adm-name"
+            formControlName="applicantName"
+          />
+          <app-ui-input label="Phone" inputId="adm-phone" formControlName="phone" />
+          <app-ui-input label="Email" inputId="adm-email" type="email" formControlName="email" />
+        </div>
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">
+          Save admission
+        </app-ui-button>
+      </form>
+    </app-ui-card>
+  }
+</div>

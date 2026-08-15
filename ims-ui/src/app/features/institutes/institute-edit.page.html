@@ -1,0 +1,62 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit institute</h1>
+      <p>{{ code ? 'Code ' + code + ' (immutable)' : 'Update contact profile and branding' }}</p>
+    </div>
+    @if (instituteId) {
+      <a [routerLink]="['/institutes', instituteId]">Back to details</a>
+    } @else {
+      <a routerLink="/institutes">Back to list</a>
+    }
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error() && !code) {
+      <app-error-state title="Unavailable" [message]="error()!" />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Save failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <h2>Institute</h2>
+        <div class="grid">
+          <app-ui-input label="Name" inputId="edit-name" formControlName="name" />
+          <app-ui-input label="Timezone" inputId="edit-tz" formControlName="timezone" />
+        </div>
+
+        <h2>Contact &amp; branding</h2>
+        <div class="grid">
+          <app-ui-input label="Mobile" inputId="edit-mobile" formControlName="mobile" />
+          <app-ui-input
+            label="Admin / contact email"
+            inputId="edit-contact-email"
+            type="email"
+            formControlName="contactEmail"
+          />
+          <app-ui-input label="Website" inputId="edit-web" formControlName="website" />
+          <app-ui-input
+            label="Icon URL"
+            inputId="edit-icon"
+            hint="Public image URL for now; MinIO upload comes later"
+            formControlName="iconUrl"
+          />
+        </div>
+        <div class="grid">
+          <app-ui-input label="Address line 1" inputId="edit-a1" formControlName="addressLine1" />
+          <app-ui-input label="Address line 2" inputId="edit-a2" formControlName="addressLine2" />
+          <app-ui-input label="City" inputId="edit-city" formControlName="city" />
+          <app-ui-input label="State" inputId="edit-state" formControlName="state" />
+          <app-ui-input label="Postal code" inputId="edit-postal" formControlName="postalCode" />
+          <app-ui-input label="Country" inputId="edit-country" formControlName="country" />
+        </div>
+
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">
+          Save changes
+        </app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

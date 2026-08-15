@@ -1,0 +1,40 @@
+<div class="login">
+  <form class="login__card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="login__brand">
+      <span class="login__logo">IMS</span>
+      <h1>Sign in</h1>
+      <p>Institute Management System</p>
+    </div>
+
+    @if (error()) {
+      <div class="login__error" role="alert">{{ error() }}</div>
+    }
+
+    <app-ui-input
+      label="Username"
+      inputId="username"
+      autocomplete="username"
+      formControlName="username"
+    />
+    <app-ui-input
+      label="Password"
+      inputId="password"
+      type="password"
+      autocomplete="current-password"
+      formControlName="password"
+    />
+    <app-ui-input
+      label="Institute code"
+      inputId="instituteCode"
+      hint="Leave empty for platform admin"
+      autocomplete="organization"
+      formControlName="instituteCode"
+    />
+
+    <app-ui-button type="submit" [loading]="submitting()" [block]="true">Sign in</app-ui-button>
+
+    <p class="login__hint">
+      Demo: <strong>admin</strong> / <strong>Password@123</strong> / <strong>DEMO_A</strong>
+    </p>
+  </form>
+</div>

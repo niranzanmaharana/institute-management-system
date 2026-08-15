@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: ims-application
+  datasource:
+    url: jdbc:mysql://localhost:3306/ims?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+    propagation:
+      type: w3c
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+ims:
+  security:
+    jwt-secret: ims-dev-jwt-secret-change-me-32chars-min!!
+    access-token-minutes: 30
+    refresh-token-days: 14
+
+logging:
+  level:
+    root: INFO
+    com.ims: INFO
+  pattern:
+    console: "%d{ISO8601} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] requestId=%X{requestId:-} userId=%X{userId:-} %logger{36} - %msg%n"

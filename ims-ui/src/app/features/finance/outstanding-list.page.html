@@ -1,0 +1,99 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Outstanding</h1>
+      <p>Open fee accounts with balance due</p>
+    </div>
+    <app-ui-button type="button" (click)="reload()">Refresh</app-ui-button>
+  </header>
+
+  @if (lastReceipt()) {
+    <app-ui-card>
+      <p class="receipt">
+        Payment {{ lastReceipt()!.payment.paymentNo }} · receipt
+        {{ lastReceipt()!.receipt.receiptNo }} · remaining
+        {{ lastReceipt()!.feeAccount.outstandingAmount }}
+        {{ lastReceipt()!.feeAccount.currency }}
+      </p>
+    </app-ui-card>
+  }
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="Nothing outstanding" message="All fee accounts are settled." />
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Student</th>
+              <th>Enrollment</th>
+              <th>Outstanding</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>#{{ row.id }}</td>
+                <td>#{{ row.studentId }}</td>
+                <td>#{{ row.enrollmentId }}</td>
+                <td>{{ row.outstandingAmount }} {{ row.currency }}</td>
+                <td>
+                  <app-status-badge [label]="row.status" tone="warning" />
+                </td>
+                <td>
+                  <app-ui-button type="button" (click)="openCollect(row)">Collect</app-ui-button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </app-ui-card>
+
+  <app-ui-modal
+    [open]="payOpen()"
+    title="Collect payment"
+    (closed)="closeCollect()"
+  >
+    @if (payTarget(); as target) {
+      <ng-container>
+        <p class="muted">
+          Account #{{ target.id }} · due {{ target.outstandingAmount }} {{ target.currency }}
+        </p>
+        @if (payError()) {
+          <app-error-state title="Payment failed" [message]="payError()!" />
+        }
+        <form class="form" [formGroup]="payForm" id="collect-pay-form">
+          <app-ui-input
+            label="Amount"
+            inputId="pay-amount"
+            type="number"
+            formControlName="amount"
+          />
+          <label class="field" for="pay-method">
+            <span class="field__label">Method</span>
+            <select id="pay-method" class="field__control" formControlName="method">
+              <option value="CASH">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="CARD">Card</option>
+              <option value="BANK">Bank transfer</option>
+            </select>
+          </label>
+        </form>
+      </ng-container>
+    }
+    <div modal-actions>
+      <app-ui-button type="button" (click)="closeCollect()">Cancel</app-ui-button>
+      <app-ui-button type="button" [loading]="paying()" (click)="collect()">Collect</app-ui-button>
+    </div>
+  </app-ui-modal>
+</div>

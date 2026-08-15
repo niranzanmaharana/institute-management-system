@@ -1,0 +1,36 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit course</h1>
+      <p>{{ code ? 'Code ' + code + ' (immutable)' : 'Update course details' }}</p>
+    </div>
+    @if (courseId) {
+      <a [routerLink]="['/courses', courseId]">Back to details</a>
+    } @else {
+      <a routerLink="/courses">Back to list</a>
+    }
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error() && !code) {
+      <app-error-state title="Unavailable" [message]="error()!" />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Save failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <app-ui-input label="Name" inputId="course-edit-name" formControlName="name" />
+          <app-ui-input
+            label="Description"
+            inputId="course-edit-desc"
+            formControlName="description"
+          />
+        </div>
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save changes</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

@@ -1,0 +1,43 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit user</h1>
+      <p>{{ username() || 'Update email, roles, or password' }}</p>
+    </div>
+    <a [routerLink]="backLink()">Back</a>
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Error" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <app-ui-input label="Email" inputId="edit-email" type="email" formControlName="email" />
+        <app-ui-input
+          label="New password (optional)"
+          inputId="edit-password"
+          type="password"
+          formControlName="password"
+          hint="Leave blank to keep the current password"
+        />
+        <fieldset class="roles">
+          <legend>Roles</legend>
+          @for (role of roles(); track role.code) {
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="isChecked(role.code)"
+                (change)="toggleRole(role.code, $any($event.target).checked)"
+              />
+              <span>{{ role.name }} <span class="code">({{ role.code }})</span></span>
+            </label>
+          }
+        </fieldset>
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

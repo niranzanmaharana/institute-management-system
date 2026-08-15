@@ -1,0 +1,44 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Batch details</h1>
+      <p>View batch offering</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/batches">Back to list</a>
+      @if (batch(); as row) {
+        <app-ui-button type="button" (click)="edit()">Edit</app-ui-button>
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (batch(); as row) {
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>{{ row.name }}</h2>
+          <p class="meta">
+            <span>{{ row.code }}</span>
+            <app-status-badge
+              [label]="row.status"
+              [tone]="row.status === 'OPEN' || row.status === 'ACTIVE' ? 'success' : 'neutral'"
+            />
+          </p>
+        </div>
+      </div>
+      <dl class="facts">
+        <div><dt>Course id</dt><dd>{{ row.courseId }}</dd></div>
+        <div><dt>Academic year id</dt><dd>{{ row.academicYearId }}</dd></div>
+        <div><dt>Capacity</dt><dd>{{ row.capacity }}</dd></div>
+        <div><dt>Start date</dt><dd>{{ row.startDate || '—' }}</dd></div>
+        <div><dt>End date</dt><dd>{{ row.endDate || '—' }}</dd></div>
+      </dl>
+    </app-ui-card>
+  }
+</div>

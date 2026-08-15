@@ -1,0 +1,63 @@
+.login {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at top right, rgba(125, 160, 250, 0.25), transparent 40%),
+    var(--ims-bg);
+}
+
+.login__card {
+  width: min(420px, 100%);
+  background: var(--ims-card-bg);
+  border: 1px solid var(--ims-border);
+  border-radius: var(--ims-radius);
+  box-shadow: var(--ims-shadow);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login__brand {
+  text-align: center;
+  margin-bottom: 0.25rem;
+}
+
+.login__brand h1 {
+  margin: 0.75rem 0 0.2rem;
+  font-size: 1.5rem;
+}
+
+.login__brand p {
+  margin: 0;
+  color: var(--ims-text-muted);
+}
+
+.login__logo {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--ims-primary), var(--ims-primary-light));
+  color: #fff;
+  font-weight: 700;
+}
+
+.login__error {
+  background: var(--ims-danger-soft);
+  color: var(--ims-danger);
+  border-radius: 8px;
+  padding: 0.75rem 0.9rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.login__hint {
+  margin: 0;
+  text-align: center;
+  color: var(--ims-text-muted);
+  font-size: 0.85rem;
+}

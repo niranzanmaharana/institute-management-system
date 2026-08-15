@@ -1,0 +1,43 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Add user</h1>
+      <p>Create a login for this institute and assign roles</p>
+    </div>
+    <a routerLink="/users">Back to list</a>
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Error" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <app-ui-input label="Username" inputId="user-username" formControlName="username" />
+        <app-ui-input label="Email" inputId="user-email" type="email" formControlName="email" />
+        <app-ui-input
+          label="Password"
+          inputId="user-password"
+          type="password"
+          formControlName="password"
+        />
+        <fieldset class="roles">
+          <legend>Roles</legend>
+          @for (role of roles(); track role.code) {
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="isChecked(role.code)"
+                (change)="toggleRole(role.code, $any($event.target).checked)"
+              />
+              <span>{{ role.name }} <span class="code">({{ role.code }})</span></span>
+            </label>
+          }
+        </fieldset>
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Create user</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

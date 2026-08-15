@@ -1,0 +1,139 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Enroll student</h1>
+      <p>Create APPLIED enrollment; activate needs approved admission (or ADMIN waiver)</p>
+    </div>
+    <a routerLink="/enrollments">Back to list</a>
+  </header>
+
+  @if (loading() && !created()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (loadError() && !created()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="loadError()!" />
+    </app-ui-card>
+  } @else if (!created()) {
+    <app-ui-card>
+      @if (students().length === 0) {
+        <app-error-state title="No students" message="Create a student before enrolling." />
+        <a routerLink="/students/new">Go to add student</a>
+      } @else if (batches().length === 0) {
+        <app-error-state title="No batches" message="Create a batch before enrolling." />
+        <a routerLink="/batches/new">Go to add batch</a>
+      } @else {
+        @if (error()) {
+          <app-error-state title="Create failed" [message]="error()!" />
+        }
+        <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+          <div class="grid">
+            <label class="field" for="enr-student">
+              <span class="field__label">Student</span>
+              <select id="enr-student" class="field__control" formControlName="studentId">
+                @for (s of students(); track s.id) {
+                  <option [value]="s.id">
+                    {{ s.studentCode }} — {{ s.firstName }} {{ s.lastName }}
+                  </option>
+                }
+              </select>
+            </label>
+            <label class="field" for="enr-batch">
+              <span class="field__label">Batch</span>
+              <select id="enr-batch" class="field__control" formControlName="batchId">
+                @for (b of batches(); track b.id) {
+                  <option [value]="b.id">{{ b.code }} — {{ b.name }}</option>
+                }
+              </select>
+            </label>
+            <label class="field" for="enr-plan">
+              <span class="field__label">Fee plan</span>
+              <select id="enr-plan" class="field__control" formControlName="feePlanId">
+                @if (feePlans().length === 0) {
+                  <option value="" disabled>No fee plans for this course</option>
+                }
+                @for (p of feePlans(); track p.id) {
+                  <option [value]="p.id">
+                    {{ p.code }} — {{ p.name }} ({{ p.totalAmount }})
+                  </option>
+                }
+              </select>
+            </label>
+          </div>
+          <app-ui-button
+            type="submit"
+            [loading]="submitting()"
+            [disabled]="feePlans().length === 0"
+            [block]="true"
+          >
+            Create enrollment
+          </app-ui-button>
+        </form>
+      }
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      <h2 class="section-title">Enrollment created</h2>
+      <dl class="meta">
+        <div>
+          <dt>ID</dt>
+          <dd>{{ created()!.id }}</dd>
+        </div>
+        <div>
+          <dt>Status</dt>
+          <dd>
+            <app-status-badge
+              [label]="created()!.status"
+              [tone]="created()!.status === 'ACTIVE' ? 'success' : 'info'"
+            />
+          </dd>
+        </div>
+        <div>
+          <dt>Student</dt>
+          <dd>#{{ created()!.studentId }}</dd>
+        </div>
+        <div>
+          <dt>Batch</dt>
+          <dd>#{{ created()!.batchId }}</dd>
+        </div>
+      </dl>
+
+      @if (activateError()) {
+        <app-error-state title="Activate failed" [message]="activateError()!" />
+      }
+
+      @if (!activation()) {
+        <p class="muted">
+          Prefer activating from
+          <a [routerLink]="['/enrollments', created()!.id]">enrollment details</a>
+          if you need ADMIN admission waiver or capacity override.
+        </p>
+        <div class="actions">
+          <app-ui-button type="button" [loading]="activating()" (click)="activate()">
+            Activate enrollment
+          </app-ui-button>
+          <a [routerLink]="['/enrollments', created()!.id]">
+            <app-ui-button type="button">View details</app-ui-button>
+          </a>
+          <app-ui-button type="button" (click)="reset()">Create another</app-ui-button>
+        </div>
+      } @else {
+        <h2 class="section-title">Activated</h2>
+        <p class="muted">
+          Fee account #{{ activation()!.feeAccount.id }} · outstanding
+          {{ activation()!.feeAccount.outstandingAmount }}
+          {{ activation()!.feeAccount.currency }} ·
+          {{ activation()!.invoices.length }} invoice(s)
+        </p>
+        <div class="actions">
+          <a [routerLink]="['/enrollments', created()!.id]">
+            <app-ui-button type="button">View details</app-ui-button>
+          </a>
+          <a routerLink="/outstanding">
+            <app-ui-button type="button">View outstanding</app-ui-button>
+          </a>
+          <app-ui-button type="button" (click)="reset()">Create another</app-ui-button>
+        </div>
+      }
+    </app-ui-card>
+  }
+</div>

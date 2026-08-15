@@ -1,0 +1,57 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Edit batch</h1>
+      <p>{{ code ? 'Code ' + code + ' (immutable)' : 'Update batch details' }}</p>
+    </div>
+    @if (batchId) {
+      <a [routerLink]="['/batches', batchId]">Back to details</a>
+    } @else {
+      <a routerLink="/batches">Back to list</a>
+    }
+  </header>
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error() && !code) {
+      <app-error-state title="Unavailable" [message]="error()!" />
+    } @else {
+      @if (error()) {
+        <app-error-state title="Save failed" [message]="error()!" />
+      }
+      <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid">
+          <app-ui-input label="Name" inputId="batch-edit-name" formControlName="name" />
+          <app-ui-input
+            label="Capacity"
+            inputId="batch-edit-capacity"
+            type="number"
+            formControlName="capacity"
+          />
+          <label class="field" for="batch-edit-status">
+            <span class="field__label">Status</span>
+            <select id="batch-edit-status" class="field__control" formControlName="status">
+              <option value="OPEN">OPEN</option>
+              <option value="CLOSED">CLOSED</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+          </label>
+          <app-ui-input
+            label="Start date"
+            inputId="batch-edit-start"
+            type="date"
+            formControlName="startDate"
+          />
+          <app-ui-input
+            label="End date"
+            inputId="batch-edit-end"
+            type="date"
+            formControlName="endDate"
+          />
+        </div>
+        <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save changes</app-ui-button>
+      </form>
+    }
+  </app-ui-card>
+</div>

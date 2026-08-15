@@ -1,0 +1,54 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>User details</h1>
+      <p>Login account for this institute</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/users">Back to list</a>
+      @if (user(); as row) {
+        <app-ui-button type="button" (click)="edit()">Edit</app-ui-button>
+        @if (row.status === 'ACTIVE' && !isSelf()) {
+          <app-ui-button type="button" [loading]="acting()" (click)="deactivate()">
+            Deactivate
+          </app-ui-button>
+        }
+        @if (row.status !== 'ACTIVE') {
+          <app-ui-button type="button" [loading]="acting()" (click)="activate()">
+            Activate
+          </app-ui-button>
+        }
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error() && !user()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (user(); as row) {
+    @if (error()) {
+      <app-ui-card>
+        <app-error-state title="Action failed" [message]="error()!" />
+      </app-ui-card>
+    }
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>{{ row.username }}</h2>
+          <p class="meta">
+            <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+          </p>
+        </div>
+      </div>
+      <dl class="facts">
+        <div><dt>Email</dt><dd>{{ row.email }}</dd></div>
+        <div><dt>Roles</dt><dd>{{ row.roles.join(', ') }}</dd></div>
+        <div><dt>Last login</dt><dd>{{ row.lastLoginAt || '—' }}</dd></div>
+        <div><dt>Created</dt><dd>{{ row.createdAt }}</dd></div>
+      </dl>
+    </app-ui-card>
+  }
+</div>

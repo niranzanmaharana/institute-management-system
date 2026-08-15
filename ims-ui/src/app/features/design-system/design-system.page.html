@@ -1,0 +1,68 @@
+<div class="page">
+  <header class="page__header">
+    <h1>Design system</h1>
+    <p>Shared Phase 1 primitives for feature teams.</p>
+  </header>
+
+  <div class="grid">
+    <app-ui-card title="Inputs">
+      <div class="stack">
+        <app-ui-input label="Sample text" inputId="ds-text" [(ngModel)]="sampleText" />
+        <app-ui-select
+          label="Sample select"
+          selectId="ds-select"
+          [options]="selectOptions"
+          [(ngModel)]="sampleSelect"
+        />
+        <app-ui-datepicker label="Sample date" inputId="ds-date" [(ngModel)]="sampleDate" />
+      </div>
+    </app-ui-card>
+
+    <app-ui-card title="Actions & status">
+      <div class="stack">
+        <app-ui-button type="button" (click)="showToast()">Show toast</app-ui-button>
+        <app-ui-button type="button" (click)="openModal()">Open modal</app-ui-button>
+        <app-status-badge label="ACTIVE" tone="success" />
+      </div>
+    </app-ui-card>
+
+    <app-ui-card title="States">
+      <div class="stack">
+        <app-loading-state message="Loading sample…" />
+        <app-empty-state title="Empty" message="No records in this demo list." />
+        <app-error-state title="Error" message="Sample recoverable error." />
+      </div>
+    </app-ui-card>
+
+    <app-ui-card title="Table">
+      <app-ui-table caption="Demo students">
+        <ng-container table-headers>
+          <th scope="col">Name</th>
+          <th scope="col">Batch</th>
+        </ng-container>
+        <tr>
+          <td>Ada Lovelace</td>
+          <td>A1</td>
+        </tr>
+        <tr>
+          <td>Alan Turing</td>
+          <td>B2</td>
+        </tr>
+      </app-ui-table>
+      <div class="pager-wrap">
+        <app-ui-pagination [page]="page()" [totalPages]="3" (pageChange)="page.set($event)" />
+      </div>
+    </app-ui-card>
+
+    <app-ui-card title="Responsive data view">
+      <app-responsive-data-view caption="People" [rows]="rows" />
+    </app-ui-card>
+  </div>
+
+  <app-ui-modal [open]="modalOpen()" title="Sample dialog" (closed)="closeModal()">
+    <p>Focus is trapped while open. Press Escape or use Close.</p>
+    <div modal-actions>
+      <app-ui-button type="button" (click)="closeModal()">Close</app-ui-button>
+    </div>
+  </app-ui-modal>
+</div>

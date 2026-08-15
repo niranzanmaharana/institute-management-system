@@ -1,0 +1,190 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Course details</h1>
+      <p>View course and manage fee plans</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/courses">Back to list</a>
+      @if (course(); as row) {
+        <a [routerLink]="['/courses', row.id, 'edit']">
+          <app-ui-button type="button">Edit</app-ui-button>
+        </a>
+        @if (row.status === 'ACTIVE') {
+          <app-ui-button type="button" [loading]="deactivating()" (click)="deactivate()">
+            Deactivate
+          </app-ui-button>
+        }
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (course(); as row) {
+    <app-ui-card>
+      <div class="hero">
+        <div>
+          <h2>{{ row.name }}</h2>
+          <p class="meta">
+            <span>{{ row.code }}</span>
+            <app-status-badge
+              [label]="row.status"
+              [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'"
+            />
+          </p>
+          @if (row.description) {
+            <p class="desc">{{ row.description }}</p>
+          }
+        </div>
+      </div>
+    </app-ui-card>
+
+    <app-ui-card>
+      <h2 class="section-title">Fee plans</h2>
+      @if (feePlans().length === 0) {
+        <app-empty-state title="No fee plans" message="Create a fee plan for this course." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (plan of feePlans(); track plan.id) {
+                <tr>
+                  <td>{{ plan.code }}</td>
+                  <td>{{ plan.name }}</td>
+                  <td>{{ plan.currency }} {{ plan.totalAmount }}</td>
+                  <td>
+                    <app-status-badge
+                      [label]="plan.status"
+                      [tone]="plan.status === 'ACTIVE' ? 'success' : 'neutral'"
+                    />
+                  </td>
+                  <td class="table__actions">
+                    <a [routerLink]="['/fee-plans', plan.id, 'edit']">
+                      <app-ui-button type="button">Edit</app-ui-button>
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+
+    <app-ui-card>
+      <h2 class="section-title">Add fee plan</h2>
+
+      @if (categories().length === 0) {
+        <p class="hint">Create a fee category before adding a fee plan.</p>
+        @if (categoryError()) {
+          <app-error-state title="Category failed" [message]="categoryError()!" />
+        }
+        <form class="form" [formGroup]="categoryForm" (ngSubmit)="createCategory()">
+          <div class="code-field">
+            <app-ui-input label="Category code (optional)" inputId="cat-code" formControlName="code" />
+            <app-ui-button
+              type="button"
+              [loading]="generatingCategory()"
+              (click)="generateCategoryCode()"
+            >
+              Generate
+            </app-ui-button>
+          </div>
+          <div class="grid">
+            <app-ui-input label="Category name" inputId="cat-name" formControlName="name" />
+          </div>
+          <app-ui-button type="submit" [loading]="categorySubmitting()" [block]="true">
+            Create category
+          </app-ui-button>
+        </form>
+      } @else {
+        @if (planError()) {
+          <app-error-state title="Fee plan failed" [message]="planError()!" />
+        }
+        <form class="form" [formGroup]="planForm" (ngSubmit)="createFeePlan()">
+          <div class="code-field">
+            <app-ui-input label="Plan code (optional)" inputId="fp-code" formControlName="code" />
+            <app-ui-button type="button" [loading]="generatingPlan()" (click)="generatePlanCode()">
+              Generate
+            </app-ui-button>
+          </div>
+          <div class="grid">
+            <app-ui-input label="Plan name" inputId="fp-name" formControlName="name" />
+            <app-ui-input label="Currency" inputId="fp-currency" formControlName="currency" />
+            <app-ui-input
+              label="Total amount"
+              inputId="fp-total"
+              type="number"
+              formControlName="totalAmount"
+            />
+            <label class="field" for="fp-category">
+              <span class="field__label">Fee category</span>
+              <select id="fp-category" class="field__control" formControlName="feeCategoryId">
+                @for (cat of categories(); track cat.id) {
+                  <option [value]="cat.id">{{ cat.code }} — {{ cat.name }}</option>
+                }
+              </select>
+            </label>
+            <app-ui-input
+              label="Installment label"
+              inputId="fp-label"
+              formControlName="installmentLabel"
+            />
+            <app-ui-input
+              label="Due offset days"
+              inputId="fp-due"
+              type="number"
+              formControlName="dueOffsetDays"
+            />
+          </div>
+          <app-ui-button type="submit" [loading]="planSubmitting()" [block]="true">
+            Save fee plan
+          </app-ui-button>
+        </form>
+
+        <details class="more">
+          <summary>Add another fee category</summary>
+          @if (categoryError()) {
+            <app-error-state title="Category failed" [message]="categoryError()!" />
+          }
+          <form class="form" [formGroup]="categoryForm" (ngSubmit)="createCategory()">
+            <div class="code-field">
+              <app-ui-input
+                label="Category code (optional)"
+                inputId="cat2-code"
+                formControlName="code"
+              />
+              <app-ui-button
+                type="button"
+                [loading]="generatingCategory()"
+                (click)="generateCategoryCode()"
+              >
+                Generate
+              </app-ui-button>
+            </div>
+            <div class="grid">
+              <app-ui-input label="Category name" inputId="cat2-name" formControlName="name" />
+            </div>
+            <app-ui-button type="submit" [loading]="categorySubmitting()" [block]="true">
+              Create category
+            </app-ui-button>
+          </form>
+        </details>
+      }
+    </app-ui-card>
+  }
+</div>

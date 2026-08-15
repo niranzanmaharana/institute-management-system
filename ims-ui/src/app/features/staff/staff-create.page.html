@@ -1,0 +1,37 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Add staff</h1>
+      <p>Create a staff member for the current institute</p>
+    </div>
+    <a routerLink="/staff">Back to list</a>
+  </header>
+
+  <app-ui-card>
+    @if (error()) {
+      <app-error-state title="Create failed" [message]="error()!" />
+    }
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="code-field">
+        <app-ui-input
+          label="Staff code (optional)"
+          inputId="stf-code"
+          formControlName="staffCode"
+        />
+        <app-ui-button type="button" [loading]="generating()" (click)="generateCode()">
+          Generate
+        </app-ui-button>
+        <p class="hint">Leave blank to auto-generate on save (S + institute id + 5-digit sequence).</p>
+      </div>
+      <div class="grid">
+        <app-ui-input label="First name" inputId="stf-fn" formControlName="firstName" />
+        <app-ui-input label="Last name" inputId="stf-ln" formControlName="lastName" />
+        <app-ui-input label="Phone" inputId="stf-phone" formControlName="phone" />
+        <app-ui-input label="Email" inputId="stf-email" type="email" formControlName="email" />
+        <app-ui-input label="Designation" inputId="stf-desig" formControlName="designation" />
+      </div>
+
+      <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save staff</app-ui-button>
+    </form>
+  </app-ui-card>
+</div>

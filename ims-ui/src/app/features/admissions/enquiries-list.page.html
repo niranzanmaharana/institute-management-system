@@ -1,0 +1,79 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Enquiries</h1>
+      <p>Optional walk-in / phone interest before a formal application</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/admissions">Applications</a>
+      @if (auth.hasPermission('admission:write')) {
+        <a routerLink="/enquiries/new">
+          <app-ui-button type="button">New enquiry</app-ui-button>
+        </a>
+      }
+    </div>
+  </header>
+
+  <app-ui-card>
+    <div class="toolbar">
+      <app-ui-input label="Search" inputId="enq-q" [(ngModel)]="q" />
+      <app-ui-select
+        label="Status"
+        selectId="enq-status"
+        [options]="statusOptions"
+        [(ngModel)]="status"
+      />
+      <app-ui-button type="button" (click)="search()">Search</app-ui-button>
+    </div>
+
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No enquiries" message="Capture an enquiry or create an application directly." />
+    } @else {
+      <p class="meta">{{ totalElements() }} total</p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Contact</th>
+              <th>Course</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ row.name }}</td>
+                <td>
+                  {{ row.phone || '—' }}
+                  @if (row.email) {
+                    <div class="muted">{{ row.email }}</div>
+                  }
+                </td>
+                <td>{{ courseLabel(row.interestedCourseId) }}</td>
+                <td>
+                  <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+                </td>
+                <td class="table__actions">
+                  <a [routerLink]="['/enquiries', row.id]">
+                    <app-ui-button type="button">View</app-ui-button>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <app-ui-pagination
+        [page]="page()"
+        [totalPages]="totalPages()"
+        (pageChange)="onPageChange($event)"
+      />
+    }
+  </app-ui-card>
+</div>

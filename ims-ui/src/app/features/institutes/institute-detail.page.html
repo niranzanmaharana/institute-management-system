@@ -1,0 +1,83 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Institute details</h1>
+      <p>View contact profile and branding</p>
+    </div>
+    <div class="page__actions">
+      <a routerLink="/institutes">Back to list</a>
+      @if (institute(); as row) {
+        <app-ui-button type="button" (click)="edit()">Edit</app-ui-button>
+        @if (row.status === 'ACTIVE') {
+          <app-ui-button type="button" [disabled]="suspending()" (click)="suspend()">
+            Suspend
+          </app-ui-button>
+        }
+      }
+    </div>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error()) {
+    <app-ui-card>
+      <app-error-state title="Unavailable" [message]="error()!" />
+    </app-ui-card>
+  } @else if (institute(); as row) {
+    <app-ui-card>
+      <div class="hero">
+        @if (row.iconUrl) {
+          <img class="hero__icon" [src]="row.iconUrl" [alt]="row.name + ' icon'" width="72" height="72" />
+        } @else {
+          <span class="hero__fallback" aria-hidden="true">{{ row.code.charAt(0) }}</span>
+        }
+        <div>
+          <h2>{{ row.name }}</h2>
+          <p class="meta">
+            <span>{{ row.code }}</span>
+            <app-status-badge
+              [label]="row.status"
+              [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'"
+            />
+          </p>
+        </div>
+      </div>
+
+      <section class="section">
+        <h3>Basics</h3>
+        <dl class="facts">
+          <div><dt>Timezone</dt><dd>{{ row.timezone || '—' }}</dd></div>
+          <div><dt>Website</dt>
+            <dd>
+              @if (row.website) {
+                <a [href]="row.website" target="_blank" rel="noopener">{{ row.website }}</a>
+              } @else {
+                —
+              }
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="section">
+        <h3>Contact</h3>
+        <dl class="facts">
+          <div><dt>Mobile</dt><dd>{{ row.mobile || '—' }}</dd></div>
+          <div><dt>Admin email</dt><dd>{{ row.adminEmail || '—' }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="section">
+        <h3>Address</h3>
+        <dl class="facts">
+          <div><dt>Line 1</dt><dd>{{ row.addressLine1 || '—' }}</dd></div>
+          <div><dt>Line 2</dt><dd>{{ row.addressLine2 || '—' }}</dd></div>
+          <div><dt>City</dt><dd>{{ row.city || '—' }}</dd></div>
+          <div><dt>State</dt><dd>{{ row.state || '—' }}</dd></div>
+          <div><dt>Postal code</dt><dd>{{ row.postalCode || '—' }}</dd></div>
+          <div><dt>Country</dt><dd>{{ row.country || '—' }}</dd></div>
+        </dl>
+      </section>
+    </app-ui-card>
+  }
+</div>
