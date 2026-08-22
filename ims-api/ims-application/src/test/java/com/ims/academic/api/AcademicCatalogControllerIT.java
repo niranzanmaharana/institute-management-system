@@ -125,22 +125,69 @@ class AcademicCatalogControllerIT {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.installments.length()").value(2));
 
-    postJson(
-            token,
-            "/api/v1/batches",
-            """
-            {
-              "courseId":%d,
-              "academicYearId":%d,
-              "code":"BAT_%s",
-              "name":"Morning",
-              "capacity":30,
-              "startDate":"2026-05-01",
-              "endDate":"2026-11-01"
-            }
-            """
-                .formatted(courseId, yearId, suffix),
-            201);
+    long batchId =
+        postJson(
+                token,
+                "/api/v1/batches",
+                """
+                {
+                  "courseId":%d,
+                  "academicYearId":%d,
+                  "code":"BAT_%s",
+                  "name":"Morning",
+                  "capacity":30,
+                  "startDate":"2026-05-01",
+                  "endDate":"2026-11-01"
+                }
+                """
+                    .formatted(courseId, yearId, suffix),
+                201)
+            .path("id")
+            .asLong();
+
+    long subjectId =
+        postJson(
+                token,
+                "/api/v1/courses/" + courseId + "/subjects",
+                "{\"name\":\"Core Java\"}",
+                201)
+            .path("id")
+            .asLong();
+
+    long facultyId =
+        postJson(
+                token,
+                "/api/v1/faculties",
+                "{\"firstName\":\"Ada\",\"lastName\":\"Lovelace\",\"email\":\"ada."
+                    + suffix
+                    + "@example.com\"}",
+                201)
+            .path("id")
+            .asLong();
+
+    long assignmentId =
+        postJson(
+                token,
+                "/api/v1/batches/" + batchId + "/faculty-assignments",
+                "{\"facultyId\":%d,\"subjectId\":%d,\"role\":\"TEACHER\"}"
+                    .formatted(facultyId, subjectId),
+                201)
+            .path("id")
+            .asLong();
+
+    mockMvc
+        .perform(
+            get("/api/v1/batches/" + batchId + "/faculty-assignments")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].facultyId").value(facultyId))
+        .andExpect(jsonPath("$[0].subjectId").value(subjectId));
+
+    mockMvc
+        .perform(
+            post("/api/v1/batches/" + batchId + "/faculty-assignments/" + assignmentId + "/remove")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
 
     String tokenB = login("admin", "Password@123", "DEMO_B");
     mockMvc

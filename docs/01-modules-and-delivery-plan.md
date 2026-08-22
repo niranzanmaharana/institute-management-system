@@ -789,6 +789,8 @@ Extract module only with ADR; add message broker if needed.
 | POST     | `/api/v1/admissions/applications`               | admissions |
 | POST     | `/api/v1/admissions/applications/{id}/approve`  | admissions |
 | GET/POST | `/api/v1/courses`                               | academic   |
+| GET/POST | `/api/v1/courses/{id}/subjects`                 | academic   |
+| GET/POST | `/api/v1/batches/{id}/faculty-assignments`      | academic   |
 | POST     | `/api/v1/batches/{id}/enrollments`              | academic   |
 | GET      | `/api/v1/finance/accounts?outstandingOnly=true` | finance    |
 | POST     | `/api/v1/finance/accounts/{id}/payments`        | finance    |

@@ -292,8 +292,9 @@ Examples: course `C1-00001`, fee plan `P1-00001`, batch `B1-00001`, fee category
 | Migration | Contents |
 | --- | --- |
 | `V6__academic_catalog.sql` | years, fee_categories, courses, course_fee_plans, course_fee_installments, batches |
+| `V14__batch_faculty_assignments.sql` | subjects, batch_faculty_assignments |
 | `V7__admissions.sql` | admission_applications |
 | `V8__enrollment_finance.sql` | enrollments, financial_years, student_fee_accounts, invoices, payments, allocations, receipts |
 | `V4__people_students.sql` | students (+ guardians/addresses) |
 
-APIs live under `/api/v1/courses`, `/fee-plans`, `/batches`, `/academic-years`, `/fee-categories`, `/enrollments`, finance outstanding/payment endpoints.
+APIs live under `/api/v1/courses`, `/fee-plans`, `/batches`, `/academic-years`, `/fee-categories`, `/enrollments`, finance outstanding/payment endpoints. Faculty teaching assignments: `GET/POST /api/v1/batches/{id}/faculty-assignments` (optional `subjectId`; subjects on `/courses/{id}/subjects`).

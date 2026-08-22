@@ -66,6 +66,26 @@ export interface Batch {
   endDate?: string;
 }
 
+export interface CourseSubject {
+  id: number;
+  courseId: number;
+  code: string;
+  name: string;
+  status: string;
+}
+
+export interface FacultyAssignment {
+  id: number;
+  batchId: number;
+  facultyId: number;
+  facultyCode: string;
+  facultyName: string;
+  subjectId?: number | null;
+  subjectCode?: string | null;
+  subjectName?: string | null;
+  role: string;
+}
+
 export interface CreateAcademicYearRequest {
   code?: string;
   name: string;
@@ -200,5 +220,34 @@ export class AcademicService {
 
   updateBatch(id: number, body: UpdateBatchRequest): Observable<Batch> {
     return this.http.put<Batch>(`${this.base}/batches/${id}`, body);
+  }
+
+  listSubjects(courseId: number): Observable<CourseSubject[]> {
+    return this.http.get<CourseSubject[]>(`${this.base}/courses/${courseId}/subjects`);
+  }
+
+  createSubject(courseId: number, body: { code?: string; name: string }): Observable<CourseSubject> {
+    return this.http.post<CourseSubject>(`${this.base}/courses/${courseId}/subjects`, body);
+  }
+
+  listFacultyAssignments(batchId: number): Observable<FacultyAssignment[]> {
+    return this.http.get<FacultyAssignment[]>(`${this.base}/batches/${batchId}/faculty-assignments`);
+  }
+
+  assignFaculty(
+    batchId: number,
+    body: { facultyId: number; subjectId?: number | null; role?: string },
+  ): Observable<FacultyAssignment> {
+    return this.http.post<FacultyAssignment>(
+      `${this.base}/batches/${batchId}/faculty-assignments`,
+      body,
+    );
+  }
+
+  removeFacultyAssignment(batchId: number, assignmentId: number): Observable<void> {
+    return this.http.post<void>(
+      `${this.base}/batches/${batchId}/faculty-assignments/${assignmentId}/remove`,
+      {},
+    );
   }
 }

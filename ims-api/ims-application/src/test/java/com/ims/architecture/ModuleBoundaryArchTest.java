@@ -21,6 +21,16 @@ class ModuleBoundaryArchTest {
           .because("modules must not reach into another module's persistence");
 
   @ArchTest
+  static final ArchRule academicMustNotDependOnPeoplePersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.academic..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.people..infrastructure..")
+          .because("academic must use FacultyService, not faculty persistence");
+
+  @ArchTest
   static final ArchRule academicMustNotDependOnFinancePersistence =
       noClasses()
           .that()
