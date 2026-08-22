@@ -62,6 +62,9 @@ public class FacultyService {
       @Size(max = 128) String department,
       List<AddressInput> addresses) {}
 
+  public record FacultyRef(
+      Long id, String facultyCode, String firstName, String lastName, String status) {}
+
   public record UpdateFacultyCommand(
       @NotBlank @Size(max = 64) String firstName,
       @NotBlank @Size(max = 64) String lastName,
@@ -90,6 +93,24 @@ public class FacultyService {
   @Transactional(readOnly = true)
   public FacultyResponse get(Long id) {
     return toDetailResponse(requireActiveFaculty(id));
+  }
+
+  @Transactional(readOnly = true)
+  public FacultyRef requireActiveNamed(Long id) {
+    Faculty faculty = requireActiveFaculty(id);
+    if (!"ACTIVE".equalsIgnoreCase(faculty.getStatus())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Faculty is not active");
+    }
+    return toRef(faculty);
+  }
+
+  @Transactional(readOnly = true)
+  public java.util.Optional<FacultyRef> findNamed(Long id) {
+    long instituteId = TenantContext.requireInstituteId();
+    tenantFilterEnabler.enableForCurrentTenant();
+    return facultyJpaRepository
+        .findByIdAndInstituteIdAndDeletedAtIsNull(id, instituteId)
+        .map(this::toRef);
   }
 
   @Transactional
@@ -181,6 +202,15 @@ public class FacultyService {
               input.country(),
               input.primaryAddress()));
     }
+  }
+
+  private FacultyRef toRef(Faculty faculty) {
+    return new FacultyRef(
+        faculty.getId(),
+        faculty.getFacultyCode(),
+        faculty.getFirstName(),
+        faculty.getLastName(),
+        faculty.getStatus());
   }
 
   private FacultyResponse toSummaryResponse(Faculty faculty) {

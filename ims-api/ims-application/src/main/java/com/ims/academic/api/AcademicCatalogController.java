@@ -7,6 +7,9 @@ import com.ims.academic.application.AcademicCatalogService.CourseView;
 import com.ims.academic.application.AcademicCatalogService.FeeCategoryView;
 import com.ims.academic.application.AcademicCatalogService.FeePlanView;
 import com.ims.academic.application.AcademicCatalogService.InstallmentInput;
+import com.ims.academic.application.BatchFacultyService;
+import com.ims.academic.application.BatchFacultyService.FacultyAssignmentView;
+import com.ims.academic.application.BatchFacultyService.SubjectView;
 import com.ims.common.paging.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -41,9 +44,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AcademicCatalogController {
 
   private final AcademicCatalogService academicCatalogService;
+  private final BatchFacultyService batchFacultyService;
 
-  public AcademicCatalogController(AcademicCatalogService academicCatalogService) {
+  public AcademicCatalogController(
+      AcademicCatalogService academicCatalogService, BatchFacultyService batchFacultyService) {
     this.academicCatalogService = academicCatalogService;
+    this.batchFacultyService = batchFacultyService;
   }
 
   public record CreateYearRequest(
@@ -97,6 +103,12 @@ public class AcademicCatalogController {
       @Size(max = 32) String status,
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
       @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {}
+
+  public record CreateSubjectRequest(
+      @Size(max = 32) String code, @NotBlank @Size(max = 128) String name) {}
+
+  public record AssignFacultyRequest(
+      @NotNull Long facultyId, Long subjectId, @Size(max = 32) String role) {}
 
   @GetMapping("/academic-years")
   @PreAuthorize("hasAuthority('course:read')")
@@ -228,6 +240,41 @@ public class AcademicCatalogController {
       @PathVariable("id") Long id, @Valid @RequestBody UpdateBatchRequest request) {
     return academicCatalogService.updateBatch(
         id, request.name(), request.capacity(), request.status(), request.startDate(), request.endDate());
+  }
+
+  @GetMapping("/courses/{courseId}/subjects")
+  @PreAuthorize("hasAuthority('course:read')")
+  public List<SubjectView> listSubjects(@PathVariable("courseId") Long courseId) {
+    return batchFacultyService.listSubjects(courseId);
+  }
+
+  @PostMapping("/courses/{courseId}/subjects")
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('course:write')")
+  public SubjectView createSubject(
+      @PathVariable("courseId") Long courseId, @Valid @RequestBody CreateSubjectRequest request) {
+    return batchFacultyService.createSubject(courseId, request.code(), request.name());
+  }
+
+  @GetMapping("/batches/{id}/faculty-assignments")
+  @PreAuthorize("hasAuthority('course:read')")
+  public List<FacultyAssignmentView> listFacultyAssignments(@PathVariable("id") Long id) {
+    return batchFacultyService.listAssignments(id);
+  }
+
+  @PostMapping("/batches/{id}/faculty-assignments")
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasAuthority('course:write')")
+  public FacultyAssignmentView assignFaculty(
+      @PathVariable("id") Long id, @Valid @RequestBody AssignFacultyRequest request) {
+    return batchFacultyService.assign(id, request.facultyId(), request.subjectId(), request.role());
+  }
+
+  @PostMapping("/batches/{id}/faculty-assignments/{assignmentId}/remove")
+  @PreAuthorize("hasAuthority('course:write')")
+  public void removeFacultyAssignment(
+      @PathVariable("id") Long id, @PathVariable("assignmentId") Long assignmentId) {
+    batchFacultyService.remove(id, assignmentId);
   }
 
   private static List<InstallmentInput> mapInstallments(List<InstallmentRequest> installments) {

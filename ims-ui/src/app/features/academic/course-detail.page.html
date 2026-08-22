@@ -45,6 +45,49 @@
     </app-ui-card>
 
     <app-ui-card>
+      <h2 class="section-title">Subjects</h2>
+      @if (subjects().length === 0) {
+        <app-empty-state title="No subjects" message="Add subjects so faculty can be assigned per paper." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (subject of subjects(); track subject.id) {
+                <tr>
+                  <td>{{ subject.code }}</td>
+                  <td>{{ subject.name }}</td>
+                  <td>
+                    <app-status-badge
+                      [label]="subject.status"
+                      [tone]="subject.status === 'ACTIVE' ? 'success' : 'neutral'"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      @if (subjectError()) {
+        <app-error-state title="Subject failed" [message]="subjectError()!" />
+      }
+      <form class="form" [formGroup]="subjectForm" (ngSubmit)="createSubject()">
+        <div class="grid">
+          <app-ui-input label="Subject code (optional)" inputId="sub-code" formControlName="code" />
+          <app-ui-input label="Subject name" inputId="sub-name" formControlName="name" />
+        </div>
+        <app-ui-button type="submit" [loading]="subjectSubmitting()" [block]="true">Add subject</app-ui-button>
+      </form>
+    </app-ui-card>
+
+    <app-ui-card>
       <h2 class="section-title">Fee plans</h2>
       @if (feePlans().length === 0) {
         <app-empty-state title="No fee plans" message="Create a fee plan for this course." />

@@ -55,6 +55,8 @@ path: institutes/{institute_id}/...
 
 Backend proxy upload allowed as fallback for local/dev.
 
+**Local vs production:** Dev uses **MinIO** (Docker) as an S3-compatible store. The app talks S3 (`ims.storage.*`); swap MinIO for AWS S3 / R2 / hosted MinIO later without changing document APIs. See **[13-object-storage.md](./13-object-storage.md)**.
+
 ---
 
 ## 5. Audit requirements (business-critical)

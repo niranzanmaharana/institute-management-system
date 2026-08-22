@@ -2,7 +2,7 @@
   <header class="page__header">
     <div>
       <h1>Batch details</h1>
-      <p>View batch offering</p>
+      <p>View batch offering and teaching assignments</p>
     </div>
     <div class="page__actions">
       <a routerLink="/batches">Back to list</a>
@@ -40,5 +40,93 @@
         <div><dt>End date</dt><dd>{{ row.endDate || '—' }}</dd></div>
       </dl>
     </app-ui-card>
+
+    <app-ui-card>
+      <h2 class="section-title">Faculty assignments</h2>
+      @if (assignments().length === 0) {
+        <app-empty-state title="No faculty assigned" message="Assign a teacher to this batch." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Faculty</th>
+                <th>Subject</th>
+                <th>Role</th>
+                @if (canAssign) {
+                  <th></th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of assignments(); track item.id) {
+                <tr>
+                  <td>{{ item.facultyName }} ({{ item.facultyCode }})</td>
+                  <td>{{ item.subjectName ? item.subjectName + ' (' + item.subjectCode + ')' : 'Whole batch' }}</td>
+                  <td>{{ item.role }}</td>
+                  @if (canAssign) {
+                    <td class="table__actions">
+                      <app-ui-button
+                        type="button"
+                        [loading]="removingId() === item.id"
+                        (click)="remove(item)"
+                      >
+                        Remove
+                      </app-ui-button>
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+
+    @if (canAssign) {
+      <app-ui-card>
+        <h2 class="section-title">Assign faculty</h2>
+        @if (assignError()) {
+          <app-error-state title="Assign failed" [message]="assignError()!" />
+        }
+        @if (faculties().length === 0) {
+          <p class="hint">Create an active faculty record before assigning.</p>
+        } @else {
+          <form class="form" [formGroup]="assignForm" (ngSubmit)="assign()">
+            <div class="grid">
+              <label class="field" for="bf-faculty">
+                <span class="field__label">Faculty</span>
+                <select id="bf-faculty" class="field__control" formControlName="facultyId">
+                  <option value="">Select faculty</option>
+                  @for (f of faculties(); track f.id) {
+                    <option [value]="f.id">{{ f.firstName }} {{ f.lastName }} ({{ f.facultyCode }})</option>
+                  }
+                </select>
+              </label>
+              <label class="field" for="bf-subject">
+                <span class="field__label">Subject (optional)</span>
+                <select id="bf-subject" class="field__control" formControlName="subjectId">
+                  <option value="">Whole batch</option>
+                  @for (s of subjects(); track s.id) {
+                    <option [value]="s.id">{{ s.code }} — {{ s.name }}</option>
+                  }
+                </select>
+              </label>
+              <label class="field" for="bf-role">
+                <span class="field__label">Role</span>
+                <select id="bf-role" class="field__control" formControlName="role">
+                  <option value="TEACHER">Teacher</option>
+                  <option value="COORDINATOR">Coordinator</option>
+                </select>
+              </label>
+            </div>
+            <app-ui-button type="submit" [loading]="assigning()" [block]="true">Assign</app-ui-button>
+          </form>
+          @if (subjects().length === 0) {
+            <p class="hint">Add subjects on the course to assign by subject. Until then, faculty is assigned to the whole batch.</p>
+          }
+        }
+      </app-ui-card>
+    }
   }
 </div>

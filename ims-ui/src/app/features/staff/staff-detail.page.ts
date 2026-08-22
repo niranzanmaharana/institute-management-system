@@ -6,11 +6,22 @@ import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
+import { PersonDocumentsSection } from '../people/person-documents.section';
+import { PersonPhotoComponent } from '../people/person-photo.component';
 import { Staff, StaffService } from './staff.service';
 
 @Component({
   selector: 'app-staff-detail-page',
-  imports: [RouterLink, UiCard, UiButton, LoadingState, ErrorState, StatusBadge],
+  imports: [
+    RouterLink,
+    UiCard,
+    UiButton,
+    LoadingState,
+    ErrorState,
+    StatusBadge,
+    PersonDocumentsSection,
+    PersonPhotoComponent,
+  ],
   templateUrl: './staff-detail.page.html',
   styleUrl: './staff-detail.page.scss',
 })

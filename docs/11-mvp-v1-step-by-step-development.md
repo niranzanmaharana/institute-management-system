@@ -246,6 +246,10 @@ flowchart TD
 
 **Phase 3.3 status:** Complete — optional enquiries (`/api/v1/enquiries` OPEN→CONVERTED/CLOSED); application list search/status/paging; cancel + approve/reject on detail (reason min 5 for reject/cancel); FRONT_DESK `enrollment:write` to enroll without course catalog rights. Flyway `V12__admissions_enquiry.sql`. Re-login after V12 for new JWT permissions.
 
+**Phase 3.4 status:** Complete — `person_documents` metadata; MinIO pre-signed PUT/GET (`institutes/{id}/…`); type/size rules (PDF/JPEG/PNG, 5 MB); ADMIN/FRONT_DESK `document:write`, coordinators/accountant `document:read`. UI on student/faculty/staff detail. Flyway `V13__person_documents.sql`. Re-login after V13 for new JWT permissions. Start MinIO (`infra` compose) before uploading.
+
+**Phase 3.5 status:** Complete — course subjects (`/api/v1/courses/{id}/subjects`); faculty assigned to a batch (optional subject) on batch detail; remove assignment. Audits: `FACULTY_ASSIGNED` / `FACULTY_UNASSIGNED`. Flyway `V14__batch_faculty_assignments.sql`. No FK from academic to `faculties` (names via `FacultyService`).
+
 **Business codes:** Sequence-backed auto-generation (`code_sequences` + `GET /api/v1/codes/next?type=…`). Codes optional on create (blank → auto); UI Generate button. Formats: student `{instituteId}{seq:06}` → `1000001`; course `C{I}-{seq:05}`; fee plan `P{I}-…`; batch `B{I}-…`; year `AY{I}-…`; fee category `FC{I}-…`; admission `A{I}-{seq:06}`; faculty `F{I}-{seq:05}`; staff `S{I}-{seq:05}`; institute `I{seq:05}` (platform).
 
 **View / edit UI:** List rows include View/Edit where APIs allow. Students, courses, batches, fee plans, institutes support edit of mutable fields (codes immutable). Admissions are view + workflow (approve/reject/cancel); enrollments are view + lifecycle. Enquiries convert to applications.
@@ -428,6 +432,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-PE-05; BR-DC-*; doc 08 |
 | **Test plan** | Cross-tenant download denied; oversized rejected |
 | **Exit criteria** | Upload+download works for ADMIN/FRONT_DESK |
+| **Status** | **Complete** |
 
 ### Step 3.5 — Faculty–batch assignment UI
 
@@ -438,6 +443,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-AC-07 |
 | **Test plan** | API + UI |
 | **Exit criteria** | Assignment visible; prepares Phase 5 authz |
+| **Status** | **Complete** |
 
 ---
 

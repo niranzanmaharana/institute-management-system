@@ -26,6 +26,12 @@
   } @else if (staff(); as row) {
     <app-ui-card>
       <div class="hero">
+        <app-person-photo
+          ownerType="STAFF"
+          [ownerId]="row.id"
+          [firstName]="row.firstName"
+          [lastName]="row.lastName"
+        />
         <div>
           <h2>{{ row.firstName }} {{ row.lastName }}</h2>
           <p class="meta">
@@ -46,6 +52,8 @@
           <div><dt>Designation</dt><dd>{{ row.designation || '—' }}</dd></div>
         </dl>
       </section>
+
+      <app-person-documents ownerType="STAFF" [ownerId]="row.id" />
     </app-ui-card>
   }
 </div>

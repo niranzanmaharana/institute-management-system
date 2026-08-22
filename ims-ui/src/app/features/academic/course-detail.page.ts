@@ -10,7 +10,7 @@ import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
-import { AcademicService, Course, FeeCategory, FeePlan } from './academic.service';
+import { AcademicService, Course, CourseSubject, FeeCategory, FeePlan } from './academic.service';
 
 @Component({
   selector: 'app-course-detail-page',
@@ -38,7 +38,10 @@ export class CourseDetailPage implements OnInit {
   readonly error = signal<string | null>(null);
   readonly course = signal<Course | null>(null);
   readonly feePlans = signal<FeePlan[]>([]);
+  readonly subjects = signal<CourseSubject[]>([]);
   readonly categories = signal<FeeCategory[]>([]);
+  readonly subjectSubmitting = signal(false);
+  readonly subjectError = signal<string | null>(null);
 
   readonly categorySubmitting = signal(false);
   readonly categoryError = signal<string | null>(null);
@@ -51,6 +54,11 @@ export class CourseDetailPage implements OnInit {
   private courseId = 0;
 
   readonly categoryForm = this.fb.nonNullable.group({
+    code: [''],
+    name: ['', Validators.required],
+  });
+
+  readonly subjectForm = this.fb.nonNullable.group({
     code: [''],
     name: ['', Validators.required],
   });
@@ -83,6 +91,7 @@ export class CourseDetailPage implements OnInit {
       next: (course) => {
         this.course.set(course);
         this.loadFeePlans();
+        this.loadSubjects();
         this.loadCategories();
         this.loading.set(false);
       },
@@ -98,6 +107,43 @@ export class CourseDetailPage implements OnInit {
       next: (plans) => this.feePlans.set(plans),
       error: (err) => this.planError.set(httpLoadError(err, 'fee plans')),
     });
+  }
+
+  loadSubjects(): void {
+    this.academicApi.listSubjects(this.courseId).subscribe({
+      next: (rows) => this.subjects.set(rows),
+      error: (err) => this.subjectError.set(httpLoadError(err, 'subjects')),
+    });
+  }
+
+  createSubject(): void {
+    if (this.subjectForm.invalid || this.subjectSubmitting()) {
+      this.subjectForm.markAllAsTouched();
+      return;
+    }
+    const v = this.subjectForm.getRawValue();
+    this.subjectSubmitting.set(true);
+    this.subjectError.set(null);
+    this.academicApi
+      .createSubject(this.courseId, {
+        code: v.code.trim() || undefined,
+        name: v.name.trim(),
+      })
+      .subscribe({
+        next: (row) => {
+          this.subjects.update((list) => [...list, row]);
+          this.subjectForm.reset({ code: '', name: '' });
+          this.subjectSubmitting.set(false);
+        },
+        error: (err) => {
+          this.subjectSubmitting.set(false);
+          if (err?.status === 409) {
+            this.subjectError.set('Subject code already exists for this course.');
+          } else {
+            this.subjectError.set(httpErrorMessage(err, 'Could not create subject.'));
+          }
+        },
+      });
   }
 
   loadCategories(): void {

@@ -49,6 +49,8 @@ Developer laptop (docker-compose)
                  [MySQL] [MinIO] [Jaeger]
 ```
 
+Local MinIO is an **S3-compatible** object store for person documents. Production can use AWS S3 or another S3 API without changing document endpoints — [13-object-storage.md](./13-object-storage.md).
+
 Optional: Redis for rate-limit/session later.
 
 ---
@@ -87,7 +89,7 @@ Optional: Redis for rate-limit/session later.
 
 | Piece | Detail |
 | --- | --- |
-| Jaeger | `infra/docker-compose` → UI http://localhost:16686 ; OTLP HTTP `:4318` |
+| Jaeger | Optional. `docker compose up -d jaeger` → UI http://localhost:16686 ; OTLP HTTP `:4318`. Apps export only when `MANAGEMENT_OTLP_TRACING_EXPORT_ENABLED=true`. |
 | Services | `api-gateway` (`spring.application.name=api-gateway`) and `ims-application` both export OTLP traces |
 | Sampling | `management.tracing.sampling.probability=1.0` locally |
 | Propagation | W3C `traceparent` + `X-Request-Id` |

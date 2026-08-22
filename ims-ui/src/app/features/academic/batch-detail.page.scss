@@ -28,3 +28,92 @@
   margin: 0 0 1rem;
   color: var(--ims-text-muted);
 }
+
+.facts {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.facts dt {
+  font-size: 0.8rem;
+  color: var(--ims-text-muted);
+}
+
+.facts dd {
+  margin: 0.15rem 0 0;
+}
+
+.section-title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.hint {
+  margin: 1rem 0 0;
+  color: var(--ims-text-muted);
+}
+
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field__label {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.field__control {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ims-border);
+  border-radius: 8px;
+  padding: 0.7rem 0.85rem;
+  font: inherit;
+  color: var(--ims-text);
+  background: #fff;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--ims-border);
+}
+
+app-ui-card + app-ui-card {
+  display: block;
+  margin-top: 1rem;
+}
+
+@media (min-width: 720px) {
+  .facts {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+

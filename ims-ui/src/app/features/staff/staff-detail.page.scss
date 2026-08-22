@@ -16,6 +16,14 @@
   color: var(--ims-text-muted);
 }
 
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .hero h2 {
   margin: 0 0 0.35rem;
 }

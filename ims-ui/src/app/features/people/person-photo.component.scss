@@ -1,0 +1,61 @@
+.photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.photo__img,
+.photo__fallback {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 1px solid var(--ims-border);
+}
+
+.photo__img {
+  object-fit: cover;
+  background: #fff;
+}
+
+.photo__fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ims-primary) 12%, #fff);
+  color: var(--ims-primary);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.photo__change {
+  position: relative;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ims-primary);
+  cursor: pointer;
+  text-align: center;
+}
+
+.photo__change input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.photo__change-label {
+  min-height: 1.25rem;
+}
+
+.photo__error {
+  margin: 0;
+  max-width: 8rem;
+  font-size: 0.75rem;
+  color: var(--ims-danger);
+  text-align: center;
+}
