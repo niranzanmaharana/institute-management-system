@@ -4,14 +4,16 @@ import { Router, RouterLink } from '@angular/router';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
+import { UiSelect } from '../../shared/ui-select';
 import { ErrorState } from '../../shared/error-state';
 import { httpErrorMessage } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
 import { InstituteService } from './institute.service';
+import { DEFAULT_INSTITUTE_TIMEZONE, timezoneSelectOptions } from './timezones';
 
 @Component({
   selector: 'app-institute-create-page',
-  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput, ErrorState],
+  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput, UiSelect, ErrorState],
   templateUrl: './institute-create.page.html',
   styleUrl: './institute-create.page.scss',
 })
@@ -24,11 +26,12 @@ export class InstituteCreatePage {
   readonly submitting = signal(false);
   readonly generating = signal(false);
   readonly error = signal<string | null>(null);
+  readonly timezoneOptions = timezoneSelectOptions();
 
   readonly form = this.fb.nonNullable.group({
     code: ['', [Validators.maxLength(32)]],
     name: ['', [Validators.required, Validators.maxLength(255)]],
-    timezone: ['Asia/Kolkata'],
+    timezone: [DEFAULT_INSTITUTE_TIMEZONE, Validators.required],
     mobile: [''],
     contactEmail: ['', Validators.email],
     website: [''],

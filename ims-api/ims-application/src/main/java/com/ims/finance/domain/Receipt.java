@@ -14,6 +14,9 @@ import org.hibernate.annotations.Filter;
 @Filter(name = "instituteFilter", condition = "institute_id = :instituteId")
 public class Receipt {
 
+  public static final String STATUS_ISSUED = "ISSUED";
+  public static final String STATUS_CANCELLED = "CANCELLED";
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
@@ -30,6 +33,12 @@ public class Receipt {
   @Column(name = "issued_at", nullable = false)
   private Instant issuedAt;
 
+  @Column(nullable = false, length = 32)
+  private String status = STATUS_ISSUED;
+
+  @Column(name = "cancelled_at")
+  private Instant cancelledAt;
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
 
@@ -42,8 +51,17 @@ public class Receipt {
     receipt.receiptNo = receiptNo;
     Instant now = Instant.now();
     receipt.issuedAt = now;
+    receipt.status = STATUS_ISSUED;
     receipt.createdAt = now;
     return receipt;
+  }
+
+  public void cancel() {
+    if (STATUS_CANCELLED.equals(this.status)) {
+      return;
+    }
+    this.status = STATUS_CANCELLED;
+    this.cancelledAt = Instant.now();
   }
 
   public Long getId() {
@@ -64,5 +82,13 @@ public class Receipt {
 
   public Instant getIssuedAt() {
     return issuedAt;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public Instant getCancelledAt() {
+    return cancelledAt;
   }
 }

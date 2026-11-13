@@ -66,3 +66,15 @@
   font: inherit;
   background: #fff;
 }
+
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.adj-list {
+  margin: 0 0 1rem;
+  padding-left: 1.1rem;
+  color: var(--ims-text-muted);
+}

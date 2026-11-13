@@ -24,7 +24,12 @@
         <h2>Institute</h2>
         <div class="grid">
           <app-ui-input label="Name" inputId="edit-name" formControlName="name" />
-          <app-ui-input label="Timezone" inputId="edit-tz" formControlName="timezone" />
+          <app-ui-select
+            label="Timezone"
+            selectId="edit-tz"
+            [options]="timezoneOptions"
+            formControlName="timezone"
+          />
         </div>
 
         <h2>Contact &amp; branding</h2>

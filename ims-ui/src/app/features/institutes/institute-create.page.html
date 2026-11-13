@@ -22,7 +22,12 @@
       </div>
       <div class="grid">
         <app-ui-input label="Name" inputId="inst-name" formControlName="name" />
-        <app-ui-input label="Timezone" inputId="inst-tz" formControlName="timezone" />
+        <app-ui-select
+          label="Timezone"
+          selectId="inst-tz"
+          [options]="timezoneOptions"
+          formControlName="timezone"
+        />
       </div>
 
       <h2>Contact &amp; branding</h2>

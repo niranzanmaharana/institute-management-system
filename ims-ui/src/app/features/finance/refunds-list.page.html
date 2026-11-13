@@ -1,0 +1,80 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Refunds</h1>
+      <p>Request, approve, and process refunds (RP-FI-06)</p>
+    </div>
+    <div class="page__actions">
+      <app-ui-button type="button" (click)="reload()">Refresh</app-ui-button>
+      <app-ui-button type="button" (click)="exportCsv()">Export CSV</app-ui-button>
+    </div>
+  </header>
+
+  @if (canRefund) {
+    <app-ui-card>
+      <h2 class="section-title">Request refund</h2>
+      @if (actionError()) {
+        <app-error-state title="Action failed" [message]="actionError()!" />
+      }
+      <form class="form" [formGroup]="requestForm" (ngSubmit)="requestRefund()">
+        <div class="grid">
+          <app-ui-input label="Fee account id" inputId="rf-account" formControlName="feeAccountId" />
+          <app-ui-input label="Amount" inputId="rf-amount" type="number" formControlName="amount" />
+          <app-ui-input label="Reason (min 5)" inputId="rf-reason" formControlName="reason" />
+        </div>
+        <app-ui-button type="submit" [loading]="requesting()">Submit request</app-ui-button>
+      </form>
+    </app-ui-card>
+  }
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No refunds" message="Completed and in-flight refunds appear here." />
+    } @else {
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Account</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Reason</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>#{{ row.id }}</td>
+                <td>#{{ row.feeAccountId }}</td>
+                <td>{{ row.amount }}</td>
+                <td>
+                  <app-status-badge
+                    [label]="row.status"
+                    [tone]="row.status === 'COMPLETED' ? 'success' : row.status === 'FAILED' || row.status === 'REJECTED' ? 'warning' : 'neutral'"
+                  />
+                </td>
+                <td>{{ row.reason }}</td>
+                <td>
+                  @if (canRefund && row.status === 'REQUESTED') {
+                    <app-ui-button type="button" [loading]="busyId() === row.id" (click)="approve(row)">Approve</app-ui-button>
+                    <app-ui-button type="button" [loading]="busyId() === row.id" (click)="reject(row)">Reject</app-ui-button>
+                  }
+                  @if (canRefund && row.status === 'APPROVED') {
+                    <app-ui-button type="button" [loading]="busyId() === row.id" (click)="process(row, true)">Complete</app-ui-button>
+                    <app-ui-button type="button" [loading]="busyId() === row.id" (click)="process(row, false)">Fail</app-ui-button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </app-ui-card>
+</div>

@@ -78,7 +78,12 @@ npm run generate:postman --prefix ../ims-ui
 
 Collection output: `postman/ims-api.postman_collection.json`
 
+## How to use the app (staff guide)
+
+Step-by-step flows by role (admissions approve/reject, enroll, fees, refunds, etc.):  
+**[docs/14-user-manual.md](./docs/14-user-manual.md)**
+
 ## Phase roadmap
 
 See [docs/11-mvp-v1-step-by-step-development.md](./docs/11-mvp-v1-step-by-step-development.md).
-#
+

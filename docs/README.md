@@ -17,6 +17,7 @@
 | [11-mvp-v1-step-by-step-development.md](./11-mvp-v1-step-by-step-development.md) | **Authoritative MVP & v1 build order** (testable steps) |
 | [12-course-fee-structure-and-relationships.md](./12-course-fee-structure-and-relationships.md) | How courses, fee plans, batches, enrollments & finance ledger relate |
 | [13-object-storage.md](./13-object-storage.md) | MinIO (local S3), how person documents use it, swapping to AWS S3 / other S3-compatible stores |
+| [14-user-manual.md](./14-user-manual.md) | **End-user / staff how-to** — roles, who does what next, feature steps (keep updated) |
 | [design/](./design/) | UI look-and-feel reference (Skydash) |
 | [review.md](./review.md) | External architecture/product review notes |
 | [adr/](./adr/) | Architecture Decision Records |

@@ -39,12 +39,40 @@ public final class FinanceDtos {
       String method,
       Instant paidAt,
       String status,
-      String idempotencyKey) {}
+      String idempotencyKey,
+      String reverseReason,
+      Instant reversedAt) {}
 
-  public record ReceiptResponse(Long id, Long paymentId, String receiptNo, Instant issuedAt) {}
+  public record ReceiptResponse(
+      Long id, Long paymentId, String receiptNo, Instant issuedAt, String status) {}
 
   public record PaymentResultResponse(
       PaymentResponse payment, ReceiptResponse receipt, FeeAccountResponse feeAccount) {}
+
+  public record AdjustmentResponse(
+      Long id,
+      Long feeAccountId,
+      String type,
+      BigDecimal amount,
+      String reason,
+      Long approvedBy,
+      Instant createdAt) {}
+
+  public record AdjustmentResultResponse(AdjustmentResponse adjustment, FeeAccountResponse feeAccount) {}
+
+  public record RefundResponse(
+      Long id,
+      Long feeAccountId,
+      BigDecimal amount,
+      String status,
+      String reason,
+      Long requestedBy,
+      Long decidedBy,
+      Instant processedAt,
+      String processNote,
+      Instant createdAt) {}
+
+  public record RefundResultResponse(RefundResponse refund, FeeAccountResponse feeAccount) {}
 
   public record ActivationResultResponse(
       Long enrollmentId,

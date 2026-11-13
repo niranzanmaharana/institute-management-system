@@ -83,6 +83,7 @@ outstanding =
   - SUM(payments.amount WHERE status = SUCCESS)
   - SUM(adjustments DISCOUNT|SCHOLARSHIP|WAIVER)
   + SUM(adjustments PENALTY)
+  + SUM(refunds.amount WHERE status = COMPLETED)
 ```
 
 Refunds are **not** a silent negative adjustment type alone — they follow refund lifecycle; completed refunds reduce net collections and update outstanding per BR-RF-*.

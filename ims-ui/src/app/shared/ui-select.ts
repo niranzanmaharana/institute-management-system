@@ -36,15 +36,26 @@ export interface UiSelectOption {
     </label>
   `,
   styles: `
+    :host {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+    }
     .field {
       display: grid;
       gap: 0.35rem;
+      min-width: 0;
     }
     .field__label {
       font-size: 0.875rem;
       font-weight: 700;
     }
     .field__control {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
       min-height: 44px;
       border: 1px solid var(--ims-border);
       border-radius: 8px;

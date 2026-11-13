@@ -242,6 +242,252 @@ class AdmissionEnrollmentFinanceIT {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].id").value(feeAccountId));
 
+    mockMvc
+        .perform(
+            post("/api/v1/fee-accounts/" + feeAccountId + "/adjustments")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"type\":\"WAIVER\",\"amount\":1000.00,\"reason\":\"Hardship waiver\"}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.adjustment.type").value("WAIVER"))
+        .andExpect(jsonPath("$.feeAccount.outstandingAmount").value(7000.00));
+
+    mockMvc
+        .perform(
+            post("/api/v1/fee-accounts/" + feeAccountId + "/adjustments")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"type\":\"PENALTY\",\"amount\":250.00,\"reason\":\"Late fee charge\"}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.feeAccount.outstandingAmount").value(7250.00));
+
+    mockMvc
+        .perform(
+            post("/api/v1/fee-accounts/" + feeAccountId + "/adjustments")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"type\":\"DISCOUNT\",\"amount\":99999.00,\"reason\":\"Too large discount\"}"))
+        .andExpect(status().isBadRequest());
+
+    postJson(
+        token,
+        "/api/v1/users",
+        """
+        {
+          "username":"desk_%s",
+          "email":"desk%s@example.com",
+          "password":"Password@123",
+          "roles":["FRONT_DESK"]
+        }
+        """
+            .formatted(suffix, suffix),
+        201);
+    String deskToken = login("desk_" + suffix, "Password@123", "DEMO_A");
+    mockMvc
+        .perform(
+            post("/api/v1/fee-accounts/" + feeAccountId + "/adjustments")
+                .header("Authorization", "Bearer " + deskToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"type\":\"WAIVER\",\"amount\":10.00,\"reason\":\"Should be forbidden\"}"))
+        .andExpect(status().isForbidden());
+
+    String tokenB = login("admin", "Password@123", "DEMO_B");
+    mockMvc
+        .perform(
+            get("/api/v1/fee-accounts/" + feeAccountId + "/adjustments")
+                .header("Authorization", "Bearer " + tokenB))
+        .andExpect(status().isNotFound());
+
+    mockMvc
+        .perform(
+            post("/api/v1/fee-accounts/" + feeAccountId + "/refunds")
+                .header("Authorization", "Bearer " + deskToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\":10.00,\"reason\":\"Should be forbidden\"}"))
+        .andExpect(status().isForbidden());
+
+    long refundId =
+        postJson(
+                token,
+                "/api/v1/fee-accounts/" + feeAccountId + "/refunds",
+                "{\"amount\":500.00,\"reason\":\"Student withdrew part\"}",
+                201)
+            .path("refund")
+            .path("id")
+            .asLong();
+    mockMvc
+        .perform(
+            post("/api/v1/refunds/" + refundId + "/approve")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"));
+    mockMvc
+        .perform(
+            post("/api/v1/refunds/" + refundId + "/process")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"success\":true,\"note\":\"Paid out\"}"))
+        .andExpect(status().isBadRequest());
+    mockMvc
+        .perform(
+            post("/api/v1/refunds/" + refundId + "/process")
+                .header("Authorization", "Bearer " + token)
+                .header("Idempotency-Key", "rf-" + suffix)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"success\":true,\"note\":\"Paid out\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.refund.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.feeAccount.outstandingAmount").value(7750.00));
+    mockMvc
+        .perform(
+            post("/api/v1/refunds/" + refundId + "/process")
+                .header("Authorization", "Bearer " + token)
+                .header("Idempotency-Key", "rf-" + suffix)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"success\":true,\"note\":\"Paid out\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.refund.status").value("COMPLETED"));
+
+    long failRefundId =
+        postJson(
+                token,
+                "/api/v1/fee-accounts/" + feeAccountId + "/refunds",
+                "{\"amount\":100.00,\"reason\":\"Bank payout attempt\"}",
+                201)
+            .path("refund")
+            .path("id")
+            .asLong();
+    mockMvc
+        .perform(
+            post("/api/v1/refunds/" + failRefundId + "/approve")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/v1/refunds/" + failRefundId + "/process")
+                .header("Authorization", "Bearer " + token)
+                .header("Idempotency-Key", "rf-fail-" + suffix)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"success\":false,\"note\":\"Bank rejected\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.refund.status").value("FAILED"))
+        .andExpect(jsonPath("$.feeAccount.outstandingAmount").value(7750.00));
+
+    mockMvc
+        .perform(
+            post("/api/v1/fee-accounts/" + feeAccountId + "/refunds")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"amount\":99999.00,\"reason\":\"Exceeds collections\"}"))
+        .andExpect(status().isBadRequest());
+
+    mockMvc
+        .perform(get("/api/v1/refunds").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(greaterThan(0))));
+
+    MvcResult paymentsResult =
+        mockMvc
+            .perform(
+                get("/api/v1/fee-accounts/" + feeAccountId + "/payments")
+                    .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(greaterThan(0))))
+            .andReturn();
+    long paymentId =
+        objectMapper
+            .readTree(paymentsResult.getResponse().getContentAsString())
+            .get(0)
+            .path("id")
+            .asLong();
+
+    mockMvc
+        .perform(
+            post("/api/v1/payments/" + paymentId + "/reverse")
+                .header("Authorization", "Bearer " + deskToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Should be forbidden\"}"))
+        .andExpect(status().isForbidden());
+
+    mockMvc
+        .perform(
+            post("/api/v1/payments/" + paymentId + "/reverse")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Wrong amount entered\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.payment.status").value("REVERSED"))
+        .andExpect(jsonPath("$.receipt.status").value("CANCELLED"))
+        .andExpect(jsonPath("$.feeAccount.outstandingAmount").value(9750.00));
+
+    mockMvc
+        .perform(
+            post("/api/v1/payments/" + paymentId + "/reverse")
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"reason\":\"Already reversed once\"}"))
+        .andExpect(status().isConflict());
+
+    mockMvc
+        .perform(
+            get("/api/v1/fee-accounts/" + feeAccountId + "/invoices")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].status").value("DUE"))
+        .andExpect(jsonPath("$[0].amountPaid").value(0.00));
+
+    mockMvc
+        .perform(get("/api/v1/finance/reports/aging").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.buckets", hasSize(5)))
+        .andExpect(jsonPath("$.invoices", hasSize(greaterThan(0))));
+
+    mockMvc
+        .perform(
+            get("/api/v1/finance/reports/outstanding").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.feeAccountId == " + feeAccountId + ")]").exists());
+
+    mockMvc
+        .perform(
+            get("/api/v1/finance/reports/daily-collection")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/v1/finance/reports/collection-by-method")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/v1/finance/reports/collection-by-category")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk());
+
+    long fyId =
+        postJson(
+                token,
+                "/api/v1/financial-years",
+                """
+                {
+                  "name":"FY-IT-%s",
+                  "startDate":"2026-04-01",
+                  "endDate":"2027-03-31",
+                  "activate":true
+                }
+                """
+                    .formatted(suffix),
+                201)
+            .path("id")
+            .asLong();
+    mockMvc
+        .perform(get("/api/v1/financial-years").header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == " + fyId + ")].active").value(true));
+
     assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "STUDENT_CREATED"))
         .isGreaterThanOrEqualTo(1);
     assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "ADMISSION_APPROVED"))
@@ -249,6 +495,14 @@ class AdmissionEnrollmentFinanceIT {
     assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "ENROLLMENT_ACTIVATED"))
         .isGreaterThanOrEqualTo(1);
     assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "PAYMENT_SUCCESS"))
+        .isGreaterThanOrEqualTo(1);
+    assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "FEE_ADJUSTED"))
+        .isGreaterThanOrEqualTo(2);
+    assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "REFUND_COMPLETED"))
+        .isGreaterThanOrEqualTo(1);
+    assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "REFUND_FAILED"))
+        .isGreaterThanOrEqualTo(1);
+    assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "PAYMENT_REVERSED"))
         .isGreaterThanOrEqualTo(1);
   }
 

@@ -18,6 +18,28 @@
     </app-ui-card>
   }
 
+  @if (lastAdjustment()) {
+    <app-ui-card>
+      <p class="receipt">
+        {{ lastAdjustment()!.adjustment.type }}
+        {{ lastAdjustment()!.adjustment.amount }}
+        {{ lastAdjustment()!.feeAccount.currency }} · remaining
+        {{ lastAdjustment()!.feeAccount.outstandingAmount }}
+      </p>
+    </app-ui-card>
+  }
+
+  @if (lastReversal()) {
+    <app-ui-card>
+      <p class="receipt">
+        Reversed {{ lastReversal()!.payment.paymentNo }} · receipt
+        {{ lastReversal()!.receipt.status }} · remaining
+        {{ lastReversal()!.feeAccount.outstandingAmount }}
+        {{ lastReversal()!.feeAccount.currency }}
+      </p>
+    </app-ui-card>
+  }
+
   <app-ui-card>
     @if (loading()) {
       <app-loading-state />
@@ -49,7 +71,16 @@
                   <app-status-badge [label]="row.status" tone="warning" />
                 </td>
                 <td>
-                  <app-ui-button type="button" (click)="openCollect(row)">Collect</app-ui-button>
+                  <div class="row-actions">
+                    <app-ui-button type="button" (click)="openCollect(row)">Collect</app-ui-button>
+                    @if (canAdjust) {
+                      <app-ui-button type="button" (click)="openAdjust(row)">Adjust</app-ui-button>
+                    }
+                    <app-ui-button type="button" (click)="openPayments(row)">Payments</app-ui-button>
+                    <a routerLink="/refunds">
+                      <app-ui-button type="button">Refunds</app-ui-button>
+                    </a>
+                  </div>
                 </td>
               </tr>
             }
@@ -94,6 +125,105 @@
     <div modal-actions>
       <app-ui-button type="button" (click)="closeCollect()">Cancel</app-ui-button>
       <app-ui-button type="button" [loading]="paying()" (click)="collect()">Collect</app-ui-button>
+    </div>
+  </app-ui-modal>
+
+  <app-ui-modal [open]="adjustOpen()" title="Fee adjustment" (closed)="closeAdjust()">
+    @if (adjustTarget(); as target) {
+      <ng-container>
+        <p class="muted">
+          Account #{{ target.id }} · due {{ target.outstandingAmount }} {{ target.currency }}
+        </p>
+        @if (adjustError()) {
+          <app-error-state title="Adjustment failed" [message]="adjustError()!" />
+        }
+        @if (adjustments().length > 0) {
+          <ul class="adj-list">
+            @for (row of adjustments(); track row.id) {
+              <li>{{ row.type }} {{ row.amount }} — {{ row.reason }}</li>
+            }
+          </ul>
+        }
+        <form class="form" [formGroup]="adjustForm">
+          <label class="field" for="adj-type">
+            <span class="field__label">Type</span>
+            <select id="adj-type" class="field__control" formControlName="type">
+              <option value="DISCOUNT">Discount</option>
+              <option value="SCHOLARSHIP">Scholarship</option>
+              <option value="WAIVER">Waiver</option>
+              <option value="PENALTY">Penalty</option>
+            </select>
+          </label>
+          <app-ui-input
+            label="Amount"
+            inputId="adj-amount"
+            type="number"
+            formControlName="amount"
+          />
+          <app-ui-input label="Reason (min 5 characters)" inputId="adj-reason" formControlName="reason" />
+        </form>
+      </ng-container>
+    }
+    <div modal-actions>
+      <app-ui-button type="button" (click)="closeAdjust()">Cancel</app-ui-button>
+      <app-ui-button type="button" [loading]="adjusting()" (click)="applyAdjustment()">Apply</app-ui-button>
+    </div>
+  </app-ui-modal>
+
+  <app-ui-modal [open]="paymentsOpen()" title="Payments" (closed)="closePayments()">
+    @if (paymentsTarget(); as target) {
+      <ng-container>
+        <p class="muted">Account #{{ target.id }} · due {{ target.outstandingAmount }} {{ target.currency }}</p>
+        @if (paymentsError()) {
+          <app-error-state title="Payments" [message]="paymentsError()!" />
+        }
+        @if (payments().length === 0) {
+          <app-empty-state title="No payments" message="Collect a payment first." />
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (payment of payments(); track payment.id) {
+                  <tr>
+                    <td>{{ payment.paymentNo }}</td>
+                    <td>{{ payment.amount }}</td>
+                    <td>{{ payment.method }}</td>
+                    <td>
+                      <app-status-badge
+                        [label]="payment.status"
+                        [tone]="payment.status === 'SUCCESS' ? 'success' : 'warning'"
+                      />
+                    </td>
+                    <td>
+                      @if (canReverse && payment.status === 'SUCCESS') {
+                        <app-ui-button
+                          type="button"
+                          [loading]="reversingId() === payment.id"
+                          (click)="reversePayment(payment)"
+                        >
+                          Reverse
+                        </app-ui-button>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </ng-container>
+    }
+    <div modal-actions>
+      <app-ui-button type="button" (click)="closePayments()">Close</app-ui-button>
     </div>
   </app-ui-modal>
 </div>

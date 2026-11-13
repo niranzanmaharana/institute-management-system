@@ -56,6 +56,11 @@ public class FinancialYear {
     return year;
   }
 
+  public void markActive(boolean active) {
+    this.active = active;
+    this.updatedAt = Instant.now();
+  }
+
   public Long getId() {
     return id;
   }

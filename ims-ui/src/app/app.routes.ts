@@ -34,6 +34,8 @@ import { EnrollmentsListPage } from './features/enrollments/enrollments-list.pag
 import { EnrollmentCreatePage } from './features/enrollments/enrollment-create.page';
 import { EnrollmentDetailPage } from './features/enrollments/enrollment-detail.page';
 import { OutstandingListPage } from './features/finance/outstanding-list.page';
+import { RefundsListPage } from './features/finance/refunds-list.page';
+import { FinanceReportsPage } from './features/finance/finance-reports.page';
 import { InstitutesListPage } from './features/institutes/institutes-list.page';
 import { InstituteCreatePage } from './features/institutes/institute-create.page';
 import { InstituteDetailPage } from './features/institutes/institute-detail.page';
@@ -244,6 +246,16 @@ export const routes: Routes = [
       {
         path: 'outstanding',
         component: OutstandingListPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'refunds',
+        component: RefundsListPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'finance-reports',
+        component: FinanceReportsPage,
         canActivate: [instituteOperatorGuard],
       },
       {

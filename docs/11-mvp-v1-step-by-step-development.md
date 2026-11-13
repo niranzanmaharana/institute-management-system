@@ -250,6 +250,14 @@ flowchart TD
 
 **Phase 3.5 status:** Complete — course subjects (`/api/v1/courses/{id}/subjects`); faculty assigned to a batch (optional subject) on batch detail; remove assignment. Audits: `FACULTY_ASSIGNED` / `FACULTY_UNASSIGNED`. Flyway `V14__batch_faculty_assignments.sql`. No FK from academic to `faculties` (names via `FacultyService`).
 
+**Phase 4.1 status:** Complete — `fee_adjustments` (DISCOUNT / SCHOLARSHIP / WAIVER / PENALTY); outstanding = invoices − SUCCESS payments − credits + penalties; `fee:adjust` for ADMIN/ACCOUNTANT. UI **Adjust** on outstanding. Audit `FEE_ADJUSTED`. Flyway `V15__fee_adjustments.sql`. Re-login after V15 for `fee:adjust` in JWT.
+
+**Phase 4.2 status:** Complete — refund lifecycle REQUESTED → APPROVED → PROCESSING → COMPLETED|FAILED (or REQUESTED → REJECTED). Cap = net SUCCESS payments minus in-flight/completed refunds. Process requires `Idempotency-Key`; FAILED does not change outstanding. List + CSV at `/refunds` (RP-FI-06). Permission `fee:refund`. Flyway `V16__refund_requests.sql`. Re-login after V16.
+
+**Phase 4.3 status:** Complete — reverse SUCCESS payment (`POST /api/v1/payments/{id}/reverse`); releases allocations, restores invoice paid amounts, marks receipt `CANCELLED`, payment `REVERSED` (row kept). Outstanding recalculated. Audit `PAYMENT_REVERSED`. Permission `fee:reverse` (ADMIN/ACCOUNTANT). UI **Payments** on outstanding. Flyway `V17__payment_reversal.sql`. Re-login after V17.
+
+**Phase 4.4 status:** Complete — financial year list/create/activate; reports: aging buckets (RP-FI-04), outstanding (RP-FI-03), daily collection (RP-FI-01), by method (RP-FI-02), by category (RP-FI-08); CSV on UI `/finance-reports`. Indexes in Flyway `V18__finance_report_indexes.sql`.
+
 **Business codes:** Sequence-backed auto-generation (`code_sequences` + `GET /api/v1/codes/next?type=…`). Codes optional on create (blank → auto); UI Generate button. Formats: student `{instituteId}{seq:06}` → `1000001`; course `C{I}-{seq:05}`; fee plan `P{I}-…`; batch `B{I}-…`; year `AY{I}-…`; fee category `FC{I}-…`; admission `A{I}-{seq:06}`; faculty `F{I}-{seq:05}`; staff `S{I}-{seq:05}`; institute `I{seq:05}` (platform).
 
 **View / edit UI:** List rows include View/Edit where APIs allow. Students, courses, batches, fee plans, institutes support edit of mutable fields (codes immutable). Admissions are view + workflow (approve/reject/cancel); enrollments are view + lifecycle. Enquiries convert to applications.
@@ -458,6 +466,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-FI-05; outstanding formula doc 04 |
 | **Test plan** | Waiver decreases; penalty increases; unauthorized role rejected |
 | **Exit criteria** | Statement reflects adjustments |
+| **Status** | **Complete** |
 
 ### Step 4.2 — Refund lifecycle
 
@@ -468,6 +477,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-FI-06; BR-RF-* |
 | **Test plan** | Amount caps; FAILED leaves ledger unchanged |
 | **Exit criteria** | RP-FI-06 exportable list |
+| **Status** | **Complete** |
 
 ### Step 4.3 — Payment reversal
 
@@ -478,6 +488,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-FI-07; BR-PV-* |
 | **Test plan** | Outstanding restored; no hard delete of payment row |
 | **Exit criteria** | Audit trail complete |
+| **Status** | **Complete** |
 
 ### Step 4.4 — Aging outstanding + financial year + category reports
 
@@ -488,6 +499,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-FI-08; RP-FI-01–05, RP-FI-08 |
 | **Test plan** | Report totals match ledger sample |
 | **Exit criteria** | ★ finance reports available as screen and/or CSV |
+| **Status** | **Complete** |
 
 ### Step 4.5 — Fee statement PDF
 

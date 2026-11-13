@@ -16,6 +16,7 @@ import org.hibernate.annotations.Filter;
 public class Payment {
 
   public static final String STATUS_SUCCESS = "SUCCESS";
+  public static final String STATUS_REVERSED = "REVERSED";
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +45,15 @@ public class Payment {
 
   @Column(nullable = false, length = 32)
   private String status = STATUS_SUCCESS;
+
+  @Column(name = "reverse_reason", length = 512)
+  private String reverseReason;
+
+  @Column(name = "reversed_at")
+  private Instant reversedAt;
+
+  @Column(name = "reversed_by")
+  private Long reversedBy;
 
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
@@ -81,6 +91,18 @@ public class Payment {
     this.updatedAt = Instant.now();
   }
 
+  public void reverse(String reason, Long reversedBy) {
+    if (!STATUS_SUCCESS.equals(this.status)) {
+      throw new IllegalStateException("Only SUCCESS payments can be reversed");
+    }
+    this.status = STATUS_REVERSED;
+    this.reverseReason = reason.trim();
+    this.reversedBy = reversedBy;
+    Instant now = Instant.now();
+    this.reversedAt = now;
+    this.updatedAt = now;
+  }
+
   public Long getId() {
     return id;
   }
@@ -115,5 +137,17 @@ public class Payment {
 
   public String getStatus() {
     return status;
+  }
+
+  public String getReverseReason() {
+    return reverseReason;
+  }
+
+  public Instant getReversedAt() {
+    return reversedAt;
+  }
+
+  public Long getReversedBy() {
+    return reversedBy;
   }
 }

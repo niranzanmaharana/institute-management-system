@@ -295,6 +295,11 @@ Examples: course `C1-00001`, fee plan `P1-00001`, batch `B1-00001`, fee category
 | `V14__batch_faculty_assignments.sql` | subjects, batch_faculty_assignments |
 | `V7__admissions.sql` | admission_applications |
 | `V8__enrollment_finance.sql` | enrollments, financial_years, student_fee_accounts, invoices, payments, allocations, receipts |
+| `V15__fee_adjustments.sql` | fee_adjustments; permission `fee:adjust` |
+| `V16__refund_requests.sql` | refund_requests; permission `fee:refund` |
+| `V17__payment_reversal.sql` | receipt status; payment reverse columns; `fee:reverse` |
+| `V18__finance_report_indexes.sql` | indexes for aging / collection reports |
+| `V17__payment_reversal.sql` | receipt status; payment reverse fields; `fee:reverse` |
 | `V4__people_students.sql` | students (+ guardians/addresses) |
 
 APIs live under `/api/v1/courses`, `/fee-plans`, `/batches`, `/academic-years`, `/fee-categories`, `/enrollments`, finance outstanding/payment endpoints. Faculty teaching assignments: `GET/POST /api/v1/batches/{id}/faculty-assignments` (optional `subjectId`; subjects on `/courses/{id}/subjects`).

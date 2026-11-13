@@ -99,6 +99,18 @@ public class Invoice {
 
   public void applyPayment(BigDecimal allocated) {
     this.amountPaid = this.amountPaid.add(allocated);
+    refreshPaidStatus();
+  }
+
+  public void reversePayment(BigDecimal allocated) {
+    this.amountPaid = this.amountPaid.subtract(allocated);
+    if (this.amountPaid.compareTo(BigDecimal.ZERO) < 0) {
+      this.amountPaid = BigDecimal.ZERO.setScale(2);
+    }
+    refreshPaidStatus();
+  }
+
+  private void refreshPaidStatus() {
     if (this.amountPaid.compareTo(this.amount) >= 0) {
       this.amountPaid = this.amount;
       this.status = STATUS_PAID;

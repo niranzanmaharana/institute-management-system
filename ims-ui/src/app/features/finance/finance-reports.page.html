@@ -1,0 +1,282 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Finance reports</h1>
+      <p>Aging, collections, outstanding, and financial years</p>
+    </div>
+    <app-ui-button type="button" (click)="reload()">Refresh</app-ui-button>
+  </header>
+
+  <app-ui-card>
+    <h2 class="section-title">Collection date range</h2>
+    <form class="form form--inline" [formGroup]="rangeForm" (ngSubmit)="reload()">
+      <app-ui-input label="From" inputId="rep-from" type="date" formControlName="from" />
+      <app-ui-input label="To" inputId="rep-to" type="date" formControlName="to" />
+      <app-ui-button type="submit">Apply</app-ui-button>
+    </form>
+  </app-ui-card>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error()) {
+    <app-ui-card>
+      <app-error-state title="Failed to load" [message]="error()!" />
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      <div class="section-head">
+        <h2 class="section-title">Aging outstanding (RP-FI-04)</h2>
+        <app-ui-button type="button" (click)="exportAgingCsv()">Export CSV</app-ui-button>
+      </div>
+      @if (aging(); as report) {
+        <p class="muted">As of {{ report.asOf }}</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Bucket</th>
+                <th>Amount</th>
+                <th>Invoices</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of report.buckets; track b.bucket) {
+                <tr>
+                  <td>{{ b.bucket }}</td>
+                  <td>{{ b.amount }}</td>
+                  <td>{{ b.invoiceCount }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        @if (report.invoices.length === 0) {
+          <app-empty-state title="No open invoices" message="Nothing to age." />
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Invoice</th>
+                  <th>Student</th>
+                  <th>Due</th>
+                  <th>Days</th>
+                  <th>Bucket</th>
+                  <th>Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of report.invoices; track row.invoiceId) {
+                  <tr>
+                    <td>{{ row.invoiceNo }}</td>
+                    <td>#{{ row.studentId }}</td>
+                    <td>{{ row.dueDate }}</td>
+                    <td>{{ row.daysOverdue }}</td>
+                    <td>{{ row.bucket }}</td>
+                    <td>{{ row.remaining }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </app-ui-card>
+
+    <app-ui-card>
+      <div class="section-head">
+        <h2 class="section-title">Outstanding fees (RP-FI-03)</h2>
+        <app-ui-button type="button" (click)="exportOutstandingCsv()">Export CSV</app-ui-button>
+      </div>
+      @if (outstanding().length === 0) {
+        <app-empty-state title="Nothing outstanding" message="All accounts settled." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Student</th>
+                <th>Enrollment</th>
+                <th>Outstanding</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of outstanding(); track row.feeAccountId) {
+                <tr>
+                  <td>#{{ row.feeAccountId }}</td>
+                  <td>#{{ row.studentId }}</td>
+                  <td>#{{ row.enrollmentId }}</td>
+                  <td>{{ row.outstandingAmount }} {{ row.currency }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+
+    <app-ui-card>
+      <div class="section-head">
+        <h2 class="section-title">Daily collection (RP-FI-01)</h2>
+        <app-ui-button type="button" (click)="exportDailyCsv()">Export CSV</app-ui-button>
+      </div>
+      @if (daily().length === 0) {
+        <app-empty-state title="No collections" message="No SUCCESS payments in this range." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Payments</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of daily(); track row.date) {
+                <tr>
+                  <td>{{ row.date }}</td>
+                  <td>{{ row.amount }}</td>
+                  <td>{{ row.paymentCount }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+
+    <div class="split">
+      <app-ui-card>
+        <div class="section-head">
+          <h2 class="section-title">By method (RP-FI-02)</h2>
+          <app-ui-button type="button" (click)="exportMethodCsv()">CSV</app-ui-button>
+        </div>
+        @if (byMethod().length === 0) {
+          <app-empty-state title="No data" message="No payments in range." />
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Amount</th>
+                  <th>Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of byMethod(); track row.key) {
+                  <tr>
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.amount }}</td>
+                    <td>{{ row.count }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </app-ui-card>
+
+      <app-ui-card>
+        <div class="section-head">
+          <h2 class="section-title">By category (RP-FI-08)</h2>
+          <app-ui-button type="button" (click)="exportCategoryCsv()">CSV</app-ui-button>
+        </div>
+        @if (byCategory().length === 0) {
+          <app-empty-state title="No data" message="No allocations in range." />
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Lines</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of byCategory(); track row.key) {
+                  <tr>
+                    <td>{{ row.label }}</td>
+                    <td>{{ row.amount }}</td>
+                    <td>{{ row.count }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </app-ui-card>
+    </div>
+
+    <app-ui-card>
+      <h2 class="section-title">Financial years (FR-FI-08)</h2>
+      @if (yearError()) {
+        <app-error-state title="Year failed" [message]="yearError()!" />
+      }
+      @if (years().length === 0) {
+        <app-empty-state
+          title="No financial years"
+          message="One is created automatically on first enrollment activate; you can add more here."
+        />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of years(); track row.id) {
+                <tr>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.startDate }}</td>
+                  <td>{{ row.endDate }}</td>
+                  <td>
+                    <app-status-badge
+                      [label]="row.active ? 'ACTIVE' : 'INACTIVE'"
+                      [tone]="row.active ? 'success' : 'neutral'"
+                    />
+                  </td>
+                  <td>
+                    @if (canManageYears && !row.active) {
+                      <app-ui-button
+                        type="button"
+                        [loading]="activatingId() === row.id"
+                        (click)="activateYear(row)"
+                      >
+                        Activate
+                      </app-ui-button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (canManageYears) {
+        <form class="form" [formGroup]="yearForm" (ngSubmit)="createYear()">
+          <div class="grid">
+            <app-ui-input label="Name" inputId="fy-name" formControlName="name" />
+            <app-ui-input label="Start" inputId="fy-start" type="date" formControlName="startDate" />
+            <app-ui-input label="End" inputId="fy-end" type="date" formControlName="endDate" />
+            <label class="check">
+              <input type="checkbox" formControlName="activate" />
+              Activate now
+            </label>
+          </div>
+          <app-ui-button type="submit" [loading]="yearSaving()">Add financial year</app-ui-button>
+        </form>
+      }
+    </app-ui-card>
+  }
+</div>

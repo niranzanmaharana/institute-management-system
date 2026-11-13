@@ -205,6 +205,28 @@
               <span>Outstanding</span>
             }
           </a>
+          <a
+            routerLink="/refunds"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-rotate-left nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Refunds</span>
+            }
+          </a>
+          <a
+            routerLink="/finance-reports"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-chart-column nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Finance reports</span>
+            }
+          </a>
         }
       }
     </nav>

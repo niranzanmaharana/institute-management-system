@@ -4,14 +4,25 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
+import { UiSelect, UiSelectOption } from '../../shared/ui-select';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { InstituteService } from './institute.service';
+import { DEFAULT_INSTITUTE_TIMEZONE, timezoneSelectOptions } from './timezones';
 
 @Component({
   selector: 'app-institute-edit-page',
-  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput, ErrorState, LoadingState],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    UiCard,
+    UiButton,
+    UiInput,
+    UiSelect,
+    ErrorState,
+    LoadingState,
+  ],
   templateUrl: './institute-edit.page.html',
   styleUrl: './institute-edit.page.scss',
 })
@@ -26,10 +37,11 @@ export class InstituteEditPage implements OnInit {
   readonly error = signal<string | null>(null);
   instituteId = 0;
   code = '';
+  timezoneOptions: UiSelectOption[] = timezoneSelectOptions();
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
-    timezone: ['Asia/Kolkata'],
+    timezone: [DEFAULT_INSTITUTE_TIMEZONE, Validators.required],
     mobile: [''],
     contactEmail: ['', Validators.email],
     website: [''],
@@ -53,9 +65,11 @@ export class InstituteEditPage implements OnInit {
     this.institutesApi.get(id).subscribe({
       next: (row) => {
         this.code = row.code;
+        const timezone = row.timezone || DEFAULT_INSTITUTE_TIMEZONE;
+        this.timezoneOptions = timezoneSelectOptions(timezone);
         this.form.patchValue({
           name: row.name,
-          timezone: row.timezone || 'Asia/Kolkata',
+          timezone,
           mobile: row.mobile || '',
           contactEmail: row.adminEmail || '',
           website: row.website || '',

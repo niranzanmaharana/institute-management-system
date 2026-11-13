@@ -793,6 +793,13 @@ Extract module only with ADR; add message broker if needed.
 | GET/POST | `/api/v1/batches/{id}/faculty-assignments`      | academic   |
 | POST     | `/api/v1/batches/{id}/enrollments`              | academic   |
 | GET      | `/api/v1/finance/accounts?outstandingOnly=true` | finance    |
+| GET/POST | `/api/v1/fee-accounts/{id}/adjustments`         | finance    |
+| GET/POST | `/api/v1/fee-accounts/{id}/refunds`             | finance    |
+| GET      | `/api/v1/refunds`                               | finance    |
+| GET      | `/api/v1/finance/reports/*`                     | finance    |
+| GET/POST | `/api/v1/financial-years`                       | finance    |
+| GET      | `/api/v1/fee-accounts/{id}/payments`            | finance    |
+| POST     | `/api/v1/payments/{id}/reverse`                 | finance    |
 | POST     | `/api/v1/finance/accounts/{id}/payments`        | finance    |
 | GET      | `/api/v1/finance/payments/{id}/receipt`         | finance    |
 | POST     | `/api/v1/attendance/sessions`                   | operations |
