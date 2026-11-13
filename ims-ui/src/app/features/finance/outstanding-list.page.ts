@@ -65,6 +65,8 @@ export class OutstandingListPage implements OnInit {
   readonly paymentsError = signal<string | null>(null);
   readonly reversingId = signal<number | null>(null);
   readonly lastReversal = signal<PaymentResult | null>(null);
+  readonly statementDownloadingId = signal<number | null>(null);
+  readonly statementError = signal<string | null>(null);
 
   readonly payForm = this.fb.nonNullable.group({
     amount: ['', Validators.required],
@@ -253,6 +255,29 @@ export class OutstandingListPage implements OnInit {
       error: (err) => {
         this.reversingId.set(null);
         this.paymentsError.set(httpErrorMessage(err, 'Could not reverse payment.'));
+      },
+    });
+  }
+
+  downloadStatement(row: FeeAccount): void {
+    if (this.statementDownloadingId() != null) {
+      return;
+    }
+    this.statementDownloadingId.set(row.id);
+    this.statementError.set(null);
+    this.financeApi.downloadStatementPdf(row.id).subscribe({
+      next: (blob) => {
+        this.statementDownloadingId.set(null);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `fee-statement-${row.id}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        this.statementDownloadingId.set(null);
+        this.statementError.set(httpErrorMessage(err, 'Could not download fee statement.'));
       },
     });
   }

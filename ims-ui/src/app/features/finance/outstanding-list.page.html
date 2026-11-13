@@ -40,6 +40,12 @@
     </app-ui-card>
   }
 
+  @if (statementError()) {
+    <app-ui-card>
+      <app-error-state title="Statement download failed" [message]="statementError()!" />
+    </app-ui-card>
+  }
+
   <app-ui-card>
     @if (loading()) {
       <app-loading-state />
@@ -77,6 +83,13 @@
                       <app-ui-button type="button" (click)="openAdjust(row)">Adjust</app-ui-button>
                     }
                     <app-ui-button type="button" (click)="openPayments(row)">Payments</app-ui-button>
+                    <app-ui-button
+                      type="button"
+                      [loading]="statementDownloadingId() === row.id"
+                      (click)="downloadStatement(row)"
+                    >
+                      Statement PDF
+                    </app-ui-button>
                     <a routerLink="/refunds">
                       <app-ui-button type="button">Refunds</app-ui-button>
                     </a>

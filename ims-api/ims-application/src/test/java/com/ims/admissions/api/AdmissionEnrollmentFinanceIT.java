@@ -488,6 +488,33 @@ class AdmissionEnrollmentFinanceIT {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == " + fyId + ")].active").value(true));
 
+    mockMvc
+        .perform(
+            get("/api/v1/fee-accounts/" + feeAccountId + "/statement")
+                .header("Authorization", "Bearer " + token))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.feeAccount.id").value(feeAccountId))
+        .andExpect(jsonPath("$.totals.outstandingAmount").value(9750.00))
+        .andExpect(jsonPath("$.invoices", hasSize(2)));
+
+    MvcResult pdfResult =
+        mockMvc
+            .perform(
+                get("/api/v1/fee-accounts/" + feeAccountId + "/statement.pdf")
+                    .header("Authorization", "Bearer " + token))
+            .andExpect(status().isOk())
+            .andReturn();
+    assertThat(pdfResult.getResponse().getContentType()).contains("application/pdf");
+    assertThat(pdfResult.getResponse().getContentAsByteArray().length).isGreaterThan(100);
+    assertThat(pdfResult.getResponse().getContentAsByteArray()[0]).isEqualTo((byte) '%');
+    assertThat(pdfResult.getResponse().getContentAsByteArray()[1]).isEqualTo((byte) 'P');
+
+    mockMvc
+        .perform(
+            get("/api/v1/fee-accounts/" + feeAccountId + "/statement")
+                .header("Authorization", "Bearer " + deskToken))
+        .andExpect(status().isForbidden());
+
     assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "STUDENT_CREATED"))
         .isGreaterThanOrEqualTo(1);
     assertThat(auditLogJpaRepository.countByInstituteIdAndAction(1L, "ADMISSION_APPROVED"))

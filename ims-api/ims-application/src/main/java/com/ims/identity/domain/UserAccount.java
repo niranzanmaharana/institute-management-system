@@ -97,6 +97,14 @@ public class UserAccount {
     return status;
   }
 
+  public String getPersonType() {
+    return personType;
+  }
+
+  public Long getPersonId() {
+    return personId;
+  }
+
   public Set<Role> getRoles() {
     return roles;
   }

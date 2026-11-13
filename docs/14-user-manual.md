@@ -378,6 +378,16 @@ Each table has **Export CSV**.
 2. **Add financial year** (name, start, end, optionally activate).
 3. **Activate** another year (previous active year turns inactive). New invoices stamp the **active** year.
 
+### 10.6 Fee statement PDF
+
+**Who:** staff with `fee:read` (ADMIN, ACCOUNTANT, …). Linked student logins (role STUDENT + person link) can download **their own** account only.
+
+**Where:** **Outstanding** → **Statement PDF** on a fee account row.
+
+**What you get:** a printable PDF with student details, totals (invoices, payments, credits, penalties, completed refunds, outstanding), invoice lines, payments/receipts, adjustments, and refunds.
+
+JSON statement (same data) is also available to integrations at `GET /api/v1/fee-accounts/{id}/statement`.
+
 ---
 
 ## 11. Documents & photos
@@ -403,6 +413,7 @@ Each table has **Export CSV**.
 | Student leaving with money paid | Use **Refunds** (not Reverse) |
 | Need discount | **Adjust** waiver/scholarship/discount |
 | Need aging / collection totals | **Finance reports** → pick dates → Export CSV |
+| Need a printable fee history | **Outstanding** → **Statement PDF** |
 | Login menu missing an item | Wrong role — ask ADMIN; or re-login after a permission migration |
 | Document upload fails | Ensure MinIO is running |
 
@@ -424,7 +435,8 @@ Use this table as the maintenance checklist for this manual.
 | 4.2 | Refunds | §10.3 |
 | 4.3 | Payment reversal | §10.4 |
 | 4.4 | Aging + FY + collection reports | §10.5 |
-| *Next* | Fee statement PDF / attendance / … | Add new § |
+| 4.5 | Fee statement PDF | §10.6 |
+| *Next* | Attendance / timetable / exams / … | Add new § |
 
 ---
 

@@ -2,6 +2,7 @@ package com.ims.academic.api;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -202,6 +203,74 @@ class AcademicCatalogControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"code\":\"X\",\"name\":\"Nope\"}"))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void replaceFeePlanInstallmentsDoesNotHitSeqUniqueConstraint() throws Exception {
+    String token = login("admin", "Password@123", "DEMO_A");
+    String suffix = String.valueOf(System.currentTimeMillis());
+
+    long categoryId =
+        postJson(
+                token,
+                "/api/v1/fee-categories",
+                "{\"code\":\"TUIT_R_" + suffix + "\",\"name\":\"Tuition\"}",
+                201)
+            .path("id")
+            .asLong();
+
+    long courseId =
+        postJson(
+                token,
+                "/api/v1/courses",
+                "{\"code\":\"CRS_R_" + suffix + "\",\"name\":\"Replace Plan Course\",\"description\":\"Demo\"}",
+                201)
+            .path("id")
+            .asLong();
+
+    long planId =
+        postJson(
+                token,
+                "/api/v1/courses/" + courseId + "/fee-plans",
+                """
+                {
+                  "code":"FP_R_%s",
+                  "name":"Original",
+                  "currency":"INR",
+                  "totalAmount":10000.00,
+                  "installments":[
+                    {"seq":1,"feeCategoryId":%d,"label":"Admission","amount":2000.00,"dueOffsetDays":0},
+                    {"seq":2,"feeCategoryId":%d,"label":"Tuition","amount":8000.00,"dueOffsetDays":30}
+                  ]
+                }
+                """
+                    .formatted(suffix, categoryId, categoryId),
+                201)
+            .path("id")
+            .asLong();
+
+    mockMvc
+        .perform(
+            put("/api/v1/fee-plans/" + planId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name":"Updated single installment",
+                      "totalAmount":12000.00,
+                      "installments":[
+                        {"seq":1,"feeCategoryId":%d,"label":"Full fee","amount":12000.00,"dueOffsetDays":0}
+                      ]
+                    }
+                    """
+                        .formatted(categoryId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Updated single installment"))
+        .andExpect(jsonPath("$.totalAmount").value(12000.00))
+        .andExpect(jsonPath("$.installments.length()").value(1))
+        .andExpect(jsonPath("$.installments[0].seq").value(1))
+        .andExpect(jsonPath("$.installments[0].label").value("Full fee"));
   }
 
   private JsonNode postJson(String token, String path, String body, int expected) throws Exception {

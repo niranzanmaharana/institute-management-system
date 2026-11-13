@@ -169,6 +169,12 @@ export class FinanceService {
     return this.http.get<Invoice[]>(`${this.base}/fee-accounts/${feeAccountId}/invoices`);
   }
 
+  downloadStatementPdf(feeAccountId: number): Observable<Blob> {
+    return this.http.get(`${this.base}/fee-accounts/${feeAccountId}/statement.pdf`, {
+      responseType: 'blob',
+    });
+  }
+
   listPayments(feeAccountId: number): Observable<Payment[]> {
     return this.http.get<Payment[]>(`${this.base}/fee-accounts/${feeAccountId}/payments`);
   }

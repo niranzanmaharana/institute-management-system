@@ -258,6 +258,8 @@ flowchart TD
 
 **Phase 4.4 status:** Complete — financial year list/create/activate; reports: aging buckets (RP-FI-04), outstanding (RP-FI-03), daily collection (RP-FI-01), by method (RP-FI-02), by category (RP-FI-08); CSV on UI `/finance-reports`. Indexes in Flyway `V18__finance_report_indexes.sql`.
 
+**Phase 4.5 status:** Complete — fee statement JSON + PDF (`GET /api/v1/fee-accounts/{id}/statement` and `…/statement.pdf`); staff with `fee:read`; STUDENT role may download only own linked `personId` account. OpenPDF renderer. UI **Statement PDF** on Outstanding.
+
 **Business codes:** Sequence-backed auto-generation (`code_sequences` + `GET /api/v1/codes/next?type=…`). Codes optional on create (blank → auto); UI Generate button. Formats: student `{instituteId}{seq:06}` → `1000001`; course `C{I}-{seq:05}`; fee plan `P{I}-…`; batch `B{I}-…`; year `AY{I}-…`; fee category `FC{I}-…`; admission `A{I}-{seq:06}`; faculty `F{I}-{seq:05}`; staff `S{I}-{seq:05}`; institute `I{seq:05}` (platform).
 
 **View / edit UI:** List rows include View/Edit where APIs allow. Students, courses, batches, fee plans, institutes support edit of mutable fields (codes immutable). Admissions are view + workflow (approve/reject/cancel); enrollments are view + lifecycle. Enquiries convert to applications.
@@ -510,6 +512,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-FI-04; RP-FI-05; FR-DC-01 |
 | **Test plan** | Authz self vs other; totals match |
 | **Exit criteria** | Downloadable statement for own account |
+| **Status** | **Complete** |
 
 ---
 
@@ -708,7 +711,7 @@ Use as a build board; do not skip gates.
 **v1**
 
 - [ ] **3.0** → 3.1 → 3.2 → 3.3 → 3.4 → 3.5  
-- [ ] 4.1 → 4.2 → 4.3 → 4.4 → 4.5  
+- [x] 4.1 → 4.2 → 4.3 → 4.4 → 4.5  
 - [ ] 5.1 → 5.2 → 5.3 → 5.4  
 - [ ] 6.1 → 6.2 → 6.3 → 6.4 → 6.5  
 - [ ] 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 7.6  

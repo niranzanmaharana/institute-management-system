@@ -1,5 +1,6 @@
 package com.ims.finance.api;
 
+import com.ims.finance.api.FeeStatementDtos.FeeStatementResponse;
 import com.ims.finance.api.FinanceDtos.AdjustmentResponse;
 import com.ims.finance.api.FinanceDtos.AdjustmentResultResponse;
 import com.ims.finance.api.FinanceDtos.FeeAccountResponse;
@@ -8,6 +9,7 @@ import com.ims.finance.api.FinanceDtos.PaymentResponse;
 import com.ims.finance.api.FinanceDtos.PaymentResultResponse;
 import com.ims.finance.api.FinanceDtos.RefundResponse;
 import com.ims.finance.api.FinanceDtos.RefundResultResponse;
+import com.ims.finance.application.FeeStatementService;
 import com.ims.finance.application.FinanceService;
 import com.ims.finance.application.FinanceService.CollectPaymentCommand;
 import com.ims.finance.application.FinanceService.CreateAdjustmentCommand;
@@ -25,7 +27,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,9 +49,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class FeeAccountController {
 
   private final FinanceService financeService;
+  private final FeeStatementService feeStatementService;
 
-  public FeeAccountController(FinanceService financeService) {
+  public FeeAccountController(
+      FinanceService financeService, FeeStatementService feeStatementService) {
     this.financeService = financeService;
+    this.feeStatementService = feeStatementService;
   }
 
   public record CollectPaymentRequest(
@@ -85,6 +93,26 @@ public class FeeAccountController {
   @PreAuthorize("hasAuthority('fee:read')")
   public List<InvoiceResponse> listInvoices(@PathVariable("id") Long id) {
     return financeService.listInvoices(id);
+  }
+
+  @GetMapping("/fee-accounts/{id}/statement")
+  @Operation(summary = "Fee statement JSON (RP-FI-05)")
+  @PreAuthorize("hasAuthority('fee:read') or hasRole('STUDENT')")
+  public FeeStatementResponse statement(@PathVariable("id") Long id) {
+    return feeStatementService.getStatement(id);
+  }
+
+  @GetMapping("/fee-accounts/{id}/statement.pdf")
+  @Operation(summary = "Fee statement PDF download")
+  @PreAuthorize("hasAuthority('fee:read') or hasRole('STUDENT')")
+  public ResponseEntity<byte[]> statementPdf(@PathVariable("id") Long id) {
+    byte[] pdf = feeStatementService.getStatementPdf(id);
+    return ResponseEntity.ok()
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            "attachment; filename=\"fee-statement-" + id + ".pdf\"")
+        .contentType(MediaType.APPLICATION_PDF)
+        .body(pdf);
   }
 
   @GetMapping("/outstanding")
