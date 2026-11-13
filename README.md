@@ -5,7 +5,7 @@ Multi-tenant institute management platform.
 | Path | Description |
 | --- | --- |
 | [ims-ui](./ims-ui) | Angular SPA (Skydash-inspired admin UI) |
-| [ims-api](./ims-api) | Spring Boot modular monolith + API Gateway + shared library |
+| [ims-backend](./ims-backend) | Spring Boot modular monolith (`ims-api`) + gateway + shared library |
 | [infra](./infra) | Docker Compose (MySQL, MinIO, Jaeger) |
 | [docs](./docs) | Architecture, standards, MVP roadmap |
 | [postman](./postman) | Generated Postman collections |
@@ -37,12 +37,12 @@ Manual steps:
 cd infra
 docker compose up -d minio
 
-# Backend — install modules once, then run app + gateway
-cd ../ims-api
-mvn -pl ims-common,ims-application,api-gateway -am install -DskipTests
-mvn -pl ims-application spring-boot:run
+# Backend — install modules once, then run API + gateway
+cd ../ims-backend
+mvn -pl ims-common,ims-api,ims-gateway -am install -DskipTests
+mvn -pl ims-api spring-boot:run
 # separate terminal:
-mvn -pl api-gateway spring-boot:run
+mvn -pl ims-gateway spring-boot:run
 
 # Frontend (talks to gateway :8088)
 cd ../ims-ui
@@ -65,11 +65,11 @@ npm start
 
 ## OpenAPI → Postman
 
-With `ims-application` running:
+With `ims-api` running:
 
 ```bash
-cd ims-api
-mvn -pl ims-application -DskipTests package
+cd ims-backend
+mvn -pl ims-api -DskipTests package
 # or while app is up:
 npm run generate:postman --prefix ../ims-ui
 # alternatively from repo root scripts:

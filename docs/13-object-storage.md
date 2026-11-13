@@ -36,7 +36,7 @@ Browser (logged-in Angular)
     │  1. POST /api/v1/people/{ownerType}/{ownerId}/documents/uploads
     │     (JWT → authz + tenant; validate type/size)
     ▼
-ims-application
+ims-api
     │  2. Insert person_documents row (status PENDING)
     │     storage_key = institutes/{instituteId}/{ownerType}/{ownerId}/{uuid}/{fileName}
     │     Return time-limited PUT URL
@@ -71,7 +71,7 @@ The Angular origin (`http://localhost:4200`) is **not** the MinIO origin (`http:
 | Port | `com.ims.platform.storage.ObjectStorage` |
 | MinIO/S3 adapter | `S3ObjectStorage` (`ims.storage.type=s3`, default) |
 | In-memory adapter | `InMemoryObjectStorage` (`ims.storage.type=memory` — tests only) |
-| Settings | `ims.storage.*` in `ims-application` `application.yml` |
+| Settings | `ims.storage.*` in `ims-api` `application.yml` |
 | APIs | `/api/v1/people/{STUDENT\|FACULTY\|STAFF}/{id}/documents` |
 | UI | Student / faculty / staff detail → Documents |
 
@@ -88,7 +88,7 @@ Docker Desktop must be **running** (Windows: whale icon idle). If Compose prints
 
 ## 3. Local configuration (current)
 
-`ims-application/src/main/resources/application.yml`:
+`ims-backend/ims-api/src/main/resources/application.yml`:
 
 ```yaml
 ims:

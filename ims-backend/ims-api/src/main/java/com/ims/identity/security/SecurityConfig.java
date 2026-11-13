@@ -30,7 +30,7 @@ public class SecurityConfig {
       HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper)
       throws Exception {
     http.csrf(csrf -> csrf.disable())
-        // CORS is handled only by api-gateway to avoid duplicate ACAO headers in the browser.
+        // CORS is handled only by ims-gateway to avoid duplicate ACAO headers in the browser.
         .cors(cors -> cors.disable())
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(

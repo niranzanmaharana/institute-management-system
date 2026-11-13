@@ -22,7 +22,7 @@
 | [review.md](./review.md) | External architecture/product review notes |
 | [adr/](./adr/) | Architecture Decision Records |
 
-**Code roots:** [ims-ui](../ims-ui) (Angular), [ims-api](../ims-api) (Spring), [infra](../infra), [postman](../postman)
+**Code roots:** [ims-ui](../ims-ui) (Angular), [ims-backend](../ims-backend) (Spring), [infra](../infra), [postman](../postman)
 
 ## Locked decisions (summary)
 

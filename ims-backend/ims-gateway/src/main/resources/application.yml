@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: api-gateway
+    name: ims-gateway
   cloud:
     gateway:
       default-filters:
@@ -27,7 +27,7 @@ spring:
               - X-Request-Id
             maxAge: 3600
       routes:
-        - id: ims-application
+        - id: ims-api
           uri: http://localhost:8080
           predicates:
             - Path=/api/**,/v3/api-docs/**,/swagger-ui/**,/swagger-ui.html,/actuator/health/**

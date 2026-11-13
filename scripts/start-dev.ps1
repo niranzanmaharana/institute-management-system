@@ -19,7 +19,7 @@ param(
 $ErrorActionPreference = "Stop"
 $root = Split-Path -Parent $PSScriptRoot
 $infra = Join-Path $root "infra"
-$api = Join-Path $root "ims-api"
+$api = Join-Path $root "ims-backend"
 $ui = Join-Path $root "ims-ui"
 
 function Wait-HttpOk {
@@ -88,7 +88,7 @@ if (-not $SkipMavenInstall) {
   Write-Host "Maven install (skip tests)..."
   Push-Location $api
   try {
-    mvn -pl ims-common,ims-application,api-gateway -am install "-DskipTests"
+    mvn -pl ims-common,ims-api,ims-gateway -am install "-DskipTests"
     if ($LASTEXITCODE -ne 0) {
       throw "Maven install failed with exit code $LASTEXITCODE"
     }
@@ -97,13 +97,13 @@ if (-not $SkipMavenInstall) {
   }
 }
 
-Write-Host "Starting ims-application (:8080) in a new window..."
-Start-DevWindow -Title "IMS application :8080" -WorkingDirectory $api -Command "mvn -pl ims-application spring-boot:run"
-Wait-HttpOk -Url "http://localhost:8080/actuator/health" -Name "ims-application"
+Write-Host "Starting ims-api (:8080) in a new window..."
+Start-DevWindow -Title "IMS api :8080" -WorkingDirectory $api -Command "mvn -pl ims-api spring-boot:run"
+Wait-HttpOk -Url "http://localhost:8080/actuator/health" -Name "ims-api"
 
-Write-Host "Starting api-gateway (:8088) in a new window..."
-Start-DevWindow -Title "IMS gateway :8088" -WorkingDirectory $api -Command "mvn -pl api-gateway spring-boot:run"
-Wait-HttpOk -Url "http://localhost:8088/actuator/health" -Name "api-gateway"
+Write-Host "Starting ims-gateway (:8088) in a new window..."
+Start-DevWindow -Title "IMS gateway :8088" -WorkingDirectory $api -Command "mvn -pl ims-gateway spring-boot:run"
+Wait-HttpOk -Url "http://localhost:8088/actuator/health" -Name "ims-gateway"
 
 if (-not (Test-Path (Join-Path $ui "node_modules"))) {
   Write-Host "Installing npm dependencies..."

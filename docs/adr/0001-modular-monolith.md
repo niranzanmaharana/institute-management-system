@@ -13,7 +13,7 @@ Angular 22
     ↓
 API Gateway (routing, rate limit, CORS, JWT check, tracing)
     ↓
-ims-application (Spring Boot, Java 21)
+ims-api (Spring Boot, Java 21)
     ├── identity
     ├── people
     ├── admissions

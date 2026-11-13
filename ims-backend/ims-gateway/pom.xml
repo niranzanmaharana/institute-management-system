@@ -5,11 +5,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.ims</groupId>
-    <artifactId>ims-api</artifactId>
+    <artifactId>ims-backend</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>api-gateway</artifactId>
-  <name>api-gateway</name>
+  <artifactId>ims-gateway</artifactId>
+  <name>ims-gateway</name>
 
   <dependencies>
     <dependency>

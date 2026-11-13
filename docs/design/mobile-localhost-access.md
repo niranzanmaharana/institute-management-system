@@ -42,10 +42,10 @@ docker compose up -d
 ### Backend
 
 ```powershell
-cd D:\workspace\working\institute-management-system\ims-api
-mvn -pl ims-application spring-boot:run
+cd D:\workspace\working\institute-management-system\ims-backend
+mvn -pl ims-api spring-boot:run
 # other terminal
-mvn -pl api-gateway spring-boot:run
+mvn -pl ims-gateway spring-boot:run
 ```
 
 Gateway listens on **8088**; app on **8080**.
@@ -82,7 +82,7 @@ Restart / let `ng serve` reload after the change.
 
 The browser on the phone sends `Origin: http://PC_IP:4200`. That is **not** `localhost`, so gateway CORS must allow it.
 
-In `ims-api/api-gateway/src/main/resources/application.yml`, under `globalcors.cors-configurations['[/**]'].allowedOriginPatterns`, include LAN patterns, for example:
+In `ims-backend/ims-gateway/src/main/resources/application.yml`, under `globalcors.cors-configurations['[/**]'].allowedOriginPatterns`, include LAN patterns, for example:
 
 ```yaml
 allowedOriginPatterns:
@@ -92,7 +92,7 @@ allowedOriginPatterns:
   - "http://10.*:*"
 ```
 
-Restart **api-gateway** after changing this.
+Restart **ims-gateway** after changing this.
 
 ---
 
@@ -104,7 +104,7 @@ Your Wi‑Fi may be classified as **Public** (common). Inbound Node rules often 
 
 ```powershell
 New-NetFirewallRule -DisplayName 'IMS ng-serve 4200' -Direction Inbound -Protocol TCP -LocalPort 4200 -Action Allow -Profile Any
-New-NetFirewallRule -DisplayName 'IMS api-gateway 8088' -Direction Inbound -Protocol TCP -LocalPort 8088 -Action Allow -Profile Any
+New-NetFirewallRule -DisplayName 'IMS ims-gateway 8088' -Direction Inbound -Protocol TCP -LocalPort 8088 -Action Allow -Profile Any
 ```
 
 Optional: mark the Wi‑Fi as Private (Settings → Network → your Wi‑Fi → **Private network**).

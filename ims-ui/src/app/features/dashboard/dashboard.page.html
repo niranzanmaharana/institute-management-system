@@ -40,7 +40,7 @@
       } @else if (error()) {
         <app-error-state title="API unavailable" [message]="error()!" />
       } @else if (institutes().length === 0) {
-        <app-empty-state title="No institutes" message="Run Flyway seeds via ims-application." />
+        <app-empty-state title="No institutes" message="Run Flyway seeds via ims-api." />
       } @else {
         <table class="table">
           <thead>

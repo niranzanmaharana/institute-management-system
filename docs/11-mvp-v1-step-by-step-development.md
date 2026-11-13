@@ -94,7 +94,7 @@ flowchart TD
 | | |
 | --- | --- |
 | **Goal** | Empty but buildable layout for monolith + gateway + Angular |
-| **Deliverables** | Folders: `ims-ui/`, `ims-api/ims-application/`, `ims-api/api-gateway/`, `ims-api/ims-common/`, `infra/`, `docs/`, `postman/`; root README with how to build |
+| **Deliverables** | Folders: `ims-ui/`, `ims-backend/ims-api/`, `ims-backend/ims-gateway/`, `ims-backend/ims-common/`, `infra/`, `docs/`, `postman/`; root README with how to build |
 | **FR/BR** | — |
 | **Test plan** | CI or local: backend modules compile; `ng` version check / empty app builds |
 | **Exit criteria** | Fresh clone builds skeleton without domain code |
@@ -125,7 +125,7 @@ flowchart TD
 | **Deliverables** | Library module; `CorrelationIds`; no domain entities/DTOs |
 | **FR/BR** | Doc 07 error contract |
 | **Test plan** | Unit tests for error serialization / money scale helper if present |
-| **Exit criteria** | Consumable from `ims-application` and gateway |
+| **Exit criteria** | Consumable from `ims-api` and gateway |
 
 ### Step 0.5 — Flyway baseline + tenant conventions
 
@@ -238,7 +238,7 @@ flowchart TD
 
 **Phase 2.8 status:** Complete — `SliceIsolationIT` for student/course cross-tenant 404 (+ same code allowed across tenants).
 
-**Phase 3.1 status:** Complete — faculty/staff CRUD; student/faculty/staff list search + status filter + pagination; role-gated nav (permission-aware). Manual sample seed: `ims-api/scripts/seed-demo-people-pagination.sql` (not Flyway).
+**Phase 3.1 status:** Complete — faculty/staff CRUD; student/faculty/staff list search + status filter + pagination; role-gated nav (permission-aware). Manual sample seed: `ims-backend/scripts/seed-demo-people-pagination.sql` (not Flyway).
 
 **Phase 3.2 status:** Complete — enrollment lifecycle APIs + detail UX: cancel / activate (admission waiver + capacity override) / suspend / resume / withdraw / complete / transfer (same course). Audits: `ENROLLMENT_*`, `CAPACITY_OVERRIDE`, `ADMISSION_WAIVER`. Flyway `V11__enrollment_lifecycle.sql`.
 

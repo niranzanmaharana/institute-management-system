@@ -19,7 +19,7 @@ import reactor.util.context.ContextView;
 
 /**
  * Ensures {@code X-Request-Id} and logs every proxied request with the same correlation fields
- * used by {@code ims-application} (traceId, spanId, requestId).
+ * used by {@code ims-api} (traceId, spanId, requestId).
  */
 @Component
 public class RequestLoggingGlobalFilter implements GlobalFilter, Ordered {

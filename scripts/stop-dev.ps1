@@ -124,10 +124,13 @@ function Stop-Port {
 
 function Stop-Launchers {
   $hints = @(
+    "IMS api :8080",
     "IMS application :8080",
     "IMS gateway :8088",
     "IMS UI :4200",
+    "ims-api spring-boot:run",
     "ims-application spring-boot:run",
+    "ims-gateway spring-boot:run",
     "api-gateway spring-boot:run"
   )
   $filter = "Name = 'powershell.exe' OR Name = 'pwsh.exe'"
@@ -149,8 +152,8 @@ Write-Host "Stopping application processes..."
 
 Stop-Launchers
 Stop-Port -Port 4200 -Name "IMS UI"
-Stop-Port -Port 8088 -Name "api-gateway"
-Stop-Port -Port 8080 -Name "ims-application"
+Stop-Port -Port 8088 -Name "ims-gateway"
+Stop-Port -Port 8080 -Name "ims-api"
 
 if (-not $SkipInfra) {
   if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {

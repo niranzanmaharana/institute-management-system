@@ -7,7 +7,7 @@ docker compose ps
 
 | Service | URL / port |
 | --- | --- |
-| MySQL (Docker, optional) | `localhost:3307` — db `ims`, user/pass `ims`/`ims`, root/`root`. App defaults to **local** MySQL on `3306` with `root`/`root` — see `ims-application` `application.yml`. |
+| MySQL (Docker, optional) | `localhost:3307` — db `ims`, user/pass `ims`/`ims`, root/`root`. App defaults to **local** MySQL on `3306` with `root`/`root` — see `ims-api` `application.yml`. |
 | MinIO API | http://localhost:9000 |
 | MinIO Console | http://localhost:9001 — `minio` / `minio12345` |
 | MinIO private bucket | App creates `ims-private` on first document upload; CORS allows `http://localhost:4200` for browser PUT |

@@ -107,13 +107,13 @@ CREATE TABLE institutes (
                             │ HTTPS
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    API Gateway                               │
+│                    ims-gateway                               │
 │  routing · rate limit · CORS · JWT validation · tracing      │
 └───────────────────────────┬─────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              ims-application (modular monolith)              │
+│              ims-api (modular monolith)                      │
 │  identity │ people │ admissions │ academic │ finance         │
 │  operations │ documents │ notification* │ reporting*         │
 └───────────────────────────┬─────────────────────────────────┘
@@ -141,7 +141,7 @@ CREATE TABLE institutes (
 
 | Module                                                       | Responsibility                                                                | Owns data for                                                      |
 | ------------------------------------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `api-gateway`                                                | Entry, routing, JWT, rate limits, trace propagation                           | None                                                               |
+| `ims-gateway`                                                | Entry, routing, JWT, rate limits, trace propagation                           | None                                                               |
 | `identity`                                                   | Users, roles, permissions, tokens, login audit; institute membership on users | users, roles, permissions, refresh_tokens                          |
 | `institutes` *(platform, may live under identity or config)* | Create/suspend tenants                                                        | institutes                                                         |
 | `people`                                                     | Students, faculties, staff, guardians, addresses, doc metadata                | students, faculties, staff, guardians, addresses, person_documents |
@@ -690,7 +690,7 @@ Summary below. Rules: every step has **Deliverable / Test plan / Exit criteria**
 
 | Step | Deliverable                                                                                                    | Test / exit                                         |
 | ---- | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| 0.1  | Monorepo: `frontend`, `backend/ims-application` (module packages), `api-gateway`, `ims-common` (thin), `infra` | Skeleton builds                                     |
+| 0.1  | Monorepo: `ims-ui`, `ims-backend/ims-api` (module packages), `ims-gateway`, `ims-common` (thin), `infra` | Skeleton builds                                     |
 | 0.2  | Compose: MySQL, MinIO, Jaeger                                                                                  | Healthchecks green                                  |
 | 0.3  | Docs/ADRs accepted; ArchUnit module rules stub                                                                 | Review sign-off                                     |
 | 0.4  | `ims-common` errors/tracing/page                                                                               | Unit tests                                          |

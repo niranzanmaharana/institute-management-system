@@ -44,7 +44,7 @@ Developer laptop (docker-compose)
 ## 3. Runtime topology (v1)
 
 ```text
-[Angular static] → [API Gateway] → [ims-application]
+[Angular static] → [ims-gateway] → [ims-api]
                          ↓
                  [MySQL] [MinIO] [Jaeger]
 ```
@@ -90,7 +90,7 @@ Optional: Redis for rate-limit/session later.
 | Piece | Detail |
 | --- | --- |
 | Jaeger | Optional. `docker compose up -d jaeger` → UI http://localhost:16686 ; OTLP HTTP `:4318`. Apps export only when `MANAGEMENT_OTLP_TRACING_EXPORT_ENABLED=true`. |
-| Services | `api-gateway` (`spring.application.name=api-gateway`) and `ims-application` both export OTLP traces |
+| Services | `ims-gateway` (`spring.application.name=ims-gateway`) and `ims-api` both export OTLP traces |
 | Sampling | `management.tracing.sampling.probability=1.0` locally |
 | Propagation | W3C `traceparent` + `X-Request-Id` |
 | Console logs | Pattern includes `[traceId,spanId] requestId=… userId=…` on both processes |
@@ -101,7 +101,7 @@ Optional: Redis for rate-limit/session later.
 1. Call via gateway (`:8088`).
 2. Copy `traceId` from either console line (or Jaeger).
 3. Grep both consoles for that `traceId` / `requestId` — gateway and app share them.
-4. Open Jaeger → search service `api-gateway` or `ims-application` → same trace shows both spans.
+4. Open Jaeger → search service `ims-gateway` or `ims-api` → same trace shows both spans.
 
 ### Production expectations
 

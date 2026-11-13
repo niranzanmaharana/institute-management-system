@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.ims</groupId>
-    <artifactId>ims-api</artifactId>
+    <artifactId>ims-backend</artifactId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>ims-application</artifactId>
-  <name>ims-application</name>
-  <description>IMS modular monolith application</description>
+  <artifactId>ims-api</artifactId>
+  <name>ims-api</name>
+  <description>IMS modular monolith API (controllers + domain)</description>
 
   <dependencies>
     <dependency>

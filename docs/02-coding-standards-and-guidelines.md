@@ -148,9 +148,9 @@ Per-module layering:
 
 - **Priority:** every HTTP request and meaningful business activity must emit logs.
 - SLF4J; console pattern includes MDC `traceId`, `spanId`, `requestId`, `userId`.
-- Both `api-gateway` and `ims-application` use the **same** pattern and `X-Request-Id` header so one call can be grepped by `traceId` or `requestId` across processes.
+- Both `ims-gateway` and `ims-api` use the **same** pattern and `X-Request-Id` header so one call can be grepped by `traceId` or `requestId` across processes.
 - Propagation: W3C `traceparent` (Micrometer Tracing) + `X-Request-Id`.
-- OTLP traces → Jaeger (`http://localhost:4318/v1/traces`, UI `http://localhost:16686`). Service names: `api-gateway`, `ims-application`.
+- OTLP traces → Jaeger (`http://localhost:4318/v1/traces`, UI `http://localhost:16686`). Service names: `ims-gateway`, `ims-api`.
 - Mask PII at INFO (no raw passwords).
 - Span / use-case names preferred for domain work (`finance.collectPayment`); HTTP access logs cover the transport layer.
 - Helper: `com.ims.common.tracing.CorrelationIds`.

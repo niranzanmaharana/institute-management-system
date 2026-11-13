@@ -82,4 +82,4 @@ Same key + same hash → replay response. Same key + different hash → `409 CON
 - Strip client-supplied identity / tenant headers; set from JWT (`X-Institute-Id` only if re-asserted from trusted claims)  
 - Rate-limit login and payment endpoints  
 - Propagate W3C `traceparent` (Micrometer Tracing) and `X-Request-Id`  
-- Emit access logs with `traceId`, `spanId`, `requestId` (same fields as `ims-application`)
+- Emit access logs with `traceId`, `spanId`, `requestId` (same fields as `ims-api`)

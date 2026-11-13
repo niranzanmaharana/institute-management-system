@@ -1,21 +1,21 @@
-# ims-api
+# ims-backend
 
 Maven multi-module backend.
 
 | Module | Port | Role |
 | --- | --- | --- |
 | `ims-common` | — | Errors, paging, TenantContext, money helpers, `CorrelationIds` |
-| `ims-application` | 8080 | Modular monolith + Flyway + Swagger |
-| `api-gateway` | 8088 | Single entry (routes to application) |
+| `ims-api` | 8080 | Modular monolith + Flyway + Swagger |
+| `ims-gateway` | 8088 | Single entry (routes to `ims-api`) |
 
 ## Run
 
 ```bash
 # From repo: infra/docker compose up -d   (MinIO + Jaeger; MySQL optional — app uses local MySQL)
 # First time / after dependency changes: install modules into local .m2
-mvn -pl ims-common,ims-application,api-gateway -am install -DskipTests
-mvn -pl ims-application spring-boot:run
-mvn -pl api-gateway spring-boot:run
+mvn -pl ims-common,ims-api,ims-gateway -am install -DskipTests
+mvn -pl ims-api spring-boot:run
+mvn -pl ims-gateway spring-boot:run
 ```
 
 Local MySQL (default in `application.yml`): `localhost:3306`, database `ims`, user/pass `root`/`root`.
@@ -30,7 +30,7 @@ Users & roles: `/api/v1/users`, `/api/v1/roles` — requires `user:manage` (inst
 - App Swagger: http://localhost:8080/swagger-ui.html
 - **Preferred entry:** Gateway http://localhost:8088 (UI uses this)
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
-- Jaeger (OTLP traces): http://localhost:16686 — look up services `api-gateway` and `ims-application`
+- Jaeger (OTLP traces): http://localhost:16686 — look up services `ims-gateway` and `ims-api`
 - Postman: import `../postman/ims-api.postman_collection.json` or regenerate via `../scripts/generate-postman.ps1`
 
 ## Logging & tracing
@@ -40,7 +40,7 @@ Both processes log every API call (except `/actuator/health`) with:
 `[traceId,spanId] requestId=… userId=…` plus an HTTP access line that repeats those ids.
 
 - Propagation: W3C `traceparent` (automatic) and `X-Request-Id` (gateway generates if missing).
-- Same `traceId` / `requestId` appear in **gateway** and **application** consoles for one user action.
+- Same `traceId` / `requestId` appear in **gateway** and **api** consoles for one user action.
 - OTLP export is **off by default** so missing Jaeger does not spam `Failed to export spans` / `localhost:4318`. Request `traceId` still appears in console logs. To send traces to Jaeger: `docker compose up -d jaeger` in `infra/`, set `MANAGEMENT_OTLP_TRACING_EXPORT_ENABLED=true` on gateway and app, restart both, open http://localhost:16686.
 - Sampling: 100% locally (`management.tracing.sampling.probability=1.0`).
 
