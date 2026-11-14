@@ -16,6 +16,7 @@ package com.ims.platform.codes.domain;
  *   <li>INSTITUTE — {@code I{N:05}} (platform scope) → {@code I00001}
  *   <li>FACULTY — {@code F{I}-{N:05}} → {@code F1-00001}
  *   <li>STAFF — {@code S{I}-{N:05}} → {@code S1-00001}
+ *   <li>ROOM — {@code R{I}-{N:05}} → {@code R1-00001}
  * </ul>
  */
 public enum CodeEntityType {
@@ -28,5 +29,6 @@ public enum CodeEntityType {
   ADMISSION,
   INSTITUTE,
   FACULTY,
-  STAFF
+  STAFF,
+  ROOM
 }

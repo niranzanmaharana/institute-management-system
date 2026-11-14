@@ -1,0 +1,186 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <a routerLink="/exams" class="back">← Exams</a>
+      <h1>{{ exam()?.name || 'Exam' }}</h1>
+      @if (exam(); as ex) {
+        <p>
+          {{ batchLabel(ex.batchId) }} · {{ ex.examDate }}
+          <app-status-badge [label]="ex.status" [tone]="statusTone(ex.status)" />
+        </p>
+      }
+    </div>
+    <app-ui-button type="button" (click)="reload()">Refresh</app-ui-button>
+  </header>
+
+  @if (loading()) {
+    <app-ui-card><app-loading-state /></app-ui-card>
+  } @else if (error()) {
+    <app-ui-card>
+      <app-error-state title="Failed to load" [message]="error()!" />
+    </app-ui-card>
+  } @else if (exam(); as ex) {
+    @if (actionError()) {
+      <app-error-state title="Action failed" [message]="actionError()!" />
+    }
+
+    <app-ui-card>
+      <h2 class="section-title">Lifecycle</h2>
+      <div class="actions">
+        @if (canMark && status === 'SCHEDULED' && ex.components.length > 0) {
+          <app-ui-button type="button" [loading]="busy()" (click)="openMarks()">Open marks entry</app-ui-button>
+        }
+        @if (canPublish && status === 'DRAFT_MARKS') {
+          <app-ui-button type="button" [loading]="busy()" (click)="publish()">Publish results</app-ui-button>
+        }
+        @if (canPublish && status === 'PUBLISHED') {
+          <app-ui-button type="button" [loading]="busy()" (click)="lock()">Lock exam</app-ui-button>
+        }
+        @if (canPublish && status === 'LOCKED') {
+          <div class="unlock">
+            <app-ui-input label="Unlock reason" inputId="unlock-reason" [formControl]="unlockReason" />
+            <app-ui-button type="button" [loading]="busy()" (click)="unlock()">Unlock</app-ui-button>
+          </div>
+        }
+      </div>
+    </app-ui-card>
+
+    @if (canMark && status === 'SCHEDULED') {
+      <app-ui-card>
+        <h2 class="section-title">Components</h2>
+        @if (ex.components.length === 0) {
+          <app-empty-state title="No components" message="Add theory/practical (or other) components before opening marks." />
+        } @else {
+          <ul class="components">
+            @for (c of ex.components; track c.id) {
+              <li>
+                <strong>{{ c.code }}</strong> — {{ c.name }}
+                (max {{ c.maxMarks }}, pass {{ c.passMarks }})
+              </li>
+            }
+          </ul>
+        }
+        <form class="form" [formGroup]="componentForm" (ngSubmit)="addComponent()">
+          <app-ui-input label="Code" inputId="comp-code" formControlName="code" />
+          <app-ui-input label="Name" inputId="comp-name" formControlName="name" />
+          <app-ui-input label="Max marks" inputId="comp-max" type="number" formControlName="maxMarks" />
+          <app-ui-input label="Pass marks" inputId="comp-pass" type="number" formControlName="passMarks" />
+          <app-ui-button type="submit" [loading]="busy()">Add component</app-ui-button>
+        </form>
+      </app-ui-card>
+    } @else if (ex.components.length > 0) {
+      <app-ui-card>
+        <h2 class="section-title">Components</h2>
+        <ul class="components">
+          @for (c of ex.components; track c.id) {
+            <li>
+              <strong>{{ c.code }}</strong> — {{ c.name }}
+              (max {{ c.maxMarks }}, pass {{ c.passMarks }})
+            </li>
+          }
+        </ul>
+      </app-ui-card>
+    }
+
+    <app-ui-card>
+      <div class="results-head">
+        <h2 class="section-title">Results</h2>
+        @if (marksEditable) {
+          <app-ui-button type="button" [loading]="busy()" (click)="saveMarks()">Save marks</app-ui-button>
+        }
+      </div>
+
+      @if (status === 'SCHEDULED') {
+        <app-empty-state
+          title="Marks not open"
+          message="Add components, then open marks entry to load batch students."
+        />
+      } @else if (rows.length === 0) {
+        <app-empty-state title="No results" message="No student results for this exam yet." />
+      } @else {
+        <form [formGroup]="marksForm">
+          <div class="table-wrap" formArrayName="rows">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Status</th>
+                  @for (c of ex.components; track c.id) {
+                    <th>{{ c.code }}</th>
+                  }
+                  <th>Grace</th>
+                  <th>Total</th>
+                  <th>P/F</th>
+                  <th>Grade</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ctrl of rows.controls; track $index; let i = $index) {
+                  <tr [formGroupName]="i">
+                    <td>{{ ctrl.get('studentLabel')?.value }}</td>
+                    <td>
+                      @if (marksEditable) {
+                        <select class="field__control" formControlName="resultStatus">
+                          <option value="MARKS">MARKS</option>
+                          <option value="ABSENT">ABSENT</option>
+                          <option value="WITHHELD">WITHHELD</option>
+                        </select>
+                      } @else {
+                        {{ ctrl.get('resultStatus')?.value }}
+                      }
+                    </td>
+                    <ng-container formGroupName="marks">
+                      @for (c of ex.components; track c.id) {
+                        <td>
+                          @if (marksEditable) {
+                            <input
+                              class="field__control field__control--narrow"
+                              type="number"
+                              step="0.01"
+                              [formControlName]="c.id"
+                            />
+                          } @else {
+                            {{ ctrl.get('marks')?.get(c.id + '')?.value ?? '—' }}
+                          }
+                        </td>
+                      }
+                    </ng-container>
+                    <td>
+                      @if (marksEditable && canPublish) {
+                        <input class="field__control field__control--narrow" type="number" step="0.01" formControlName="graceMarks" />
+                      } @else {
+                        {{ ctrl.get('graceMarks')?.value ?? '—' }}
+                      }
+                    </td>
+                    <td>{{ ctrl.get('totalMarks')?.value ?? '—' }}</td>
+                    <td>{{ ctrl.get('passFail')?.value ?? '—' }}</td>
+                    <td>
+                      @if (marksEditable) {
+                        <select class="field__control field__control--narrow" formControlName="grade">
+                          <option value="">—</option>
+                          @for (g of grades(); track g) {
+                            <option [value]="g">{{ g }}</option>
+                          }
+                        </select>
+                      } @else {
+                        {{ ctrl.get('grade')?.value || '—' }}
+                      }
+                    </td>
+                    <td>
+                      @if (marksEditable) {
+                        <input class="field__control" type="text" formControlName="remarks" />
+                      } @else {
+                        {{ ctrl.get('remarks')?.value || '—' }}
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </form>
+      }
+    </app-ui-card>
+  }
+</div>

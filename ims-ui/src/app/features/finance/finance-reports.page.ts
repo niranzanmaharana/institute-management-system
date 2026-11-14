@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
+import { UiDatepicker } from '../../shared/ui-datepicker';
 import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
@@ -26,6 +27,7 @@ import {
     UiCard,
     UiButton,
     UiInput,
+    UiDatepicker,
     EmptyState,
     LoadingState,
     ErrorState,

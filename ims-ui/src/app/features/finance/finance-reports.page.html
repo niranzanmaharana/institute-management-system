@@ -10,8 +10,8 @@
   <app-ui-card>
     <h2 class="section-title">Collection date range</h2>
     <form class="form form--inline" [formGroup]="rangeForm" (ngSubmit)="reload()">
-      <app-ui-input label="From" inputId="rep-from" type="date" formControlName="from" />
-      <app-ui-input label="To" inputId="rep-to" type="date" formControlName="to" />
+      <app-ui-datepicker label="From" inputId="rep-from" formControlName="from" />
+      <app-ui-datepicker label="To" inputId="rep-to" formControlName="to" />
       <app-ui-button type="submit">Apply</app-ui-button>
     </form>
   </app-ui-card>
@@ -267,8 +267,8 @@
         <form class="form" [formGroup]="yearForm" (ngSubmit)="createYear()">
           <div class="grid">
             <app-ui-input label="Name" inputId="fy-name" formControlName="name" />
-            <app-ui-input label="Start" inputId="fy-start" type="date" formControlName="startDate" />
-            <app-ui-input label="End" inputId="fy-end" type="date" formControlName="endDate" />
+            <app-ui-datepicker label="Start" inputId="fy-start" formControlName="startDate" />
+            <app-ui-datepicker label="End" inputId="fy-end" formControlName="endDate" />
             <label class="check">
               <input type="checkbox" formControlName="activate" />
               Activate now

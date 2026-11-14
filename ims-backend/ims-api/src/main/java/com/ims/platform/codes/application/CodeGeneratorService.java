@@ -87,6 +87,7 @@ public class CodeGeneratorService {
       case INSTITUTE -> "I" + String.format("%05d", seq);
       case FACULTY -> "F" + instituteId + "-" + String.format("%05d", seq);
       case STAFF -> "S" + instituteId + "-" + String.format("%05d", seq);
+      case ROOM -> "R" + instituteId + "-" + String.format("%05d", seq);
     };
   }
 }

@@ -28,6 +28,23 @@
     </article>
   </div>
 
+  @if (showOperations) {
+    <app-ui-card title="Operations">
+      <p class="ops-intro">Attendance → Timetable → Exams (demo path)</p>
+      <div class="ops-links">
+        @if (showAttendance) {
+          <a routerLink="/attendance"><app-ui-button type="button">Attendance</app-ui-button></a>
+        }
+        @if (showTimetable) {
+          <a routerLink="/timetable"><app-ui-button type="button">Timetable</app-ui-button></a>
+        }
+        @if (showExams) {
+          <a routerLink="/exams"><app-ui-button type="button">Exams</app-ui-button></a>
+        }
+      </div>
+    </app-ui-card>
+  }
+
   <div class="grid">
     <app-ui-card title="Session">
       <p>Roles: {{ auth.user()?.roles?.join(', ') || '—' }}</p>

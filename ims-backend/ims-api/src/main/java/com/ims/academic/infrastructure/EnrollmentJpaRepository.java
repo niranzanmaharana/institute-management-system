@@ -16,4 +16,7 @@ public interface EnrollmentJpaRepository extends JpaRepository<Enrollment, Long>
       Long instituteId, Long studentId, Long courseId, Collection<String> statuses);
 
   long countByInstituteIdAndBatchIdAndStatus(Long instituteId, Long batchId, String status);
+
+  List<Enrollment> findByInstituteIdAndBatchIdAndStatusOrderByActivatedAtAscIdAsc(
+      Long instituteId, Long batchId, String status);
 }

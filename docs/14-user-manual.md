@@ -390,6 +390,73 @@ JSON statement (same data) is also available to integrations at `GET /api/v1/fee
 
 ---
 
+## 10A. Attendance
+
+**Who**
+
+| Role | Can |
+| --- | --- |
+| ADMIN | Create/mark any batch; submit; lock; unlock |
+| FACULTY | Mark **assigned** batches only (own sessions); submit; lock |
+| ACADEMIC_COORDINATOR | Unlock locked sessions (audited) |
+
+Requires `attendance:mark` / `attendance:unlock` in JWT — **re-login** after migration V19.
+
+**Where:** **Attendance** in the Operations nav (also Dashboard → Operations). On phone, sessions show as cards; on laptop as a table. Use **Filter by batch** to narrow the list.
+
+### Steps
+
+1. Assign faculty to the batch (Batch detail → faculty) if a faculty user will mark.
+2. Open **Attendance** → pick batch + date → **Create session** (starts as **DRAFT**).
+3. Set each eligible student to Present / Absent / Late / Excused → **Save marks**.
+4. **Submit** (all eligible students must be marked).
+5. **Lock** when final.
+6. To correct a locked session: COORD/ADMIN **Unlock** (reason required) → edit → lock again.
+
+**Eligible students:** ACTIVE enrollments whose activation date is on/before the session date (mid-course joiners appear from then on). Suspended/withdrawn are not listed.
+
+**Percentage:** (Present + Late) ÷ (Present + Late + Absent). Excused is **excluded** from the denominator. Batch summary shows a warning when below the course minimum (default 75%).
+
+---
+
+## 10B. Timetable
+
+**Who:** ADMIN / ACADEMIC_COORDINATOR (`timetable:write`) manage rooms and slots. Others with `course:read` or `attendance:mark` can view.
+
+**Where:** **Timetable** under Operations. Re-login after migration V20 for `timetable:write`.
+
+### Rooms
+
+1. Add room (name, capacity) — code is auto-generated (e.g. `R1-00001`).
+2. Deactivate when no longer used (inactive rooms cannot be chosen for new slots).
+
+### Weekly slots
+
+1. Select a **batch**.
+2. Add slot: room, optional faculty, day (Mon–Sun), start/end time.
+3. System **rejects** overlapping room or faculty times (same day).
+4. Use **Week** tabs on desktop; on phone the week collapses to an agenda list. Day tabs filter one day.
+5. **Cancel** removes a slot from the active timetable.
+
+---
+
+## 10C. Exams & results
+
+**Who:** FACULTY / COORD / ADMIN with `exam:mark` enter marks. COORD / ADMIN with `exam:publish` publish, lock, unlock, and set grace (max 10). Students only see results after **Publish** (or while Locked).
+
+**Where:** **Exams** under Operations. Re-login after migration V21 for `exam:mark` / `exam:publish`.
+
+### Lifecycle
+
+1. **Create exam** for a batch (name + date) → status **SCHEDULED**.
+2. Add **components** (e.g. THEORY / PRACTICAL) with max and pass marks.
+3. **Open marks entry** → **DRAFT_MARKS**; eligible enrolled students are seeded as blank rows.
+4. Enter marks (or set **ABSENT** / **WITHHELD**). Pass/fail is computed from component totals (+ optional grace). Pick a **grade** from the dropdown (O, A+, A, B+, B, C, D, F).
+5. **Publish results** → students can see them.
+6. **Lock** to freeze. **Unlock** (with reason) returns to draft for corrections.
+
+---
+
 ## 11. Documents & photos
 
 **Where:** Student / Faculty / Staff **detail** pages.
@@ -414,6 +481,12 @@ JSON statement (same data) is also available to integrations at `GET /api/v1/fee
 | Need discount | **Adjust** waiver/scholarship/discount |
 | Need aging / collection totals | **Finance reports** → pick dates → Export CSV |
 | Need a printable fee history | **Outstanding** → **Statement PDF** |
+| Need to take class attendance | **Attendance** → create session → mark → Submit → Lock |
+| Locked attendance needs a fix | COORD/ADMIN **Unlock** with reason, then edit |
+| Room already booked / faculty double-booked | Timetable rejects overlap — pick another room/time |
+| Need batch weekly schedule | **Timetable** → select batch → Week / day tabs |
+| Need midterm / final marks | **Exams** → create → components → Open marks → Publish → Lock |
+| Published results need a fix | COORD/ADMIN **Unlock** with reason, edit, publish again |
 | Login menu missing an item | Wrong role — ask ADMIN; or re-login after a permission migration |
 | Document upload fails | Ensure MinIO is running |
 
@@ -436,7 +509,11 @@ Use this table as the maintenance checklist for this manual.
 | 4.3 | Payment reversal | §10.4 |
 | 4.4 | Aging + FY + collection reports | §10.5 |
 | 4.5 | Fee statement PDF | §10.6 |
-| *Next* | Attendance / timetable / exams / … | Add new § |
+| 5.1 | Attendance lifecycle | §10A |
+| 5.2 | Timetable | §10B |
+| 5.3 | Exams & results | §10C |
+| 5.4 | Operations UI polish (responsive lists, filters, dashboard shortcuts) | §§10A–10C |
+| *Next* | Certificates / import / … | Add new § |
 
 ---
 

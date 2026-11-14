@@ -54,10 +54,22 @@
   background: linear-gradient(135deg, #f2a654, #ffc100);
 }
 
+.ops-intro {
+  margin: 0 0 0.75rem;
+  color: var(--ims-text-muted);
+}
+
+.ops-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1.1fr 1fr;
   gap: 1rem;
+  margin-top: 1rem;
 }
 
 .table {

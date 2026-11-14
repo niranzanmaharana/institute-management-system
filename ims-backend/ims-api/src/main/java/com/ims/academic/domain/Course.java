@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.Instant;
 import org.hibernate.annotations.Filter;
 
@@ -32,6 +33,9 @@ public class Course {
 
   @Column(nullable = false, length = 32)
   private String status = "ACTIVE";
+
+  @Column(name = "min_attendance_percent", precision = 5, scale = 2)
+  private BigDecimal minAttendancePercent;
 
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
@@ -99,5 +103,9 @@ public class Course {
 
   public String getStatus() {
     return status;
+  }
+
+  public BigDecimal getMinAttendancePercent() {
+    return minAttendancePercent;
   }
 }

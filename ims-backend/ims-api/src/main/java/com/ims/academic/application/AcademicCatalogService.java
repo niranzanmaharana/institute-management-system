@@ -165,6 +165,15 @@ public class AcademicCatalogService {
     return toCourse(requireCourse(id));
   }
 
+  /** BR-AT-09: course threshold, default 75% when unset. */
+  @Transactional(readOnly = true)
+  public java.math.BigDecimal getMinAttendancePercent(Long courseId) {
+    Course course = requireCourse(courseId);
+    return course.getMinAttendancePercent() != null
+        ? course.getMinAttendancePercent()
+        : new java.math.BigDecimal("75.00");
+  }
+
   @Transactional
   public CourseView createCourse(String code, String name, String description) {
     long instituteId = requireTenant();

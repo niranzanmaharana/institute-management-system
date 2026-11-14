@@ -1,0 +1,104 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Attendance</h1>
+      <p>Mark sessions DRAFT → SUBMITTED → LOCKED</p>
+    </div>
+    <app-ui-button type="button" (click)="reload()">Refresh</app-ui-button>
+  </header>
+
+  @if (canMark) {
+    <app-ui-card>
+      <h2 class="section-title">New session</h2>
+      @if (createError()) {
+        <app-error-state title="Create failed" [message]="createError()!" />
+      }
+      <form class="form" [formGroup]="createForm" (ngSubmit)="create()">
+        <label class="field" for="att-batch">
+          <span class="field__label">Batch</span>
+          <select id="att-batch" class="field__control" formControlName="batchId">
+            <option value="">Select batch</option>
+            @for (batch of batches(); track batch.id) {
+              <option [value]="batch.id">{{ batch.code }} — {{ batch.name }}</option>
+            }
+          </select>
+        </label>
+        <app-ui-datepicker label="Session date" inputId="att-date" formControlName="sessionDate" />
+        <app-ui-button type="submit" [loading]="creating()">Create session</app-ui-button>
+      </form>
+    </app-ui-card>
+  }
+
+  <app-ui-card>
+    <div class="ops-toolbar">
+      <label class="field" for="att-filter-batch">
+        <span class="field__label">Filter by batch</span>
+        <select
+          id="att-filter-batch"
+          class="field__control"
+          [ngModel]="filterBatchId()"
+          (ngModelChange)="onFilterBatch($event)"
+        >
+          <option value="">All batches</option>
+          @for (batch of batches(); track batch.id) {
+            <option [value]="batch.id">{{ batch.code }} — {{ batch.name }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state title="No sessions" message="Create a session for a batch to start marking." />
+    } @else {
+      <div class="table-wrap ops-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>Batch</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>#{{ row.id }}</td>
+                <td>{{ batchLabel(row.batchId) }}</td>
+                <td>{{ row.sessionDate }}</td>
+                <td>
+                  <app-status-badge [label]="row.status" [tone]="statusTone(row.status)" />
+                </td>
+                <td class="table__actions">
+                  <a [routerLink]="['/attendance', row.id]">
+                    <app-ui-button type="button">Open</app-ui-button>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">Session #{{ row.id }}</p>
+              <app-status-badge [label]="row.status" [tone]="statusTone(row.status)" />
+            </div>
+            <p class="ops-card__meta">{{ batchLabel(row.batchId) }} · {{ row.sessionDate }}</p>
+            <a [routerLink]="['/attendance', row.id]">
+              <app-ui-button type="button">Open</app-ui-button>
+            </a>
+          </article>
+        }
+      </div>
+    }
+  </app-ui-card>
+</div>

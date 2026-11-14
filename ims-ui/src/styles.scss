@@ -1,3 +1,5 @@
+@import 'flatpickr/dist/flatpickr.min.css';
+
 /* Skydash-inspired IMS design tokens (see docs/design/skydash-reference.png) */
 :root {
   --ims-primary: #4b49ac;
@@ -126,4 +128,98 @@ button {
 .section h3 {
   margin: 0 0 0.75rem;
   font-size: 1rem;
+}
+
+/* Operations lists: table on desktop, stacked cards on phone (FR-UX-04) */
+.ops-cards {
+  display: none;
+  gap: 0.75rem;
+}
+
+.ops-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ims-border);
+  border-radius: var(--ims-radius);
+  background: #fff;
+}
+
+.ops-card__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ops-card__meta {
+  margin: 0;
+  color: var(--ims-text-muted);
+  font-size: 0.875rem;
+}
+
+.ops-card__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.ops-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.ops-toolbar .field {
+  min-width: 12rem;
+  flex: 1 1 12rem;
+}
+
+@media (max-width: 767px) {
+  .ops-table {
+    display: none;
+  }
+
+  .ops-cards {
+    display: grid;
+  }
+}
+
+/* Flatpickr — align with IMS tokens */
+.flatpickr-calendar {
+  font-family: var(--ims-font);
+  border-radius: var(--ims-radius);
+  box-shadow: var(--ims-shadow);
+  border: 1px solid var(--ims-border);
+}
+
+.flatpickr-months .flatpickr-month,
+.flatpickr-current-month .flatpickr-monthDropdown-months,
+span.flatpickr-weekday {
+  color: var(--ims-text);
+  fill: var(--ims-text);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover {
+  background: var(--ims-primary);
+  border-color: var(--ims-primary);
+}
+
+.flatpickr-day.today {
+  border-color: var(--ims-primary-light);
+}
+
+.flatpickr-time input:hover,
+.flatpickr-time .flatpickr-am-pm:hover,
+.flatpickr-time input:focus,
+.flatpickr-time .flatpickr-am-pm:focus {
+  background: var(--ims-primary-soft);
 }

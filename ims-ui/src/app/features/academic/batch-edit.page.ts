@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
+import { UiDatepicker } from '../../shared/ui-datepicker';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
@@ -11,7 +12,16 @@ import { AcademicService } from './academic.service';
 
 @Component({
   selector: 'app-batch-edit-page',
-  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput, ErrorState, LoadingState],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    UiCard,
+    UiButton,
+    UiInput,
+    UiDatepicker,
+    ErrorState,
+    LoadingState,
+  ],
   templateUrl: './batch-edit.page.html',
   styleUrl: './batch-edit.page.scss',
 })

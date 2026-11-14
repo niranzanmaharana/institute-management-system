@@ -37,18 +37,8 @@
           </div>
           <div class="grid">
             <app-ui-input label="Year name" inputId="ay-name" formControlName="name" />
-            <app-ui-input
-              label="Start date"
-              inputId="ay-start"
-              type="date"
-              formControlName="startDate"
-            />
-            <app-ui-input
-              label="End date"
-              inputId="ay-end"
-              type="date"
-              formControlName="endDate"
-            />
+            <app-ui-datepicker label="Start date" inputId="ay-start" formControlName="startDate" />
+            <app-ui-datepicker label="End date" inputId="ay-end" formControlName="endDate" />
           </div>
           <app-ui-button type="submit" [loading]="yearSubmitting()" [block]="true">
             Create academic year
@@ -95,18 +85,12 @@
               type="number"
               formControlName="capacity"
             />
-            <app-ui-input
+            <app-ui-datepicker
               label="Start date"
               inputId="batch-start"
-              type="date"
               formControlName="startDate"
             />
-            <app-ui-input
-              label="End date"
-              inputId="batch-end"
-              type="date"
-              formControlName="endDate"
-            />
+            <app-ui-datepicker label="End date" inputId="batch-end" formControlName="endDate" />
           </div>
           <app-ui-button type="submit" [loading]="submitting()" [block]="true">Save batch</app-ui-button>
         </form>
@@ -125,18 +109,12 @@
             </div>
             <div class="grid">
               <app-ui-input label="Year name" inputId="ay2-name" formControlName="name" />
-              <app-ui-input
+              <app-ui-datepicker
                 label="Start date"
                 inputId="ay2-start"
-                type="date"
                 formControlName="startDate"
               />
-              <app-ui-input
-                label="End date"
-                inputId="ay2-end"
-                type="date"
-                formControlName="endDate"
-              />
+              <app-ui-datepicker label="End date" inputId="ay2-end" formControlName="endDate" />
             </div>
             <app-ui-button type="submit" [loading]="yearSubmitting()" [block]="true">
               Create academic year

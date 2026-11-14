@@ -1,0 +1,133 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <a routerLink="/attendance" class="back">← Sessions</a>
+      <h1>Attendance session</h1>
+      @if (session(); as s) {
+        <p>
+          {{ batchLabel(s.batchId) }} · {{ s.sessionDate }} ·
+          <app-status-badge [label]="s.status" [tone]="sessionTone(s.status)" />
+        </p>
+      }
+    </div>
+    <div class="actions">
+      @if (session(); as s) {
+        @if (editable) {
+          <app-ui-button type="button" [loading]="busy()" (click)="saveMarks()">Save marks</app-ui-button>
+        }
+        @if (canMark && s.status === 'DRAFT') {
+          <app-ui-button type="button" [loading]="busy()" (click)="submit()">Submit</app-ui-button>
+        }
+        @if (canMark && s.status === 'SUBMITTED') {
+          <app-ui-button type="button" [loading]="busy()" (click)="lock()">Lock</app-ui-button>
+        }
+        @if (canUnlock && s.status === 'LOCKED') {
+          <app-ui-button type="button" [loading]="busy()" (click)="unlock()">Unlock</app-ui-button>
+        }
+      }
+    </div>
+  </header>
+
+  @if (actionError()) {
+    <app-ui-card>
+      <app-error-state title="Action failed" [message]="actionError()!" />
+    </app-ui-card>
+  }
+
+  <app-ui-card>
+    @if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (session(); as s) {
+      @if (s.records.length === 0) {
+        <app-empty-state
+          title="No eligible students"
+          message="Activate enrollments in this batch on or before the session date."
+        />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of s.records; track trackRecord($index, row)) {
+                <tr>
+                  <td>
+                    {{ row.studentCode }} — {{ row.studentName }}
+                    @if (!row.eligible) {
+                      <span class="muted">(not eligible)</span>
+                    }
+                  </td>
+                  <td>
+                    @if (editable && row.eligible) {
+                      <select
+                        class="field__control"
+                        [ngModel]="draftMarks()[row.studentId]"
+                        (ngModelChange)="setMark(row.studentId, $event)"
+                      >
+                        <option value="PRESENT">Present</option>
+                        <option value="ABSENT">Absent</option>
+                        <option value="LATE">Late</option>
+                        <option value="EXCUSED">Excused</option>
+                      </select>
+                    } @else {
+                      <app-status-badge
+                        [label]="row.status || 'UNMARKED'"
+                        [tone]="tone(row.status)"
+                      />
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </app-ui-card>
+
+  @if (summary(); as sum) {
+    <app-ui-card>
+      <h2 class="section-title">Batch % summary</h2>
+      <p class="muted">
+        Sessions {{ sum.sessionCount }} · Draft {{ sum.draftCount }} · Submitted
+        {{ sum.submittedCount }} · Locked {{ sum.lockedCount }}
+      </p>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Present+Late</th>
+              <th>Absent</th>
+              <th>Excused</th>
+              <th>%</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of sum.students; track row.studentId) {
+              <tr>
+                <td>#{{ row.studentId }}</td>
+                <td>{{ row.presentEffective }}</td>
+                <td>{{ row.absent }}</td>
+                <td>{{ row.excused }}</td>
+                <td>{{ row.percentage }}%</td>
+                <td>
+                  @if (row.belowThreshold) {
+                    <app-status-badge label="Below min" tone="warning" />
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-ui-card>
+  }
+</div>

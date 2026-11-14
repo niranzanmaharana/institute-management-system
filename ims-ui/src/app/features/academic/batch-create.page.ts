@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
+import { UiDatepicker } from '../../shared/ui-datepicker';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
@@ -19,6 +20,7 @@ import { AcademicService, AcademicYear, Course } from './academic.service';
     UiCard,
     UiButton,
     UiInput,
+    UiDatepicker,
     LoadingState,
     ErrorState,
   ],

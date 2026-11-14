@@ -15,7 +15,8 @@ const NETWORK_MESSAGE =
 
 const AUTH_MESSAGE = 'Authentication required. Please sign in again.';
 const FORBIDDEN_MESSAGE = 'You do not have permission to perform this action.';
-const SERVER_MESSAGE = 'The server encountered an error. Please try again later.';
+const SERVER_MESSAGE =
+  'The server could not complete this action. Please try again, or contact support if it continues.';
 
 /**
  * Maps an HttpClient failure to a user-facing message.

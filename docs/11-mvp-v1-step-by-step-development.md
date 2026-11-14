@@ -260,6 +260,14 @@ flowchart TD
 
 **Phase 4.5 status:** Complete — fee statement JSON + PDF (`GET /api/v1/fee-accounts/{id}/statement` and `…/statement.pdf`); staff with `fee:read`; STUDENT role may download only own linked `personId` account. OpenPDF renderer. UI **Statement PDF** on Outstanding.
 
+**Phase 5.1 status:** Complete — attendance sessions DRAFT→SUBMITTED→LOCKED; records PRESENT/ABSENT/LATE/EXCUSED; % = (PRESENT+LATE)/(PRESENT+LATE+ABSENT) with EXCUSED excluded; faculty assigned-only via batch faculty + `personId`; unlock audited (`attendance:unlock`). Flyway `V19__attendance.sql`. UI `/attendance`. Re-login after V19 for new JWT permissions.
+
+**Phase 5.2 status:** Complete — rooms + weekly `timetable_slots`; room and faculty overlap rejected (409); batch week/day views. Permission `timetable:write` (ADMIN, ACADEMIC_COORDINATOR). Flyway `V20__timetable.sql`. UI `/timetable` (week grid desktop, day/agenda mobile). Re-login after V20.
+
+**Phase 5.3 status:** Complete — exams SCHEDULED→DRAFT_MARKS→PUBLISHED→LOCKED; components; results MARKS/ABSENT/WITHHELD; open-marks seeds eligible students; pass/fail from component totals (+ grace ≤10 for publish roles); students see published/locked only; unlock audited. Permissions `exam:mark` / `exam:publish`. Flyway `V21__exams.sql`. UI `/exams`. Re-login after V21.
+
+**Phase 5.4 status:** Complete — Operations Angular UI polish: role-gated nav + dashboard shortcuts; loading/empty/error on ops screens; batch filter + labels; status badge tones; table↔cards ≤767px for attendance/exams/rooms; timetable day/agenda already responsive. Viewport smoke checklist: `docs/design/responsive-ops-smoke.md`. Playwright e2e deferred (same pattern as fee spine).
+
 **Business codes:** Sequence-backed auto-generation (`code_sequences` + `GET /api/v1/codes/next?type=…`). Codes optional on create (blank → auto); UI Generate button. Formats: student `{instituteId}{seq:06}` → `1000001`; course `C{I}-{seq:05}`; fee plan `P{I}-…`; batch `B{I}-…`; year `AY{I}-…`; fee category `FC{I}-…`; admission `A{I}-{seq:06}`; faculty `F{I}-{seq:05}`; staff `S{I}-{seq:05}`; institute `I{seq:05}` (platform).
 
 **View / edit UI:** List rows include View/Edit where APIs allow. Students, courses, batches, fee plans, institutes support edit of mutable fields (codes immutable). Admissions are view + workflow (approve/reject/cancel); enrollments are view + lifecycle. Enquiries convert to applications.
@@ -527,6 +535,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-AT-*; BR-AT-*; RP-AT-* |
 | **Test plan** | Edit rules; unlock audited; mid-course joiner |
 | **Exit criteria** | Faculty can mark on tablet; % API correct |
+| **Status** | **Complete** |
 
 ### Step 5.2 — Timetable
 
@@ -537,6 +546,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-TT-01 |
 | **Test plan** | Overlap rejected |
 | **Exit criteria** | Batch timetable renders laptop + mobile |
+| **Status** | **Complete** |
 
 ### Step 5.3 — Exams & results
 
@@ -547,6 +557,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-EX-*; BR-EX-*; RP-EX-01 |
 | **Test plan** | Draft hidden from student; publish visible; lock blocks edit |
 | **Exit criteria** | Marks entry + publish path demoable |
+| **Status** | **Complete** |
 
 ### Step 5.4 — Operations Angular UI
 
@@ -556,6 +567,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **Deliverables** | Role-based UI; UX states; responsive |
 | **Test plan** | e2e smoke + viewports |
 | **Exit criteria** | Operations demo path complete |
+| **Status** | **Complete** |
 
 ---
 
@@ -712,7 +724,9 @@ Use as a build board; do not skip gates.
 
 - [ ] **3.0** → 3.1 → 3.2 → 3.3 → 3.4 → 3.5  
 - [x] 4.1 → 4.2 → 4.3 → 4.4 → 4.5  
-- [ ] 5.1 → 5.2 → 5.3 → 5.4  
+- [x] 5.1 → 5.2 → 5.3 → 5.4  
+
+
 - [ ] 6.1 → 6.2 → 6.3 → 6.4 → 6.5  
 - [ ] 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 7.6  
 - [ ] **v1 freeze**  

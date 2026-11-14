@@ -16,6 +16,7 @@ import com.ims.platform.tenancy.infrastructure.TenantFilterEnabler;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -341,6 +342,37 @@ public class EnrollmentService {
     long instituteId = requireTenant();
     return enrollmentJpaRepository.findByInstituteIdOrderByCreatedAtDesc(instituteId).stream()
         .map(this::toResponse)
+        .toList();
+  }
+
+  /** ACTIVE enrollments in the batch whose activation date is on or before the session date. */
+  public record AttendanceEligibleEnrollment(
+      Long enrollmentId, Long studentId, Long batchId, Long courseId, Instant activatedAt) {}
+
+  @Transactional(readOnly = true)
+  public List<AttendanceEligibleEnrollment> listAttendanceEligible(
+      Long batchId, java.time.LocalDate sessionDate) {
+    long instituteId = requireTenant();
+    academicCatalogService.getBatch(batchId);
+    return enrollmentJpaRepository
+        .findByInstituteIdAndBatchIdAndStatusOrderByActivatedAtAscIdAsc(
+            instituteId, batchId, Enrollment.STATUS_ACTIVE)
+        .stream()
+        .filter(e -> e.getActivatedAt() != null)
+        .filter(
+            e ->
+                !e.getActivatedAt()
+                    .atZone(java.time.ZoneOffset.UTC)
+                    .toLocalDate()
+                    .isAfter(sessionDate))
+        .map(
+            e ->
+                new AttendanceEligibleEnrollment(
+                    e.getId(),
+                    e.getStudentId(),
+                    e.getBatchId(),
+                    e.getCourseId(),
+                    e.getActivatedAt()))
         .toList();
   }
 

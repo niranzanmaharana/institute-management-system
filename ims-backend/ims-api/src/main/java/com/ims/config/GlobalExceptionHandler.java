@@ -65,6 +65,18 @@ public class GlobalExceptionHandler {
         .body(ApiError.of(400, "ILLEGAL_STATE", ex.getMessage(), traceId(), null));
   }
 
+  @ExceptionHandler({NullPointerException.class, IllegalArgumentException.class})
+  public ResponseEntity<ApiError> handleNullOrIllegalArg(RuntimeException ex, HttpServletRequest request) {
+    org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class)
+        .error("Bad data / null while handling {}", request.getRequestURI(), ex);
+    String message =
+        ex.getMessage() == null || ex.getMessage().isBlank() || "null".equals(ex.getMessage())
+            ? "Could not process this request due to incomplete or invalid data. Check the form and try again."
+            : ex.getMessage();
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(ApiError.of(400, "BAD_REQUEST", message, traceId(), null));
+  }
+
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest request) {
     org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class)
@@ -72,7 +84,11 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .body(
             ApiError.of(
-                500, "INTERNAL_ERROR", "Unexpected server error", traceId(), null));
+                500,
+                "INTERNAL_ERROR",
+                "The server could not complete this action. Please try again, or contact support if it continues.",
+                traceId(),
+                null));
   }
 
   private String traceId() {

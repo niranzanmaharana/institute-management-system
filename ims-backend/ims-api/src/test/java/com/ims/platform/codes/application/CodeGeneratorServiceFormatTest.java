@@ -27,6 +27,7 @@ class CodeGeneratorServiceFormatTest {
         .isEqualTo("A1-000001");
     assertThat(CodeGeneratorService.format(CodeEntityType.FACULTY, 1L, 1L)).isEqualTo("F1-00001");
     assertThat(CodeGeneratorService.format(CodeEntityType.STAFF, 1L, 1L)).isEqualTo("S1-00001");
+    assertThat(CodeGeneratorService.format(CodeEntityType.ROOM, 1L, 1L)).isEqualTo("R1-00001");
     assertThat(CodeGeneratorService.format(CodeEntityType.INSTITUTE, 0L, 1L)).isEqualTo("I00001");
   }
 }

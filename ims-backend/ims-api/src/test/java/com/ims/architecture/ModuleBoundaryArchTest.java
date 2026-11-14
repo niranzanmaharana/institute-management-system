@@ -48,4 +48,24 @@ class ModuleBoundaryArchTest {
           .should()
           .dependOnClassesThat()
           .resideInAPackage("com.ims.finance..infrastructure..");
+
+  @ArchTest
+  static final ArchRule operationsMustNotDependOnAcademicPersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.operations..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.academic..infrastructure..")
+          .because("operations must use academic application services");
+
+  @ArchTest
+  static final ArchRule operationsMustNotDependOnPeoplePersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.operations..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.people..infrastructure..")
+          .because("operations must use people application services");
 }

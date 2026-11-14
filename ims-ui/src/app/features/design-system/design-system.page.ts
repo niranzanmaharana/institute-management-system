@@ -42,6 +42,8 @@ export class DesignSystemPage {
   sampleText = '';
   sampleSelect = 'a';
   sampleDate = '2026-08-09';
+  sampleTime = '09:30';
+  sampleDateTime = '2026-08-09T09:30';
   modalOpen = signal(false);
   page = signal(1);
 

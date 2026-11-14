@@ -36,6 +36,11 @@ import { EnrollmentDetailPage } from './features/enrollments/enrollment-detail.p
 import { OutstandingListPage } from './features/finance/outstanding-list.page';
 import { RefundsListPage } from './features/finance/refunds-list.page';
 import { FinanceReportsPage } from './features/finance/finance-reports.page';
+import { AttendanceListPage } from './features/attendance/attendance-list.page';
+import { AttendanceSessionPage } from './features/attendance/attendance-session.page';
+import { TimetablePage } from './features/timetable/timetable.page';
+import { ExamsListPage } from './features/exams/exams-list.page';
+import { ExamDetailPage } from './features/exams/exam-detail.page';
 import { InstitutesListPage } from './features/institutes/institutes-list.page';
 import { InstituteCreatePage } from './features/institutes/institute-create.page';
 import { InstituteDetailPage } from './features/institutes/institute-detail.page';
@@ -256,6 +261,31 @@ export const routes: Routes = [
       {
         path: 'finance-reports',
         component: FinanceReportsPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'attendance',
+        component: AttendanceListPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'attendance/:id',
+        component: AttendanceSessionPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'timetable',
+        component: TimetablePage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'exams',
+        component: ExamsListPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'exams/:id',
+        component: ExamDetailPage,
         canActivate: [instituteOperatorGuard],
       },
       {

@@ -1,0 +1,222 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Timetable</h1>
+      <p>Rooms and weekly slots — room/faculty overlaps are rejected</p>
+    </div>
+  </header>
+
+  @if (actionError()) {
+    <app-ui-card>
+      <app-error-state title="Action failed" [message]="actionError()!" />
+    </app-ui-card>
+  }
+
+  <app-ui-card>
+    <h2 class="section-title">Rooms</h2>
+    @if (canWrite) {
+      <form class="form form--inline" [formGroup]="roomForm" (ngSubmit)="createRoom()">
+        <app-ui-input label="Name" inputId="room-name" formControlName="name" />
+        <app-ui-input label="Capacity" inputId="room-cap" type="number" formControlName="capacity" />
+        <app-ui-button type="submit" [loading]="busy()">Add room</app-ui-button>
+      </form>
+      <p class="muted">Room code is assigned automatically (e.g. R1-00001).</p>
+    }
+    @if (rooms().length === 0) {
+      <app-empty-state title="No rooms" message="Add a room before creating slots." />
+    } @else {
+      <div class="table-wrap ops-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Name</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (room of rooms(); track room.id) {
+              <tr>
+                <td>{{ room.code }}</td>
+                <td>{{ room.name }}</td>
+                <td>{{ room.capacity }}</td>
+                <td>
+                  <app-status-badge
+                    [label]="room.status"
+                    [tone]="room.status === 'ACTIVE' ? 'success' : 'neutral'"
+                  />
+                </td>
+                <td>
+                  @if (canWrite && room.status === 'ACTIVE') {
+                    <app-ui-button type="button" (click)="deactivateRoom(room)">Deactivate</app-ui-button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="ops-cards">
+        @for (room of rooms(); track room.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">{{ room.code }} — {{ room.name }}</p>
+              <app-status-badge
+                [label]="room.status"
+                [tone]="room.status === 'ACTIVE' ? 'success' : 'neutral'"
+              />
+            </div>
+            <p class="ops-card__meta">Capacity {{ room.capacity }}</p>
+            @if (canWrite && room.status === 'ACTIVE') {
+              <app-ui-button type="button" (click)="deactivateRoom(room)">Deactivate</app-ui-button>
+            }
+          </article>
+        }
+      </div>
+    }
+  </app-ui-card>
+
+  <app-ui-card>
+    <h2 class="section-title">Batch schedule</h2>
+    <label class="field" for="tt-batch">
+      <span class="field__label">Batch</span>
+      <select
+        id="tt-batch"
+        class="field__control"
+        (change)="selectBatch($any($event.target).value)"
+      >
+        <option value="">Select batch</option>
+        @for (batch of batches(); track batch.id) {
+          <option [value]="batch.id">{{ batch.code }} — {{ batch.name }}</option>
+        }
+      </select>
+    </label>
+
+    @if (canWrite) {
+      <form class="form form--grid" [formGroup]="slotForm" (ngSubmit)="createSlot()">
+        <input type="hidden" formControlName="batchId" />
+        <label class="field" for="tt-room">
+          <span class="field__label">Room</span>
+          <select id="tt-room" class="field__control" formControlName="roomId">
+            <option value="">Select room</option>
+            @for (room of rooms(); track room.id) {
+              @if (room.status === 'ACTIVE') {
+                <option [value]="room.id">{{ room.code }} — {{ room.name }}</option>
+              }
+            }
+          </select>
+        </label>
+        <label class="field" for="tt-faculty">
+          <span class="field__label">Faculty (optional)</span>
+          <select id="tt-faculty" class="field__control" formControlName="facultyId">
+            <option value="">None</option>
+            @for (row of faculty(); track row.id) {
+              <option [value]="row.id">{{ row.facultyCode }} — {{ row.firstName }} {{ row.lastName }}</option>
+            }
+          </select>
+        </label>
+        <label class="field" for="tt-day">
+          <span class="field__label">Day</span>
+          <select id="tt-day" class="field__control" formControlName="dayOfWeek">
+            @for (d of weekDays; track d) {
+              <option [value]="d">{{ dayName(d) }}</option>
+            }
+          </select>
+        </label>
+        <app-ui-datepicker label="Start" inputId="tt-start" mode="time" formControlName="startTime" />
+        <app-ui-datepicker label="End" inputId="tt-end" mode="time" formControlName="endTime" />
+        <app-ui-button type="submit" [loading]="busy()">Add slot</app-ui-button>
+      </form>
+    }
+
+    @if (selectedBatchId()) {
+      <div class="day-tabs" role="tablist" aria-label="Timetable view">
+        <button
+          type="button"
+          class="day-tabs__btn"
+          [class.is-active]="selectedDay() === 0"
+          (click)="setDay(0)"
+        >
+          Week
+        </button>
+        @for (d of weekDays; track d) {
+          <button
+            type="button"
+            class="day-tabs__btn"
+            [class.is-active]="selectedDay() === d"
+            (click)="setDay(d)"
+          >
+            {{ dayName(d) }}
+          </button>
+        }
+      </div>
+    }
+
+    @if (!selectedBatchId()) {
+      <app-empty-state title="Pick a batch" message="Select a batch to view or edit its timetable." />
+    } @else if (loading()) {
+      <app-loading-state />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (slots().length === 0) {
+      <app-empty-state title="No slots" message="Add a weekly slot for this batch." />
+    } @else if (selectedDay() === 0) {
+      <div class="week week--desktop">
+        @for (d of weekDays; track d) {
+          <div class="week__col">
+            <h3 class="week__day">{{ dayName(d) }}</h3>
+            @for (slot of slotsByDay().get(d); track slot.id) {
+              <article class="slot-card">
+                <p class="slot-card__time">{{ slot.startTime }} – {{ slot.endTime }}</p>
+                <p>{{ slot.roomCode }} · {{ slot.roomName }}</p>
+                @if (slot.facultyName) {
+                  <p class="muted">{{ slot.facultyName }}</p>
+                }
+                @if (canWrite) {
+                  <app-ui-button type="button" (click)="cancelSlot(slot)">Cancel</app-ui-button>
+                }
+              </article>
+            } @empty {
+              <p class="muted">—</p>
+            }
+          </div>
+        }
+      </div>
+      <div class="agenda agenda--mobile">
+        @for (slot of agendaSlots(); track slot.id) {
+          <article class="slot-card">
+            <p class="slot-card__time">
+              {{ dayName(slot.dayOfWeek) }} · {{ slot.startTime }} – {{ slot.endTime }}
+            </p>
+            <p>{{ slot.roomCode }} · {{ slot.roomName }}</p>
+            @if (slot.facultyName) {
+              <p class="muted">{{ slot.facultyName }}</p>
+            }
+            @if (canWrite) {
+              <app-ui-button type="button" (click)="cancelSlot(slot)">Cancel</app-ui-button>
+            }
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="agenda">
+        @for (slot of agendaSlots(); track slot.id) {
+          <article class="slot-card">
+            <p class="slot-card__time">{{ slot.startTime }} – {{ slot.endTime }}</p>
+            <p>{{ slot.roomCode }} · {{ slot.roomName }}</p>
+            @if (slot.facultyName) {
+              <p class="muted">{{ slot.facultyName }}</p>
+            }
+            @if (canWrite) {
+              <app-ui-button type="button" (click)="cancelSlot(slot)">Cancel</app-ui-button>
+            }
+          </article>
+        } @empty {
+          <app-empty-state title="No slots this day" message="Try another day or add a slot." />
+        }
+      </div>
+    }
+  </app-ui-card>
+</div>

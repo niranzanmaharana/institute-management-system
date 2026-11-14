@@ -18,4 +18,7 @@ public interface BatchFacultyAssignmentJpaRepository
 
   boolean existsByInstituteIdAndBatchIdAndFacultyIdAndSubjectIdIsNull(
       Long instituteId, Long batchId, Long facultyId);
+
+  boolean existsByInstituteIdAndBatchIdAndFacultyId(
+      Long instituteId, Long batchId, Long facultyId);
 }

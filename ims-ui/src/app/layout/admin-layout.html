@@ -228,6 +228,58 @@
             }
           </a>
         }
+        <div class="nav-section">
+          @if (sidebarOpen() || isMobile()) {
+            <span>Operations</span>
+          }
+        </div>
+        @if (auth.hasPermission('attendance:mark') || auth.hasPermission('attendance:unlock')) {
+          <a
+            routerLink="/attendance"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-clipboard-user nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Attendance</span>
+            }
+          </a>
+        }
+        @if (
+          auth.hasPermission('timetable:write') ||
+          auth.hasPermission('course:read') ||
+          auth.hasPermission('attendance:mark')
+        ) {
+          <a
+            routerLink="/timetable"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-calendar-week nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Timetable</span>
+            }
+          </a>
+        }
+        @if (
+          auth.hasPermission('exam:mark') ||
+          auth.hasPermission('exam:publish') ||
+          auth.hasPermission('course:read')
+        ) {
+          <a
+            routerLink="/exams"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-file-pen nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>Exams</span>
+            }
+          </a>
+        }
       }
     </nav>
   </aside>

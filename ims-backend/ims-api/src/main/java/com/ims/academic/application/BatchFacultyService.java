@@ -141,6 +141,26 @@ public class BatchFacultyService {
     return toAssignment(saved);
   }
 
+  /**
+   * Faculty may mark attendance when assigned to the batch (any subject) for a general session, or
+   * when assigned batch-wide / to the session subject for a subject session.
+   */
+  @Transactional(readOnly = true)
+  public boolean canMarkAttendance(Long batchId, Long facultyId, Long sessionSubjectId) {
+    long instituteId = requireTenant();
+    academicCatalogService.getBatch(batchId);
+    if (assignmentJpaRepository.existsByInstituteIdAndBatchIdAndFacultyIdAndSubjectIdIsNull(
+        instituteId, batchId, facultyId)) {
+      return true;
+    }
+    if (sessionSubjectId == null) {
+      return assignmentJpaRepository.existsByInstituteIdAndBatchIdAndFacultyId(
+          instituteId, batchId, facultyId);
+    }
+    return assignmentJpaRepository.existsByInstituteIdAndBatchIdAndFacultyIdAndSubjectId(
+        instituteId, batchId, facultyId, sessionSubjectId);
+  }
+
   @Transactional
   public void remove(Long batchId, Long assignmentId) {
     long instituteId = requireTenant();

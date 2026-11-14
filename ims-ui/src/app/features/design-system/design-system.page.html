@@ -15,6 +15,18 @@
           [(ngModel)]="sampleSelect"
         />
         <app-ui-datepicker label="Sample date" inputId="ds-date" [(ngModel)]="sampleDate" />
+        <app-ui-datepicker
+          label="Sample time"
+          inputId="ds-time"
+          mode="time"
+          [(ngModel)]="sampleTime"
+        />
+        <app-ui-datepicker
+          label="Sample date & time"
+          inputId="ds-datetime"
+          mode="datetime"
+          [(ngModel)]="sampleDateTime"
+        />
       </div>
     </app-ui-card>
 
