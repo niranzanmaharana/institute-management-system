@@ -8,6 +8,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
 import { AcademicService, Batch } from '../academic/academic.service';
@@ -38,6 +39,7 @@ export class TimetablePage implements OnInit {
   private readonly facultyApi = inject(FacultyService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -47,7 +49,6 @@ export class TimetablePage implements OnInit {
   readonly slots = signal<TimetableSlot[]>([]);
   readonly selectedBatchId = signal<number | null>(null);
   readonly selectedDay = signal<number>(0); // 0 = week
-  readonly actionError = signal<string | null>(null);
   readonly busy = signal(false);
 
   readonly roomForm = this.fb.nonNullable.group({
@@ -155,7 +156,7 @@ export class TimetablePage implements OnInit {
     if (this.roomForm.invalid) {
       this.roomForm.markAllAsTouched();
       const nameMissing = this.roomForm.controls.name.invalid;
-      this.actionError.set(
+      this.toasts.warning(
         nameMissing ? 'Room name is required.' : 'Check room name and capacity.',
       );
       return;
@@ -164,11 +165,10 @@ export class TimetablePage implements OnInit {
     const name = v.name.trim();
     if (!name) {
       this.roomForm.controls.name.setErrors({ required: true });
-      this.actionError.set('Room name is required.');
+      this.toasts.warning('Room name is required.');
       return;
     }
     this.busy.set(true);
-    this.actionError.set(null);
     this.timetableApi
       .createRoom({
         name,
@@ -182,7 +182,7 @@ export class TimetablePage implements OnInit {
         },
         error: (err) => {
           this.busy.set(false);
-          this.actionError.set(httpErrorMessage(err, 'Could not create room.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create room.'));
         },
       });
   }
@@ -199,7 +199,7 @@ export class TimetablePage implements OnInit {
       },
       error: (err) => {
         this.busy.set(false);
-        this.actionError.set(httpErrorMessage(err, 'Could not deactivate room.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not deactivate room.'));
       },
     });
   }
@@ -210,13 +210,12 @@ export class TimetablePage implements OnInit {
     }
     if (this.slotForm.invalid) {
       this.slotForm.markAllAsTouched();
-      this.actionError.set('Select batch, room, day, and start/end times before adding a slot.');
+      this.toasts.warning('Select batch, room, day, and start/end times before adding a slot.');
       return;
     }
     const v = this.slotForm.getRawValue();
     const facultyId = v.facultyId ? Number(v.facultyId) : null;
     this.busy.set(true);
-    this.actionError.set(null);
     this.timetableApi
       .createSlot({
         batchId: Number(v.batchId),
@@ -234,7 +233,7 @@ export class TimetablePage implements OnInit {
         },
         error: (err) => {
           this.busy.set(false);
-          this.actionError.set(httpErrorMessage(err, 'Could not create slot.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create slot.'));
         },
       });
   }
@@ -254,7 +253,7 @@ export class TimetablePage implements OnInit {
       },
       error: (err) => {
         this.busy.set(false);
-        this.actionError.set(httpErrorMessage(err, 'Could not cancel slot.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not cancel slot.'));
       },
     });
   }

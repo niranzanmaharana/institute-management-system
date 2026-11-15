@@ -35,15 +35,25 @@
   color: var(--ims-text-muted);
 }
 
+.login__logo,
+.login__logo-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+}
+
 .login__logo {
   display: inline-grid;
   place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
   background: linear-gradient(135deg, var(--ims-primary), var(--ims-primary-light));
   color: #fff;
   font-weight: 700;
+}
+
+.login__logo-img {
+  object-fit: cover;
+  border: 1px solid var(--ims-border);
+  background: #fff;
 }
 
 .login__error {

@@ -10,6 +10,8 @@ export interface AuthUser {
   username: string;
   email: string;
   instituteId: number | null;
+  instituteName?: string | null;
+  instituteCode?: string | null;
   roles: string[];
   permissions: string[];
 }

@@ -4,14 +4,14 @@ import { Router, RouterLink } from '@angular/router';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
-import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
 import { AcademicService } from './academic.service';
 
 @Component({
   selector: 'app-course-create-page',
-  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput, ErrorState],
+  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput],
   templateUrl: './course-create.page.html',
   styleUrl: './course-create.page.scss',
 })
@@ -20,10 +20,10 @@ export class CourseCreatePage {
   private readonly academicApi = inject(AcademicService);
   private readonly codesApi = inject(CodeService);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
 
   readonly submitting = signal(false);
   readonly generating = signal(false);
-  readonly error = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     code: [''],
@@ -36,7 +36,6 @@ export class CourseCreatePage {
       return;
     }
     this.generating.set(true);
-    this.error.set(null);
     this.codesApi.next('COURSE').subscribe({
       next: (res) => {
         this.form.controls.code.setValue(res.code);
@@ -44,7 +43,7 @@ export class CourseCreatePage {
       },
       error: (err) => {
         this.generating.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not generate course code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate course code.'));
       },
     });
   }
@@ -55,7 +54,6 @@ export class CourseCreatePage {
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const v = this.form.getRawValue();
     this.academicApi
       .createCourse({
@@ -72,9 +70,9 @@ export class CourseCreatePage {
           this.submitting.set(false);
           const status = err?.status;
           if (status === 409) {
-            this.error.set('Course code already exists in this institute.');
+            this.toasts.danger('Course code already exists in this institute.');
           } else {
-            this.error.set(httpErrorMessage(err, 'Could not create course.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create course.'));
           }
         },
       });

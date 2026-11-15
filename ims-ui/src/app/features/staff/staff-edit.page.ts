@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { StaffService } from './staff.service';
 
@@ -20,6 +21,7 @@ export class StaffEditPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly staffApi = inject(StaffService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
@@ -68,7 +70,6 @@ export class StaffEditPage implements OnInit {
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const v = this.form.getRawValue();
 
     this.staffApi
@@ -86,7 +87,7 @@ export class StaffEditPage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not save staff.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not save staff.'));
         },
       });
   }

@@ -8,6 +8,7 @@ import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
 import { EmptyState } from '../../shared/empty-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
 import { Faculty, FacultyService } from '../faculty/faculty.service';
@@ -38,6 +39,7 @@ export class BatchDetailPage implements OnInit {
   private readonly router = inject(Router);
   private readonly academicApi = inject(AcademicService);
   private readonly facultyApi = inject(FacultyService);
+  private readonly toasts = inject(ToastService);
   private readonly auth = inject(AuthService);
   private readonly fb = inject(FormBuilder);
 
@@ -47,7 +49,6 @@ export class BatchDetailPage implements OnInit {
   readonly assignments = signal<FacultyAssignment[]>([]);
   readonly subjects = signal<CourseSubject[]>([]);
   readonly faculties = signal<Faculty[]>([]);
-  readonly assignError = signal<string | null>(null);
   readonly assigning = signal(false);
   readonly removingId = signal<number | null>(null);
 
@@ -138,7 +139,6 @@ export class BatchDetailPage implements OnInit {
     const subjectRaw = v.subjectId.trim();
     const subjectId = subjectRaw ? Number(subjectRaw) : null;
     this.assigning.set(true);
-    this.assignError.set(null);
     this.academicApi
       .assignFaculty(this.batchId, {
         facultyId,
@@ -154,9 +154,9 @@ export class BatchDetailPage implements OnInit {
         error: (err) => {
           this.assigning.set(false);
           if (err?.status === 409) {
-            this.assignError.set('This faculty is already assigned for that subject.');
+            this.toasts.danger('This faculty is already assigned for that subject.');
           } else {
-            this.assignError.set(httpErrorMessage(err, 'Could not assign faculty.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not assign faculty.'));
           }
         },
       });
@@ -167,7 +167,6 @@ export class BatchDetailPage implements OnInit {
       return;
     }
     this.removingId.set(assignment.id);
-    this.assignError.set(null);
     this.academicApi.removeFacultyAssignment(this.batchId, assignment.id).subscribe({
       next: () => {
         this.assignments.update((list) => list.filter((row) => row.id !== assignment.id));
@@ -175,7 +174,7 @@ export class BatchDetailPage implements OnInit {
       },
       error: (err) => {
         this.removingId.set(null);
-        this.assignError.set(httpErrorMessage(err, 'Could not remove assignment.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not remove assignment.'));
       },
     });
   }

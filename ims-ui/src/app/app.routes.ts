@@ -36,11 +36,17 @@ import { EnrollmentDetailPage } from './features/enrollments/enrollment-detail.p
 import { OutstandingListPage } from './features/finance/outstanding-list.page';
 import { RefundsListPage } from './features/finance/refunds-list.page';
 import { FinanceReportsPage } from './features/finance/finance-reports.page';
+import { ReportsPage } from './features/reports/reports.page';
+import { StudentsReportsPage } from './features/reports/students-reports.page';
+import { AdmissionsReportsPage } from './features/reports/admissions-reports.page';
+import { AttendanceReportsPage } from './features/reports/attendance-reports.page';
+import { ExamsReportsPage } from './features/reports/exams-reports.page';
 import { AttendanceListPage } from './features/attendance/attendance-list.page';
 import { AttendanceSessionPage } from './features/attendance/attendance-session.page';
 import { TimetablePage } from './features/timetable/timetable.page';
 import { ExamsListPage } from './features/exams/exams-list.page';
 import { ExamDetailPage } from './features/exams/exam-detail.page';
+import { CsvImportPage } from './features/imports/csv-import.page';
 import { InstitutesListPage } from './features/institutes/institutes-list.page';
 import { InstituteCreatePage } from './features/institutes/institute-create.page';
 import { InstituteDetailPage } from './features/institutes/institute-detail.page';
@@ -264,6 +270,31 @@ export const routes: Routes = [
         canActivate: [instituteOperatorGuard],
       },
       {
+        path: 'reports',
+        component: ReportsPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'reports/students',
+        component: StudentsReportsPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'reports/admissions',
+        component: AdmissionsReportsPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'reports/attendance',
+        component: AttendanceReportsPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'reports/exams',
+        component: ExamsReportsPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
         path: 'attendance',
         component: AttendanceListPage,
         canActivate: [instituteOperatorGuard],
@@ -286,6 +317,11 @@ export const routes: Routes = [
       {
         path: 'exams/:id',
         component: ExamDetailPage,
+        canActivate: [instituteOperatorGuard],
+      },
+      {
+        path: 'imports',
+        component: CsvImportPage,
         canActivate: [instituteOperatorGuard],
       },
       {

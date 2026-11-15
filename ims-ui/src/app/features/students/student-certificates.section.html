@@ -1,0 +1,101 @@
+<section class="section certs">
+  <h3>Certificates</h3>
+  <p class="muted">Bonafide and course completion PDFs (stored privately; download via signed URL).</p>
+
+  @if (!canRead) {
+    <app-error-state
+      title="Forbidden"
+      message="You do not have permission to view certificates for this student."
+    />
+  } @else {
+    @if (canGenerate) {
+      <div class="certs__form">
+        <label class="field" for="cert-template">
+          <span class="field__label">Template</span>
+          <select
+            id="cert-template"
+            class="field__control"
+            [(ngModel)]="templateCode"
+            name="templateCode"
+          >
+            @for (t of templates(); track t.code) {
+              <option [value]="t.code">{{ t.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field" for="cert-enrollment">
+          <span class="field__label">
+            Enrollment
+            @if (needsEnrollment) {
+              (required — COMPLETED)
+            }
+          </span>
+          <select
+            id="cert-enrollment"
+            class="field__control"
+            [(ngModel)]="enrollmentId"
+            name="enrollmentId"
+          >
+            <option value="">{{ needsEnrollment ? 'Select completed enrollment' : 'Auto / optional' }}</option>
+            @for (e of enrollmentOptions; track e.id) {
+              <option [value]="e.id">#{{ e.id }} · batch {{ e.batchId }} · {{ e.status }}</option>
+            }
+          </select>
+        </label>
+        <app-ui-button type="button" [loading]="generating()" (click)="generate()">
+          Generate PDF
+        </app-ui-button>
+      </div>
+    }
+
+    @if (loading()) {
+      <app-loading-state message="Loading certificates…" />
+    } @else if (error()) {
+      <app-error-state title="Failed to load" [message]="error()!" />
+    } @else if (rows().length === 0) {
+      <app-empty-state
+        title="No certificates yet"
+        message="Generate a bonafide or completion certificate for this student."
+      />
+    } @else {
+      <div class="table-wrap ops-table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>File</th>
+              <th>Issued</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of rows(); track row.id) {
+              <tr>
+                <td>{{ row.templateCode }}</td>
+                <td>{{ row.fileName }}</td>
+                <td>{{ row.issuedAt | date: 'medium' }}</td>
+                <td><app-status-badge [label]="row.status" tone="success" /></td>
+                <td>
+                  <app-ui-button type="button" (click)="download(row)">Download</app-ui-button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">{{ row.templateCode }}</p>
+              <app-status-badge [label]="row.status" tone="success" />
+            </div>
+            <p class="ops-card__meta">{{ row.fileName }} · {{ row.issuedAt | date: 'medium' }}</p>
+            <app-ui-button type="button" (click)="download(row)">Download</app-ui-button>
+          </article>
+        }
+      </div>
+    }
+  }
+</section>

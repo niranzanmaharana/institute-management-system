@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
 import { AcademicService, Course } from '../academic/academic.service';
@@ -31,12 +32,12 @@ export class AdmissionCreatePage implements OnInit {
   private readonly academicApi = inject(AcademicService);
   private readonly codesApi = inject(CodeService);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly loadError = signal<string | null>(null);
   readonly submitting = signal(false);
   readonly generating = signal(false);
-  readonly error = signal<string | null>(null);
   readonly courses = signal<Course[]>([]);
 
   readonly form = this.fb.nonNullable.group({
@@ -68,7 +69,6 @@ export class AdmissionCreatePage implements OnInit {
       return;
     }
     this.generating.set(true);
-    this.error.set(null);
     this.codesApi.next('ADMISSION').subscribe({
       next: (res) => {
         this.form.controls.applicationNo.setValue(res.code);
@@ -76,7 +76,7 @@ export class AdmissionCreatePage implements OnInit {
       },
       error: (err) => {
         this.generating.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not generate application number.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate application number.'));
       },
     });
   }
@@ -89,12 +89,11 @@ export class AdmissionCreatePage implements OnInit {
     const v = this.form.getRawValue();
     const courseId = Number(v.courseId);
     if (!Number.isFinite(courseId) || courseId <= 0) {
-      this.error.set('Select a course.');
+      this.toasts.warning('Select a course.');
       return;
     }
 
     this.submitting.set(true);
-    this.error.set(null);
     this.admissionsApi
       .create({
         applicationNo: v.applicationNo.trim() || undefined,
@@ -110,7 +109,7 @@ export class AdmissionCreatePage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not create admission.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create admission.'));
         },
       });
   }

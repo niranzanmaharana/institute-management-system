@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { StatusBadge, BadgeTone } from '../../shared/status-badge';
 import { AuthService } from '../../core/auth.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
@@ -33,6 +34,7 @@ export class EnquiryDetailPage implements OnInit {
   private readonly enquiriesApi = inject(EnquiryService);
   private readonly academicApi = inject(AcademicService);
   private readonly fb = inject(FormBuilder);
+  private readonly toasts = inject(ToastService);
   readonly auth = inject(AuthService);
 
   readonly loading = signal(true);
@@ -98,12 +100,10 @@ export class EnquiryDetailPage implements OnInit {
 
   openConvert(): void {
     this.panel.set('convert');
-    this.error.set(null);
   }
 
   openClose(): void {
     this.panel.set('close');
-    this.error.set(null);
     this.closeForm.reset({ notes: '' });
   }
 
@@ -119,11 +119,10 @@ export class EnquiryDetailPage implements OnInit {
     }
     const courseId = Number(this.convertForm.getRawValue().courseId);
     if (!courseId) {
-      this.error.set('Select a course to convert.');
+      this.toasts.warning('Select a course to convert.');
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     this.enquiriesApi.convert(row.id, { courseId }).subscribe({
       next: (application) => {
         this.acting.set(false);
@@ -131,7 +130,7 @@ export class EnquiryDetailPage implements OnInit {
       },
       error: (err) => {
         this.acting.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not convert enquiry.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not convert enquiry.'));
       },
     });
   }
@@ -142,7 +141,6 @@ export class EnquiryDetailPage implements OnInit {
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     this.enquiriesApi.close(row.id, this.closeForm.getRawValue().notes.trim() || undefined).subscribe({
       next: (updated) => {
         this.enquiry.set(updated);
@@ -151,7 +149,7 @@ export class EnquiryDetailPage implements OnInit {
       },
       error: (err) => {
         this.acting.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not close enquiry.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not close enquiry.'));
       },
     });
   }

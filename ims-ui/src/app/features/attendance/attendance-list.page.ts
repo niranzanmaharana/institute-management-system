@@ -8,6 +8,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { BadgeTone, StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
 import { AcademicService, Batch } from '../academic/academic.service';
@@ -36,6 +37,7 @@ export class AttendanceListPage implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -43,7 +45,6 @@ export class AttendanceListPage implements OnInit {
   readonly batches = signal<Batch[]>([]);
   readonly filterBatchId = signal('');
   readonly creating = signal(false);
-  readonly createError = signal<string | null>(null);
 
   readonly createForm = this.fb.nonNullable.group({
     batchId: ['', Validators.required],
@@ -110,7 +111,6 @@ export class AttendanceListPage implements OnInit {
     }
     const v = this.createForm.getRawValue();
     this.creating.set(true);
-    this.createError.set(null);
     this.attendanceApi
       .createSession({ batchId: Number(v.batchId), sessionDate: v.sessionDate })
       .subscribe({
@@ -120,7 +120,7 @@ export class AttendanceListPage implements OnInit {
         },
         error: (err) => {
           this.creating.set(false);
-          this.createError.set(httpErrorMessage(err, 'Could not create session.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create session.'));
         },
       });
   }

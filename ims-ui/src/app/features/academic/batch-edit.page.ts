@@ -7,6 +7,7 @@ import { UiInput } from '../../shared/ui-input';
 import { UiDatepicker } from '../../shared/ui-datepicker';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AcademicService } from './academic.service';
 
@@ -30,6 +31,7 @@ export class BatchEditPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly academicApi = inject(AcademicService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
@@ -80,11 +82,10 @@ export class BatchEditPage implements OnInit {
     const v = this.form.getRawValue();
     const capacity = Number(v.capacity);
     if (!Number.isFinite(capacity) || capacity < 1) {
-      this.error.set('Capacity must be at least 1.');
+      this.toasts.warning('Capacity must be at least 1.');
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     this.academicApi
       .updateBatch(this.batchId, {
         name: v.name.trim(),
@@ -100,7 +101,7 @@ export class BatchEditPage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not save batch.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not save batch.'));
         },
       });
   }

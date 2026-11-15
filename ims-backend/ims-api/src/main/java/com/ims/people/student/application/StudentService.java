@@ -117,6 +117,22 @@ public class StudentService {
     return toDetailResponse(requireActiveStudent(id));
   }
 
+  @Transactional(readOnly = true)
+  public StudentResponse requireByStudentCode(String studentCode) {
+    long instituteId = TenantContext.requireInstituteId();
+    tenantFilterEnabler.enableForCurrentTenant();
+    if (studentCode == null || studentCode.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "studentCode is required");
+    }
+    Student student =
+        studentJpaRepository
+            .findByInstituteIdAndStudentCodeIgnoreCaseAndDeletedAtIsNull(
+                instituteId, studentCode.trim())
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+    return toDetailResponse(student);
+  }
+
   @Transactional
   public StudentResponse create(CreateStudentCommand command) {
     long instituteId = TenantContext.requireInstituteId();

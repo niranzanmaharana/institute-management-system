@@ -23,9 +23,6 @@
     } @else if (error() && !studentCode) {
       <app-error-state title="Unavailable" [message]="error()!" />
     } @else {
-      @if (error()) {
-        <app-error-state title="Save failed" [message]="error()!" />
-      }
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <div class="grid">
           <app-ui-input label="First name" inputId="edit-fn" formControlName="firstName" />

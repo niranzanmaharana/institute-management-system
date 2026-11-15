@@ -86,9 +86,6 @@
     @if (canAssign) {
       <app-ui-card>
         <h2 class="section-title">Assign faculty</h2>
-        @if (assignError()) {
-          <app-error-state title="Assign failed" [message]="assignError()!" />
-        }
         @if (faculties().length === 0) {
           <p class="hint">Create an active faculty record before assigning.</p>
         } @else {

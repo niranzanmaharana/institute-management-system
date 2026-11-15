@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { RoleOption, UsersService } from './users.service';
 
@@ -19,10 +20,11 @@ export class UserCreatePage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly usersApi = inject(UsersService);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
-  readonly error = signal<string | null>(null);
+  readonly loadError = signal<string | null>(null);
   readonly roles = signal<RoleOption[]>([]);
 
   readonly form = this.fb.nonNullable.group({
@@ -39,7 +41,7 @@ export class UserCreatePage implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(httpLoadError(err, 'roles'));
+        this.loadError.set(httpLoadError(err, 'roles'));
         this.loading.set(false);
       },
     });
@@ -70,11 +72,10 @@ export class UserCreatePage implements OnInit {
     }
     const v = this.form.getRawValue();
     if (v.roles.length === 0) {
-      this.error.set('Select at least one role.');
+      this.toasts.warning('Select at least one role.');
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     this.usersApi
       .create({
         username: v.username.trim(),
@@ -89,7 +90,7 @@ export class UserCreatePage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not create user.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create user.'));
         },
       });
   }

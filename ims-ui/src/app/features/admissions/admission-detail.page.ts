@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { StatusBadge, BadgeTone } from '../../shared/status-badge';
 import { AuthService } from '../../core/auth.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
@@ -37,6 +38,7 @@ export class AdmissionDetailPage implements OnInit {
   private readonly academicApi = inject(AcademicService);
   private readonly codesApi = inject(CodeService);
   private readonly fb = inject(FormBuilder);
+  private readonly toasts = inject(ToastService);
   readonly auth = inject(AuthService);
 
   readonly loading = signal(true);
@@ -111,7 +113,6 @@ export class AdmissionDetailPage implements OnInit {
   openPanel(next: Panel): void {
     const row = this.admission();
     this.panel.set(next);
-    this.error.set(null);
     this.reasonForm.reset({ reason: '' });
     if (next === 'approve' && row) {
       const parts = row.applicantName.trim().split(/\s+/);
@@ -135,7 +136,6 @@ export class AdmissionDetailPage implements OnInit {
       return;
     }
     this.generatingStudent.set(true);
-    this.error.set(null);
     this.codesApi.next('STUDENT').subscribe({
       next: (res) => {
         this.approveForm.controls.studentCode.setValue(res.code);
@@ -143,7 +143,7 @@ export class AdmissionDetailPage implements OnInit {
       },
       error: (err) => {
         this.generatingStudent.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not generate student code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate student code.'));
       },
     });
   }
@@ -155,7 +155,6 @@ export class AdmissionDetailPage implements OnInit {
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     const v = this.approveForm.getRawValue();
     this.admissionsApi
       .approve(row.id, {
@@ -176,7 +175,7 @@ export class AdmissionDetailPage implements OnInit {
         },
         error: (err) => {
           this.acting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not approve admission.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not approve admission.'));
         },
       });
   }
@@ -200,7 +199,6 @@ export class AdmissionDetailPage implements OnInit {
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     const reason = this.reasonForm.getRawValue().reason.trim();
     const req =
       kind === 'reject'
@@ -214,7 +212,7 @@ export class AdmissionDetailPage implements OnInit {
       },
       error: (err) => {
         this.acting.set(false);
-        this.error.set(httpErrorMessage(err, `Could not ${kind} admission.`));
+        this.toasts.danger(httpErrorMessage(err, `Could not ${kind} admission.`));
       },
     });
   }

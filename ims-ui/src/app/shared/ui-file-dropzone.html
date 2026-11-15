@@ -1,0 +1,58 @@
+<div class="drop-field" [class.drop-field--compact]="compact">
+  @if (label) {
+    <span class="drop-field__label">{{ label }}</span>
+  }
+  <div
+    class="dropzone"
+    [class.dropzone--active]="dragOver()"
+    [class.dropzone--has-file]="!!file()"
+    [class.dropzone--disabled]="disabled"
+    [class.dropzone--compact]="compact"
+    (dragenter)="onDragEnter($event)"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+  >
+    <input
+      #fileInput
+      class="dropzone__input"
+      type="file"
+      [accept]="accept || null"
+      [attr.aria-label]="ariaLabel"
+      [disabled]="disabled"
+      (change)="onFileSelected($event)"
+    />
+    <i class="fa-solid fa-cloud-arrow-up dropzone__icon" aria-hidden="true"></i>
+    @if (file(); as selected) {
+      <p class="dropzone__title">{{ selected.name }}</p>
+      <p class="dropzone__meta">{{ formatSize(selected.size) }} · {{ readyMeta }}</p>
+      <div class="dropzone__actions">
+        <button type="button" class="link-btn" [disabled]="disabled" (click)="openPicker($event)">
+          Replace file
+        </button>
+        <button
+          type="button"
+          class="link-btn link-btn--muted"
+          [disabled]="disabled"
+          (click)="clear($event)"
+        >
+          Clear
+        </button>
+      </div>
+    } @else {
+      <p class="dropzone__title">{{ emptyTitle }}</p>
+      <p class="dropzone__or">or</p>
+      <button type="button" class="link-btn" [disabled]="disabled" (click)="openPicker($event)">
+        {{ browseLabel }}
+      </button>
+    }
+  </div>
+  @if (acceptedHint || showSecure) {
+    <div class="drop-field__footer">
+      <span>{{ acceptedHint }}</span>
+      @if (showSecure) {
+        <span class="secure"><i class="fa-solid fa-lock" aria-hidden="true"></i> Secure</span>
+      }
+    </div>
+  }
+</div>

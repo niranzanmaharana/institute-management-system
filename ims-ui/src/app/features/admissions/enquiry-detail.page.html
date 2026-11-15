@@ -16,11 +16,6 @@
       <app-error-state title="Unavailable" [message]="error()!" />
     </app-ui-card>
   } @else if (enquiry(); as row) {
-    @if (error()) {
-      <app-ui-card>
-        <app-error-state title="Action failed" [message]="error()!" />
-      </app-ui-card>
-    }
     <app-ui-card>
       <div class="hero">
         <div>

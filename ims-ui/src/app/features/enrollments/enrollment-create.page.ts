@@ -7,6 +7,7 @@ import { UiButton } from '../../shared/ui-button';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AcademicService, Batch, FeePlan } from '../academic/academic.service';
 import { Student, StudentService } from '../students/student.service';
@@ -31,13 +32,12 @@ export class EnrollmentCreatePage implements OnInit {
   private readonly enrollmentsApi = inject(EnrollmentService);
   private readonly studentsApi = inject(StudentService);
   private readonly academicApi = inject(AcademicService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly loadError = signal<string | null>(null);
   readonly submitting = signal(false);
   readonly activating = signal(false);
-  readonly error = signal<string | null>(null);
-  readonly activateError = signal<string | null>(null);
 
   readonly students = signal<Student[]>([]);
   readonly batches = signal<Batch[]>([]);
@@ -129,12 +129,11 @@ export class EnrollmentCreatePage implements OnInit {
     const batchId = Number(v.batchId);
     const feePlanId = Number(v.feePlanId);
     if (!studentId || !batchId || !feePlanId) {
-      this.error.set('Select student, batch, and fee plan.');
+      this.toasts.warning('Select student, batch, and fee plan.');
       return;
     }
 
     this.submitting.set(true);
-    this.error.set(null);
     this.enrollmentsApi.create({ studentId, batchId, feePlanId }).subscribe({
       next: (enrollment) => {
         this.created.set(enrollment);
@@ -143,9 +142,9 @@ export class EnrollmentCreatePage implements OnInit {
       error: (err) => {
         this.submitting.set(false);
         if (err?.status === 409) {
-          this.error.set('Enrollment already exists or capacity exceeded.');
+          this.toasts.danger('Enrollment already exists or capacity exceeded.');
         } else {
-          this.error.set(httpErrorMessage(err, 'Could not create enrollment.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create enrollment.'));
         }
       },
     });
@@ -157,7 +156,6 @@ export class EnrollmentCreatePage implements OnInit {
       return;
     }
     this.activating.set(true);
-    this.activateError.set(null);
     const key = crypto.randomUUID();
     this.enrollmentsApi.activate(enrollment.id, {}, key).subscribe({
       next: (result) => {
@@ -169,7 +167,7 @@ export class EnrollmentCreatePage implements OnInit {
       },
       error: (err) => {
         this.activating.set(false);
-        this.activateError.set(httpErrorMessage(err, 'Could not activate enrollment.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not activate enrollment.'));
       },
     });
   }
@@ -177,7 +175,5 @@ export class EnrollmentCreatePage implements OnInit {
   reset(): void {
     this.created.set(null);
     this.activation.set(null);
-    this.error.set(null);
-    this.activateError.set(null);
   }
 }

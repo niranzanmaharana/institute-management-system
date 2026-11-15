@@ -209,13 +209,45 @@
           </div>
         }
       </app-ui-card>
+
+      <app-ui-card>
+        <div class="section-head">
+          <h2 class="section-title">Discounts / scholarships / waivers (RP-FI-07)</h2>
+          <app-ui-button type="button" (click)="exportAdjustmentsCsv()">CSV</app-ui-button>
+        </div>
+        @if (adjustments().length === 0) {
+          <app-empty-state title="No adjustments" message="No credit adjustments in range." />
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>Student</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of adjustments(); track row.adjustmentId) {
+                  <tr>
+                    <td>{{ row.createdAt.substring(0, 10) }}</td>
+                    <td>{{ row.studentCode }} — {{ row.studentName }}</td>
+                    <td>{{ row.type }}</td>
+                    <td>{{ row.amount }}</td>
+                    <td>{{ row.reason }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </app-ui-card>
     </div>
 
     <app-ui-card>
       <h2 class="section-title">Financial years (FR-FI-08)</h2>
-      @if (yearError()) {
-        <app-error-state title="Year failed" [message]="yearError()!" />
-      }
       @if (years().length === 0) {
         <app-empty-state
           title="No financial years"

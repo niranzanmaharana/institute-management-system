@@ -22,9 +22,6 @@
         <app-error-state title="No batches" message="Create a batch before enrolling." />
         <a routerLink="/batches/new">Go to add batch</a>
       } @else {
-        @if (error()) {
-          <app-error-state title="Create failed" [message]="error()!" />
-        }
         <form class="form" [formGroup]="form" (ngSubmit)="submit()">
           <div class="grid">
             <label class="field" for="enr-student">
@@ -96,10 +93,6 @@
           <dd>#{{ created()!.batchId }}</dd>
         </div>
       </dl>
-
-      @if (activateError()) {
-        <app-error-state title="Activate failed" [message]="activateError()!" />
-      }
 
       @if (!activation()) {
         <p class="muted">

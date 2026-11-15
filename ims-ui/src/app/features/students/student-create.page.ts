@@ -4,14 +4,14 @@ import { Router, RouterLink } from '@angular/router';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
-import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
 import { StudentService } from './student.service';
 
 @Component({
   selector: 'app-student-create-page',
-  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput, ErrorState],
+  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput],
   templateUrl: './student-create.page.html',
   styleUrl: './student-create.page.scss',
 })
@@ -20,10 +20,10 @@ export class StudentCreatePage {
   private readonly studentsApi = inject(StudentService);
   private readonly codesApi = inject(CodeService);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
 
   readonly submitting = signal(false);
   readonly generating = signal(false);
-  readonly error = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     studentCode: [''],
@@ -45,7 +45,6 @@ export class StudentCreatePage {
       return;
     }
     this.generating.set(true);
-    this.error.set(null);
     this.codesApi.next('STUDENT').subscribe({
       next: (res) => {
         this.form.controls.studentCode.setValue(res.code);
@@ -53,7 +52,7 @@ export class StudentCreatePage {
       },
       error: (err) => {
         this.generating.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not generate student code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate student code.'));
       },
     });
   }
@@ -64,7 +63,6 @@ export class StudentCreatePage {
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const v = this.form.getRawValue();
     const guardians =
       v.guardianName.trim().length > 0
@@ -110,9 +108,9 @@ export class StudentCreatePage {
           this.submitting.set(false);
           const status = err?.status;
           if (status === 409) {
-            this.error.set('Student code already exists in this institute.');
+            this.toasts.danger('Student code already exists in this institute.');
           } else {
-            this.error.set(httpErrorMessage(err, 'Could not create student.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create student.'));
           }
         },
       });

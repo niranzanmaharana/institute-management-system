@@ -9,6 +9,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
 import {
@@ -40,6 +41,7 @@ import {
 export class OutstandingListPage implements OnInit {
   private readonly financeApi = inject(FinanceService);
   private readonly auth = inject(AuthService);
+  private readonly toasts = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(true);
@@ -49,24 +51,20 @@ export class OutstandingListPage implements OnInit {
   readonly payOpen = signal(false);
   readonly payTarget = signal<FeeAccount | null>(null);
   readonly paying = signal(false);
-  readonly payError = signal<string | null>(null);
   readonly lastReceipt = signal<PaymentResult | null>(null);
   readonly lastAdjustment = signal<AdjustmentResult | null>(null);
 
   readonly adjustOpen = signal(false);
   readonly adjustTarget = signal<FeeAccount | null>(null);
   readonly adjusting = signal(false);
-  readonly adjustError = signal<string | null>(null);
   readonly adjustments = signal<Adjustment[]>([]);
 
   readonly paymentsOpen = signal(false);
   readonly paymentsTarget = signal<FeeAccount | null>(null);
   readonly payments = signal<Payment[]>([]);
-  readonly paymentsError = signal<string | null>(null);
   readonly reversingId = signal<number | null>(null);
   readonly lastReversal = signal<PaymentResult | null>(null);
   readonly statementDownloadingId = signal<number | null>(null);
-  readonly statementError = signal<string | null>(null);
 
   readonly payForm = this.fb.nonNullable.group({
     amount: ['', Validators.required],
@@ -108,7 +106,6 @@ export class OutstandingListPage implements OnInit {
 
   openCollect(row: FeeAccount): void {
     this.payTarget.set(row);
-    this.payError.set(null);
     this.lastReceipt.set(null);
     this.payForm.reset({
       amount: String(row.outstandingAmount),
@@ -120,7 +117,6 @@ export class OutstandingListPage implements OnInit {
   closeCollect(): void {
     this.payOpen.set(false);
     this.payTarget.set(null);
-    this.payError.set(null);
   }
 
   collect(): void {
@@ -132,12 +128,11 @@ export class OutstandingListPage implements OnInit {
     const v = this.payForm.getRawValue();
     const amount = Number(v.amount);
     if (!Number.isFinite(amount) || amount <= 0) {
-      this.payError.set('Amount must be greater than zero.');
+      this.toasts.warning('Amount must be greater than zero.');
       return;
     }
 
     this.paying.set(true);
-    this.payError.set(null);
     const key = crypto.randomUUID();
     this.financeApi
       .collectPayment(target.id, { amount, method: v.method.trim() || 'CASH' }, key)
@@ -152,9 +147,9 @@ export class OutstandingListPage implements OnInit {
         error: (err) => {
           this.paying.set(false);
           if (err?.status === 409) {
-            this.payError.set('Payment conflict — try again with a fresh amount.');
+            this.toasts.danger('Payment conflict — try again with a fresh amount.');
           } else {
-            this.payError.set(httpErrorMessage(err, 'Could not collect payment.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not collect payment.'));
           }
         },
       });
@@ -162,7 +157,6 @@ export class OutstandingListPage implements OnInit {
 
   openAdjust(row: FeeAccount): void {
     this.adjustTarget.set(row);
-    this.adjustError.set(null);
     this.lastAdjustment.set(null);
     this.adjustForm.reset({ type: 'WAIVER', amount: '', reason: '' });
     this.adjustOpen.set(true);
@@ -175,7 +169,6 @@ export class OutstandingListPage implements OnInit {
   closeAdjust(): void {
     this.adjustOpen.set(false);
     this.adjustTarget.set(null);
-    this.adjustError.set(null);
   }
 
   applyAdjustment(): void {
@@ -187,11 +180,10 @@ export class OutstandingListPage implements OnInit {
     const v = this.adjustForm.getRawValue();
     const amount = Number(v.amount);
     if (!Number.isFinite(amount) || amount <= 0) {
-      this.adjustError.set('Amount must be greater than zero.');
+      this.toasts.warning('Amount must be greater than zero.');
       return;
     }
     this.adjusting.set(true);
-    this.adjustError.set(null);
     this.financeApi
       .createAdjustment(target.id, {
         type: v.type,
@@ -208,21 +200,20 @@ export class OutstandingListPage implements OnInit {
         },
         error: (err) => {
           this.adjusting.set(false);
-          this.adjustError.set(httpErrorMessage(err, 'Could not apply adjustment.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not apply adjustment.'));
         },
       });
   }
 
   openPayments(row: FeeAccount): void {
     this.paymentsTarget.set(row);
-    this.paymentsError.set(null);
     this.lastReversal.set(null);
     this.paymentsOpen.set(true);
     this.financeApi.listPayments(row.id).subscribe({
       next: (rows) => this.payments.set(rows),
       error: (err) => {
         this.payments.set([]);
-        this.paymentsError.set(httpLoadError(err, 'payments'));
+        this.toasts.danger(httpLoadError(err, 'payments'));
       },
     });
   }
@@ -230,7 +221,6 @@ export class OutstandingListPage implements OnInit {
   closePayments(): void {
     this.paymentsOpen.set(false);
     this.paymentsTarget.set(null);
-    this.paymentsError.set(null);
   }
 
   reversePayment(payment: Payment): void {
@@ -242,7 +232,6 @@ export class OutstandingListPage implements OnInit {
       return;
     }
     this.reversingId.set(payment.id);
-    this.paymentsError.set(null);
     this.financeApi.reversePayment(payment.id, reason.trim()).subscribe({
       next: (result) => {
         this.reversingId.set(null);
@@ -254,7 +243,7 @@ export class OutstandingListPage implements OnInit {
       },
       error: (err) => {
         this.reversingId.set(null);
-        this.paymentsError.set(httpErrorMessage(err, 'Could not reverse payment.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not reverse payment.'));
       },
     });
   }
@@ -264,7 +253,6 @@ export class OutstandingListPage implements OnInit {
       return;
     }
     this.statementDownloadingId.set(row.id);
-    this.statementError.set(null);
     this.financeApi.downloadStatementPdf(row.id).subscribe({
       next: (blob) => {
         this.statementDownloadingId.set(null);
@@ -277,7 +265,7 @@ export class OutstandingListPage implements OnInit {
       },
       error: (err) => {
         this.statementDownloadingId.set(null);
-        this.statementError.set(httpErrorMessage(err, 'Could not download fee statement.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not download fee statement.'));
       },
     });
   }

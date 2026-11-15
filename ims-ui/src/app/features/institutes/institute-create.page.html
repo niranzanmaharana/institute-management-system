@@ -8,9 +8,6 @@
   </header>
 
   <app-ui-card>
-    @if (error()) {
-      <app-error-state title="Create failed" [message]="error()!" />
-    }
     <form class="form" [formGroup]="form" (ngSubmit)="submit()">
       <h2>Institute</h2>
       <div class="code-field">
@@ -31,6 +28,15 @@
       </div>
 
       <h2>Contact &amp; branding</h2>
+      <div class="branding">
+        <app-institute-logo
+          [name]="form.controls.name.value"
+          [previewUrl]="logoPreviewUrl()"
+          [uploading]="logoUploading()"
+          [disabled]="submitting()"
+          (fileSelected)="onLogoSelected($event)"
+        />
+      </div>
       <div class="grid">
         <app-ui-input label="Mobile" inputId="inst-mobile" formControlName="mobile" />
         <app-ui-input
@@ -40,12 +46,6 @@
           formControlName="contactEmail"
         />
         <app-ui-input label="Website" inputId="inst-web" formControlName="website" />
-        <app-ui-input
-          label="Icon URL"
-          inputId="inst-icon"
-          hint="Public image URL for now; MinIO upload comes later"
-          formControlName="iconUrl"
-        />
       </div>
       <div class="grid">
         <app-ui-input label="Address line 1" inputId="inst-a1" formControlName="addressLine1" />

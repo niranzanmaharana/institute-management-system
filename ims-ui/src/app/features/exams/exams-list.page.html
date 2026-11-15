@@ -10,9 +10,6 @@
   @if (canMark) {
     <app-ui-card>
       <h2 class="section-title">New exam</h2>
-      @if (createError()) {
-        <app-error-state title="Create failed" [message]="createError()!" />
-      }
       <form class="form" [formGroup]="createForm" (ngSubmit)="create()">
         <label class="field" for="ex-batch">
           <span class="field__label">Batch</span>

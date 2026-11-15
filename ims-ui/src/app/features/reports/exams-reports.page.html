@@ -1,0 +1,72 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Exam reports</h1>
+      <p>RP-EX-01 exam results by batch</p>
+    </div>
+  </header>
+
+  @if (!canRun) {
+    <app-ui-card>
+      <app-empty-state title="No access" message="exam:mark or exam:publish is required." />
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      <h2 class="section-title">Exam results (RP-EX-01)</h2>
+      <form class="filters" [formGroup]="form" (ngSubmit)="run()">
+        <label class="field">
+          <span class="field__label">Batch</span>
+          <select class="field__control" formControlName="batchId" (change)="onBatchChange()">
+            <option value="">Select…</option>
+            @for (b of batches(); track b.id) {
+              <option [value]="b.id">{{ b.code }} — {{ b.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Exam</span>
+          <select class="field__control" formControlName="examId">
+            <option value="">Select…</option>
+            @for (e of exams(); track e.id) {
+              <option [value]="e.id">{{ e.name }} ({{ e.status }})</option>
+            }
+          </select>
+        </label>
+        <app-ui-button type="submit" [loading]="loading()">Run</app-ui-button>
+        @if (examResults().length) {
+          <app-ui-button type="button" (click)="exportCsv()">Export CSV</app-ui-button>
+        }
+      </form>
+      @if (loading()) {
+        <app-loading-state />
+      } @else if (examResults().length === 0) {
+        <app-empty-state title="No results" message="Select batch + exam and run." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>P/F</th>
+                <th>Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of examResults(); track r.studentId) {
+                <tr>
+                  <td>{{ r.studentCode }} — {{ r.studentName }}</td>
+                  <td>{{ r.resultStatus }}</td>
+                  <td>{{ r.totalMarks ?? '—' }}</td>
+                  <td>{{ r.passFail || '—' }}</td>
+                  <td>{{ r.grade || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+  }
+</div>

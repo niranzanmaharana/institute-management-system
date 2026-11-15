@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
@@ -113,6 +114,26 @@ public class S3ObjectStorage implements ObjectStorage {
           .url()
           .toString();
     } catch (SdkClientException ex) {
+      throw unavailable(ex);
+    }
+  }
+
+  @Override
+  public void put(String storageKey, String contentType, byte[] bytes) {
+    if (bytes == null) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Object bytes are required");
+    }
+    ensureBucket();
+    PutObjectRequest put =
+        PutObjectRequest.builder()
+            .bucket(properties.bucket())
+            .key(storageKey)
+            .contentType(contentType)
+            .contentLength((long) bytes.length)
+            .build();
+    try {
+      client.putObject(put, RequestBody.fromBytes(bytes));
+    } catch (SdkClientException | S3Exception ex) {
       throw unavailable(ex);
     }
   }

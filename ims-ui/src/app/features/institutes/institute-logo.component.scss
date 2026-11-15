@@ -1,0 +1,94 @@
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+.logo__avatar {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.logo__avatar:focus-visible {
+  outline: 2px solid var(--ims-primary-light);
+  outline-offset: 3px;
+}
+
+.logo__avatar:disabled {
+  cursor: progress;
+}
+
+.logo__avatar--readonly {
+  cursor: default;
+}
+
+.logo__avatar--busy .logo__img,
+.logo__avatar--busy .logo__fallback {
+  opacity: 0.72;
+}
+
+.logo__img,
+.logo__fallback {
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+  border: 1px solid var(--ims-border);
+  display: block;
+}
+
+.logo__img {
+  object-fit: cover;
+  background: #fff;
+}
+
+.logo__fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--ims-primary) 12%, #fff);
+  color: var(--ims-primary);
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.logo__camera {
+  position: absolute;
+  right: -0.15rem;
+  bottom: -0.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #fff;
+  color: var(--ims-text);
+  box-shadow: 0 1px 4px color-mix(in srgb, #000 18%, transparent);
+  font-size: 0.85rem;
+}
+
+.logo__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.logo__hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ims-text-muted);
+}

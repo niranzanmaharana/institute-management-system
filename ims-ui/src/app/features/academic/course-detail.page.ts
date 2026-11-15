@@ -8,6 +8,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
 import { AcademicService, Course, CourseSubject, FeeCategory, FeePlan } from './academic.service';
@@ -33,6 +34,7 @@ export class CourseDetailPage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly academicApi = inject(AcademicService);
   private readonly codesApi = inject(CodeService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -41,12 +43,12 @@ export class CourseDetailPage implements OnInit {
   readonly subjects = signal<CourseSubject[]>([]);
   readonly categories = signal<FeeCategory[]>([]);
   readonly subjectSubmitting = signal(false);
-  readonly subjectError = signal<string | null>(null);
+  readonly subjectLoadError = signal<string | null>(null);
 
   readonly categorySubmitting = signal(false);
-  readonly categoryError = signal<string | null>(null);
+  readonly categoryLoadError = signal<string | null>(null);
   readonly planSubmitting = signal(false);
-  readonly planError = signal<string | null>(null);
+  readonly planLoadError = signal<string | null>(null);
   readonly generatingCategory = signal(false);
   readonly generatingPlan = signal(false);
   readonly deactivating = signal(false);
@@ -105,14 +107,14 @@ export class CourseDetailPage implements OnInit {
   loadFeePlans(): void {
     this.academicApi.listFeePlans(this.courseId).subscribe({
       next: (plans) => this.feePlans.set(plans),
-      error: (err) => this.planError.set(httpLoadError(err, 'fee plans')),
+      error: (err) => this.planLoadError.set(httpLoadError(err, 'fee plans')),
     });
   }
 
   loadSubjects(): void {
     this.academicApi.listSubjects(this.courseId).subscribe({
       next: (rows) => this.subjects.set(rows),
-      error: (err) => this.subjectError.set(httpLoadError(err, 'subjects')),
+      error: (err) => this.subjectLoadError.set(httpLoadError(err, 'subjects')),
     });
   }
 
@@ -123,7 +125,6 @@ export class CourseDetailPage implements OnInit {
     }
     const v = this.subjectForm.getRawValue();
     this.subjectSubmitting.set(true);
-    this.subjectError.set(null);
     this.academicApi
       .createSubject(this.courseId, {
         code: v.code.trim() || undefined,
@@ -138,9 +139,9 @@ export class CourseDetailPage implements OnInit {
         error: (err) => {
           this.subjectSubmitting.set(false);
           if (err?.status === 409) {
-            this.subjectError.set('Subject code already exists for this course.');
+            this.toasts.danger('Subject code already exists for this course.');
           } else {
-            this.subjectError.set(httpErrorMessage(err, 'Could not create subject.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create subject.'));
           }
         },
       });
@@ -154,7 +155,7 @@ export class CourseDetailPage implements OnInit {
           this.planForm.controls.feeCategoryId.setValue(String(cats[0].id));
         }
       },
-      error: (err) => this.categoryError.set(httpLoadError(err, 'fee categories')),
+      error: (err) => this.categoryLoadError.set(httpLoadError(err, 'fee categories')),
     });
   }
 
@@ -173,7 +174,7 @@ export class CourseDetailPage implements OnInit {
         this.deactivating.set(false);
       },
       error: (err) => {
-        this.error.set(httpErrorMessage(err, 'Could not deactivate course.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not deactivate course.'));
         this.deactivating.set(false);
       },
     });
@@ -185,7 +186,6 @@ export class CourseDetailPage implements OnInit {
       return;
     }
     this.categorySubmitting.set(true);
-    this.categoryError.set(null);
     const v = this.categoryForm.getRawValue();
     this.academicApi
       .createFeeCategory({ code: v.code.trim() || undefined, name: v.name.trim() })
@@ -199,9 +199,9 @@ export class CourseDetailPage implements OnInit {
         error: (err) => {
           this.categorySubmitting.set(false);
           if (err?.status === 409) {
-            this.categoryError.set('Fee category code already exists.');
+            this.toasts.danger('Fee category code already exists.');
           } else {
-            this.categoryError.set(httpErrorMessage(err, 'Could not create fee category.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create fee category.'));
           }
         },
       });
@@ -212,7 +212,6 @@ export class CourseDetailPage implements OnInit {
       return;
     }
     this.generatingCategory.set(true);
-    this.categoryError.set(null);
     this.codesApi.next('FEE_CATEGORY').subscribe({
       next: (res) => {
         this.categoryForm.controls.code.setValue(res.code);
@@ -220,7 +219,7 @@ export class CourseDetailPage implements OnInit {
       },
       error: (err) => {
         this.generatingCategory.set(false);
-        this.categoryError.set(httpErrorMessage(err, 'Could not generate category code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate category code.'));
       },
     });
   }
@@ -230,7 +229,6 @@ export class CourseDetailPage implements OnInit {
       return;
     }
     this.generatingPlan.set(true);
-    this.planError.set(null);
     this.codesApi.next('FEE_PLAN').subscribe({
       next: (res) => {
         this.planForm.controls.code.setValue(res.code);
@@ -238,7 +236,7 @@ export class CourseDetailPage implements OnInit {
       },
       error: (err) => {
         this.generatingPlan.set(false);
-        this.planError.set(httpErrorMessage(err, 'Could not generate fee plan code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate fee plan code.'));
       },
     });
   }
@@ -253,16 +251,15 @@ export class CourseDetailPage implements OnInit {
     const feeCategoryId = Number(v.feeCategoryId);
     const dueOffsetDays = Number(v.dueOffsetDays || '0');
     if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
-      this.planError.set('Total amount must be a positive number.');
+      this.toasts.warning('Total amount must be a positive number.');
       return;
     }
     if (!Number.isFinite(feeCategoryId) || feeCategoryId <= 0) {
-      this.planError.set('Select a fee category.');
+      this.toasts.warning('Select a fee category.');
       return;
     }
 
     this.planSubmitting.set(true);
-    this.planError.set(null);
     this.academicApi
       .createFeePlan(this.courseId, {
         code: v.code.trim() || undefined,
@@ -296,11 +293,11 @@ export class CourseDetailPage implements OnInit {
         error: (err) => {
           this.planSubmitting.set(false);
           if (err?.status === 409) {
-            this.planError.set('Fee plan code already exists for this course.');
+            this.toasts.danger('Fee plan code already exists for this course.');
           } else if (err?.status === 400) {
-            this.planError.set('Invalid fee plan. Check amounts and installments.');
+            this.toasts.danger('Invalid fee plan. Check amounts and installments.');
           } else {
-            this.planError.set(httpErrorMessage(err, 'Could not create fee plan.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create fee plan.'));
           }
         },
       });

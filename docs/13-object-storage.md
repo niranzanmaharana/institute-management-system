@@ -2,7 +2,7 @@
 
 **Document purpose:** What MinIO is in this project, how IMS uses it for person documents, and how to point the app at another S3-compatible store later.  
 **Companions:** [08-security-and-privacy.md](./08-security-and-privacy.md) §4, [04-business-rules.md](./04-business-rules.md) BR-DC-*, [infra/README.md](../infra/README.md)  
-**Status:** Phase 3.4 — person documents (pre-signed upload)
+**Status:** Phase 3.4 person documents (pre-signed upload) + Phase 6.1 certificates (server-side `put`)
 
 ---
 
@@ -55,8 +55,9 @@ Rules (BR-DC-01–04): PDF / JPEG / PNG; max **5 MB**; private bucket; time-limi
 | Store | Contents |
 | --- | --- |
 | MySQL `person_documents` | Tenant, owner (student/faculty/staff), doc type, file name, **storage_key**, content type, size, checksum, status (`PENDING` / `ACTIVE` / `DELETED`), uploader |
+| MySQL `generated_documents` | Certificate metadata: template code, student, enrollment, **storage_key**, size, issuer |
 | MinIO/S3 object | The file bytes at `storage_key` |
-| JWT / RBAC | `document:read` / `document:write`; institute **ADMIN** may use the APIs by role |
+| JWT / RBAC | `document:read` / `document:write`; `certificate:generate` / `certificate:read` |
 
 Cross-tenant: lookup is always `institute_id` from the JWT. The object key **must** start with `institutes/{thatId}/`. Another tenant’s document id returns **404**. Soft-delete marks metadata `DELETED`; the object is not purged yet (lifecycle TBD).
 
@@ -68,12 +69,14 @@ The Angular origin (`http://localhost:4200`) is **not** the MinIO origin (`http:
 
 | Piece | Location |
 | --- | --- |
-| Port | `com.ims.platform.storage.ObjectStorage` |
+| Port | `com.ims.platform.storage.ObjectStorage` (`presignPut` / `presignGet` / `head` / **`put`**) |
 | MinIO/S3 adapter | `S3ObjectStorage` (`ims.storage.type=s3`, default) |
 | In-memory adapter | `InMemoryObjectStorage` (`ims.storage.type=memory` — tests only) |
 | Settings | `ims.storage.*` in `ims-api` `application.yml` |
-| APIs | `/api/v1/people/{STUDENT\|FACULTY\|STAFF}/{id}/documents` |
-| UI | Student / faculty / staff detail → Documents |
+| Person doc APIs | `/api/v1/people/{STUDENT\|FACULTY\|STAFF}/{id}/documents` |
+| Certificate APIs | `POST /api/v1/certificates/generate`, `GET …/students/{id}/certificates`, `GET …/certificates/{id}/download` |
+| Certificate keys | `institutes/{instituteId}/certificates/{studentId}/{uuid}/{fileName}.pdf` (server `put`, then signed GET) |
+| UI | Student / faculty / staff detail → Documents; Student detail → Certificates |
 
 Compose service: `infra/docker-compose.yml` → `minio` (ports **9000** API, **9001** console). Start just that service:
 

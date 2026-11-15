@@ -7,6 +7,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { BadgeTone, StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
 import { AcademicService, Batch } from '../academic/academic.service';
@@ -37,10 +38,10 @@ export class AttendanceSessionPage implements OnInit {
   private readonly attendanceApi = inject(AttendanceService);
   private readonly academicApi = inject(AcademicService);
   private readonly auth = inject(AuthService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
-  readonly actionError = signal<string | null>(null);
   readonly session = signal<AttendanceSession | null>(null);
   readonly summary = signal<BatchAttendanceSummary | null>(null);
   readonly batches = signal<Batch[]>([]);
@@ -132,7 +133,6 @@ export class AttendanceSessionPage implements OnInit {
         status: this.draftMarks()[r.studentId] || 'PRESENT',
       }));
     this.busy.set(true);
-    this.actionError.set(null);
     this.attendanceApi.markRecords(session.id, records).subscribe({
       next: (updated) => {
         this.busy.set(false);
@@ -140,7 +140,7 @@ export class AttendanceSessionPage implements OnInit {
       },
       error: (err) => {
         this.busy.set(false);
-        this.actionError.set(httpErrorMessage(err, 'Could not save marks.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not save marks.'));
       },
     });
   }
@@ -169,7 +169,6 @@ export class AttendanceSessionPage implements OnInit {
       return;
     }
     this.busy.set(true);
-    this.actionError.set(null);
     call(session.id).subscribe({
       next: (updated) => {
         this.busy.set(false);
@@ -181,7 +180,7 @@ export class AttendanceSessionPage implements OnInit {
       },
       error: (err) => {
         this.busy.set(false);
-        this.actionError.set(httpErrorMessage(err, 'Action failed.'));
+        this.toasts.danger(httpErrorMessage(err, 'Action failed.'));
       },
     });
   }

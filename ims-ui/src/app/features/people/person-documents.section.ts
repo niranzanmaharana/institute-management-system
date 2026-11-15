@@ -6,7 +6,9 @@ import { EmptyState } from '../../shared/empty-state';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { UiButton } from '../../shared/ui-button';
+import { UiFileDropzone } from '../../shared/ui-file-dropzone';
 import { UiSelect, UiSelectOption } from '../../shared/ui-select';
 import {
   PersonDocument,
@@ -15,27 +17,36 @@ import {
   normalizeContentType,
 } from './person-document.service';
 
-const MAX_BYTES = 5 * 1024 * 1024;
-
 @Component({
   selector: 'app-person-documents',
-  imports: [FormsModule, UiButton, UiSelect, LoadingState, ErrorState, EmptyState, StatusBadge],
+  imports: [
+    FormsModule,
+    UiButton,
+    UiSelect,
+    UiFileDropzone,
+    LoadingState,
+    ErrorState,
+    EmptyState,
+    StatusBadge,
+  ],
   templateUrl: './person-documents.section.html',
   styleUrl: './person-documents.section.scss',
 })
 export class PersonDocumentsSection implements OnChanges {
   private readonly api = inject(PersonDocumentService);
+  private readonly toasts = inject(ToastService);
   readonly auth = inject(AuthService);
 
   @Input({ required: true }) ownerType!: PersonOwnerType;
   @Input({ required: true }) ownerId!: number;
 
+  readonly maxBytes = 5 * 1024 * 1024;
   readonly loading = signal(false);
   readonly uploading = signal(false);
-  readonly error = signal<string | null>(null);
+  readonly loadError = signal<string | null>(null);
   readonly rows = signal<PersonDocument[]>([]);
+  readonly selectedFile = signal<File | null>(null);
   docType = 'ID_PROOF';
-  selectedFile: File | null = null;
 
   readonly docTypeOptions: UiSelectOption[] = [
     { value: 'ID_PROOF', label: 'ID proof' },
@@ -68,46 +79,45 @@ export class PersonDocumentsSection implements OnChanges {
 
   load(): void {
     this.loading.set(true);
-    this.error.set(null);
+    this.loadError.set(null);
     this.api.list(this.ownerType, this.ownerId).subscribe({
       next: (rows) => {
         this.rows.set(rows);
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set(httpErrorMessage(err, 'Could not load documents.'));
+        this.loadError.set(httpErrorMessage(err, 'Could not load documents.'));
         this.loading.set(false);
       },
     });
   }
 
-  onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    this.selectedFile = input.files?.[0] ?? null;
+  onRejected(message: string): void {
+    this.toasts.warning(message);
   }
 
   async upload(): Promise<void> {
-    const file = this.selectedFile;
+    const file = this.selectedFile();
     if (!file || this.uploading() || !this.canWrite) {
       return;
     }
-    if (file.size > MAX_BYTES) {
-      this.error.set('File exceeds the maximum size of 5 MB.');
+    if (file.size > this.maxBytes) {
+      this.toasts.warning('File exceeds the maximum size of 5 MB.');
       return;
     }
     const contentType = normalizeContentType(file, this.docType);
     if (!contentType) {
-      this.error.set('Allowed types are PDF, JPEG, and PNG.');
+      this.toasts.warning('Allowed types are PDF, JPEG, and PNG.');
       return;
     }
 
     this.uploading.set(true);
-    this.error.set(null);
     try {
       await this.api.uploadFile(this.ownerType, this.ownerId, file, this.docType);
-      this.selectedFile = null;
+      this.selectedFile.set(null);
+      this.toasts.success('Document uploaded.');
     } catch (err) {
-      this.error.set(this.uploadError(err));
+      this.toasts.danger(this.uploadError(err));
     } finally {
       this.uploading.set(false);
     }
@@ -119,7 +129,7 @@ export class PersonDocumentsSection implements OnChanges {
         window.open(res.downloadUrl, '_blank', 'noopener');
       },
       error: (err) => {
-        this.error.set(httpErrorMessage(err, 'Could not download document.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not download document.'));
       },
     });
   }
@@ -132,9 +142,12 @@ export class PersonDocumentsSection implements OnChanges {
       return;
     }
     this.api.delete(this.ownerType, this.ownerId, row.id).subscribe({
-      next: () => this.api.notifyChanged(),
+      next: () => {
+        this.api.notifyChanged();
+        this.toasts.success('Document deleted.');
+      },
       error: (err) => {
-        this.error.set(httpErrorMessage(err, 'Could not delete document.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not delete document.'));
       },
     });
   }

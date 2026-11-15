@@ -1,0 +1,43 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Reports</h1>
+      <p>Pick a category from the sidebar Reports menu, or open one below.</p>
+    </div>
+  </header>
+
+  <app-ui-card>
+    <div class="hub-grid">
+      @if (canStudents) {
+        <a class="hub-link" routerLink="/reports/students">
+          <strong>Students</strong>
+          <span>RP-ST-01…05 list, counts, withdrawals, roster</span>
+        </a>
+      }
+      @if (canAdmissions) {
+        <a class="hub-link" routerLink="/reports/admissions">
+          <strong>Admissions</strong>
+          <span>RP-ST-03 new applications by date</span>
+        </a>
+      }
+      @if (canAttendance) {
+        <a class="hub-link" routerLink="/reports/attendance">
+          <strong>Attendance</strong>
+          <span>RP-AT-02 summary · RP-AT-03 low %</span>
+        </a>
+      }
+      @if (canExams) {
+        <a class="hub-link" routerLink="/reports/exams">
+          <strong>Exams</strong>
+          <span>RP-EX-01 results by batch</span>
+        </a>
+      }
+      @if (canFinance) {
+        <a class="hub-link" routerLink="/finance-reports">
+          <strong>Finance</strong>
+          <span>RP-FI-01…08 collections, aging, discounts</span>
+        </a>
+      }
+    </div>
+  </app-ui-card>
+</div>

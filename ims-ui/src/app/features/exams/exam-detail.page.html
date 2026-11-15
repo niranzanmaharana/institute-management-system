@@ -20,10 +20,6 @@
       <app-error-state title="Failed to load" [message]="error()!" />
     </app-ui-card>
   } @else if (exam(); as ex) {
-    @if (actionError()) {
-      <app-error-state title="Action failed" [message]="actionError()!" />
-    }
-
     <app-ui-card>
       <h2 class="section-title">Lifecycle</h2>
       <div class="actions">
@@ -79,6 +75,51 @@
             </li>
           }
         </ul>
+      </app-ui-card>
+    }
+
+    @if (marksEditable) {
+      <app-ui-card>
+        <h2 class="section-title">Bulk marks upload</h2>
+        <p class="hint">
+          Download the template (includes component columns), fill <code>studentCode</code> + marks, then upload.
+          Re-upload is safe — each student is upserted. Large files run as a background job.
+        </p>
+        <div class="import-actions">
+          <app-ui-button type="button" [loading]="importBusy()" (click)="downloadMarksTemplate()">
+            Download template
+          </app-ui-button>
+          <app-ui-button
+            type="button"
+            [loading]="importBusy()"
+            [disabled]="!selectedMarksFile()"
+            (click)="uploadMarksCsv()"
+          >
+            Upload CSV
+          </app-ui-button>
+        </div>
+        <app-ui-file-dropzone
+          class="import-dropzone"
+          label="CSV file"
+          accept=".csv,text/csv"
+          acceptedHint="Accepted file types: .csv only"
+          readyMeta="CSV ready to upload"
+          ariaLabel="Choose marks CSV file"
+          [disabled]="importBusy()"
+          [(file)]="selectedMarksFile"
+          (rejected)="onMarksRejected($event)"
+        />
+        @if (importJob(); as job) {
+          <p class="import-meta">
+            Job #{{ job.id }} · {{ job.status }} · {{ job.successCount }}/{{ job.totalRows }} ok
+            @if (job.failedCount > 0) {
+              · {{ job.failedCount }} failed
+            }
+          </p>
+          @if (job.errorReportCsv) {
+            <app-ui-button type="button" (click)="downloadImportErrors()">Download error report</app-ui-button>
+          }
+        }
       </app-ui-card>
     }
 

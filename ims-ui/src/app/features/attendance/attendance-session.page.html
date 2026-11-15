@@ -28,12 +28,6 @@
     </div>
   </header>
 
-  @if (actionError()) {
-    <app-ui-card>
-      <app-error-state title="Action failed" [message]="actionError()!" />
-    </app-ui-card>
-  }
-
   <app-ui-card>
     @if (loading()) {
       <app-loading-state />

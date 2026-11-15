@@ -1,0 +1,259 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Student reports</h1>
+      <p>RP-ST-01 list · RP-ST-02 counts · RP-ST-04 withdrawals · RP-ST-05 roster</p>
+    </div>
+  </header>
+
+  @if (!canRun) {
+    <app-ui-card>
+      <app-empty-state title="No access" message="student:read is required for these reports." />
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      <h2 class="section-title">Student list (RP-ST-01)</h2>
+      <form class="filters" [formGroup]="studentForm" (ngSubmit)="runStudentList()">
+        <label class="field">
+          <span class="field__label">Status</span>
+          <select class="field__control" formControlName="status">
+            <option value="">All</option>
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="INACTIVE">INACTIVE</option>
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Course</span>
+          <select class="field__control" formControlName="courseId">
+            <option value="">All</option>
+            @for (c of courses(); track c.id) {
+              <option [value]="c.id">{{ c.code }} — {{ c.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Batch</span>
+          <select class="field__control" formControlName="batchId">
+            <option value="">All</option>
+            @for (b of batches(); track b.id) {
+              <option [value]="b.id">{{ b.code }} — {{ b.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Search</span>
+          <input class="field__control" type="text" formControlName="q" />
+        </label>
+        <app-ui-button type="submit" [loading]="loadingStudents()">Run</app-ui-button>
+        @if (students().length) {
+          <app-ui-button type="button" (click)="exportStudentsCsv()">Export CSV</app-ui-button>
+        }
+      </form>
+      @if (loadingStudents()) {
+        <app-loading-state />
+      } @else if (students().length === 0) {
+        <app-empty-state title="No rows" message="Adjust filters and run the report." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Batch</th>
+                <th>Course</th>
+                <th>Enrollment</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of students(); track r.studentId + '-' + (r.batchId ?? 0)) {
+                <tr>
+                  <td>{{ r.studentCode }}</td>
+                  <td>{{ r.fullName }}</td>
+                  <td>{{ r.status }}</td>
+                  <td>{{ r.batchCode || '—' }}</td>
+                  <td>{{ r.courseCode || '—' }}</td>
+                  <td>{{ r.enrollmentStatus || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+
+    <app-ui-card>
+      <h2 class="section-title">Active students by batch (RP-ST-02)</h2>
+      <form class="filters" [formGroup]="countForm" (ngSubmit)="runActiveCounts()">
+        <label class="field">
+          <span class="field__label">Course</span>
+          <select class="field__control" formControlName="courseId">
+            <option value="">All courses</option>
+            @for (c of courses(); track c.id) {
+              <option [value]="c.id">{{ c.code }} — {{ c.name }}</option>
+            }
+          </select>
+        </label>
+        <app-ui-button type="submit" [loading]="loadingCounts()">Run</app-ui-button>
+        @if (activeCounts().length) {
+          <app-ui-button type="button" (click)="exportActiveCountsCsv()">Export CSV</app-ui-button>
+        }
+      </form>
+      @if (loadingCounts()) {
+        <app-loading-state />
+      } @else if (activeCounts().length === 0) {
+        <app-empty-state title="No rows" message="Run to load active enrollment counts." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>Course</th>
+                <th>Active</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of activeCounts(); track r.batchId) {
+                <tr>
+                  <td>{{ r.batchCode }} — {{ r.batchName }}</td>
+                  <td>{{ r.courseCode }} — {{ r.courseName }}</td>
+                  <td>{{ r.activeCount }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+
+    <app-ui-card>
+      <h2 class="section-title">Withdrawals / dropouts (RP-ST-04)</h2>
+      <form class="filters" [formGroup]="withdrawalForm" (ngSubmit)="runWithdrawals()">
+        <label class="field">
+          <span class="field__label">From</span>
+          <input class="field__control" type="date" formControlName="from" />
+        </label>
+        <label class="field">
+          <span class="field__label">To</span>
+          <input class="field__control" type="date" formControlName="to" />
+        </label>
+        <label class="field">
+          <span class="field__label">Course</span>
+          <select class="field__control" formControlName="courseId">
+            <option value="">All</option>
+            @for (c of courses(); track c.id) {
+              <option [value]="c.id">{{ c.code }} — {{ c.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Batch</span>
+          <select class="field__control" formControlName="batchId">
+            <option value="">All</option>
+            @for (b of batches(); track b.id) {
+              <option [value]="b.id">{{ b.code }} — {{ b.name }}</option>
+            }
+          </select>
+        </label>
+        <app-ui-button type="submit" [loading]="loadingWithdrawals()">Run</app-ui-button>
+        @if (withdrawals().length) {
+          <app-ui-button type="button" (click)="exportWithdrawalsCsv()">Export CSV</app-ui-button>
+        }
+      </form>
+      @if (loadingWithdrawals()) {
+        <app-loading-state />
+      } @else if (withdrawals().length === 0) {
+        <app-empty-state title="No withdrawals" message="No WITHDRAWN enrollments in this date range." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Batch</th>
+                <th>Course</th>
+                <th>Withdrawn</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of withdrawals(); track r.enrollmentId) {
+                <tr>
+                  <td>{{ r.studentCode || '—' }}</td>
+                  <td>{{ r.studentName || '—' }}</td>
+                  <td>{{ r.batchCode || '—' }}</td>
+                  <td>{{ r.courseCode || '—' }}</td>
+                  <td>{{ r.withdrawnAt || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+
+    <app-ui-card>
+      <h2 class="section-title">Batch roster (RP-ST-05)</h2>
+      <form class="filters" [formGroup]="rosterForm" (ngSubmit)="runRoster()">
+        <label class="field">
+          <span class="field__label">Batch</span>
+          <select class="field__control" formControlName="batchId">
+            <option value="" disabled>Select batch</option>
+            @for (b of batches(); track b.id) {
+              <option [value]="b.id">{{ b.code }} — {{ b.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field">
+          <span class="field__label">Enrollment status</span>
+          <select class="field__control" formControlName="status">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="SUSPENDED">SUSPENDED</option>
+            <option value="APPLIED">APPLIED</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="WITHDRAWN">WITHDRAWN</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </label>
+        <app-ui-button type="submit" [loading]="loadingRoster()">Run</app-ui-button>
+        @if (roster().length) {
+          <app-ui-button type="button" (click)="exportRosterCsv()">Export CSV</app-ui-button>
+        }
+      </form>
+      @if (loadingRoster()) {
+        <app-loading-state />
+      } @else if (roster().length === 0) {
+        <app-empty-state title="No roster rows" message="Pick a batch and run the report." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Activated</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of roster(); track r.enrollmentId) {
+                <tr>
+                  <td>{{ r.studentCode }}</td>
+                  <td>{{ r.studentName }}</td>
+                  <td>{{ r.phone || '—' }}</td>
+                  <td>{{ r.email || '—' }}</td>
+                  <td>{{ r.enrollmentStatus }}</td>
+                  <td>{{ r.activatedAt || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+  }
+</div>

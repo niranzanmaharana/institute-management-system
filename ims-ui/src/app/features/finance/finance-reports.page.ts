@@ -9,6 +9,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
 import {
@@ -19,6 +20,7 @@ import {
   NamedAmount,
   OutstandingReportRow,
 } from './finance.service';
+import { AdjustmentReportRow, ReportService } from '../reports/report.service';
 
 @Component({
   selector: 'app-finance-reports-page',
@@ -38,7 +40,9 @@ import {
 })
 export class FinanceReportsPage implements OnInit {
   private readonly financeApi = inject(FinanceService);
+  private readonly reportApi = inject(ReportService);
   private readonly auth = inject(AuthService);
+  private readonly toasts = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(true);
@@ -48,8 +52,8 @@ export class FinanceReportsPage implements OnInit {
   readonly daily = signal<DailyCollectionRow[]>([]);
   readonly byMethod = signal<NamedAmount[]>([]);
   readonly byCategory = signal<NamedAmount[]>([]);
+  readonly adjustments = signal<AdjustmentReportRow[]>([]);
   readonly years = signal<FinancialYear[]>([]);
-  readonly yearError = signal<string | null>(null);
   readonly yearSaving = signal(false);
   readonly activatingId = signal<number | null>(null);
 
@@ -90,6 +94,7 @@ export class FinanceReportsPage implements OnInit {
       daily: this.financeApi.dailyCollection(v.from || undefined, v.to || undefined),
       byMethod: this.financeApi.collectionByMethod(v.from || undefined, v.to || undefined),
       byCategory: this.financeApi.collectionByCategory(v.from || undefined, v.to || undefined),
+      adjustments: this.reportApi.adjustments(v.from, v.to),
       years: this.financeApi.listFinancialYears(),
     }).subscribe({
       next: (data) => {
@@ -98,6 +103,7 @@ export class FinanceReportsPage implements OnInit {
         this.daily.set(data.daily);
         this.byMethod.set(data.byMethod);
         this.byCategory.set(data.byCategory);
+        this.adjustments.set(data.adjustments);
         this.years.set(data.years);
         this.loading.set(false);
       },
@@ -115,7 +121,6 @@ export class FinanceReportsPage implements OnInit {
     }
     const v = this.yearForm.getRawValue();
     this.yearSaving.set(true);
-    this.yearError.set(null);
     this.financeApi
       .createFinancialYear({
         name: v.name.trim(),
@@ -131,7 +136,7 @@ export class FinanceReportsPage implements OnInit {
         },
         error: (err) => {
           this.yearSaving.set(false);
-          this.yearError.set(httpErrorMessage(err, 'Could not create financial year.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create financial year.'));
         },
       });
   }
@@ -141,7 +146,6 @@ export class FinanceReportsPage implements OnInit {
       return;
     }
     this.activatingId.set(row.id);
-    this.yearError.set(null);
     this.financeApi.activateFinancialYear(row.id).subscribe({
       next: () => {
         this.activatingId.set(null);
@@ -149,7 +153,7 @@ export class FinanceReportsPage implements OnInit {
       },
       error: (err) => {
         this.activatingId.set(null);
-        this.yearError.set(httpErrorMessage(err, 'Could not activate financial year.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not activate financial year.'));
       },
     });
   }
@@ -192,6 +196,16 @@ export class FinanceReportsPage implements OnInit {
         `${r.feeAccountId},${r.studentId},${r.enrollmentId},${r.currency},${r.outstandingAmount}`,
     );
     this.downloadCsv('outstanding-fees.csv', [header, ...lines].join('\n'));
+  }
+
+  exportAdjustmentsCsv(): void {
+    const header =
+      'adjustmentId,studentCode,studentName,type,amount,reason,feeAccountId,enrollmentId,createdAt';
+    const lines = this.adjustments().map((r) => {
+      const reason = (r.reason ?? '').replaceAll('"', '""');
+      return `${r.adjustmentId},${r.studentCode ?? ''},"${(r.studentName ?? '').replaceAll('"', '""')}",${r.type},${r.amount},"${reason}",${r.feeAccountId},${r.enrollmentId ?? ''},${r.createdAt}`;
+    });
+    this.downloadCsv('rp-fi-07-adjustments.csv', [header, ...lines].join('\n'));
   }
 
   private downloadCsv(filename: string, content: string): void {

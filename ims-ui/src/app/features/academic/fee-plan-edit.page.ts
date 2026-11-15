@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AcademicService, FeeCategory } from './academic.service';
 
@@ -20,6 +21,7 @@ export class FeePlanEditPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly academicApi = inject(AcademicService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
@@ -82,15 +84,14 @@ export class FeePlanEditPage implements OnInit {
     const feeCategoryId = Number(v.feeCategoryId);
     const dueOffsetDays = Number(v.dueOffsetDays || '0');
     if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
-      this.error.set('Total amount must be a positive number.');
+      this.toasts.warning('Total amount must be a positive number.');
       return;
     }
     if (!Number.isFinite(feeCategoryId) || feeCategoryId <= 0) {
-      this.error.set('Select a fee category.');
+      this.toasts.warning('Select a fee category.');
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     this.academicApi
       .updateFeePlan(this.planId, {
         name: v.name.trim(),
@@ -113,9 +114,9 @@ export class FeePlanEditPage implements OnInit {
         error: (err) => {
           this.submitting.set(false);
           if (err?.status === 400) {
-            this.error.set('Invalid fee plan. Check amounts and installments.');
+            this.toasts.danger('Invalid fee plan. Check amounts and installments.');
           } else {
-            this.error.set(httpErrorMessage(err, 'Could not save fee plan.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not save fee plan.'));
           }
         },
       });

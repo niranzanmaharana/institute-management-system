@@ -1,6 +1,8 @@
 package com.ims.admissions.infrastructure;
 
 import com.ims.admissions.domain.AdmissionApplication;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -41,4 +43,19 @@ public interface AdmissionApplicationJpaRepository extends JpaRepository<Admissi
       @Param("q") String q,
       @Param("status") String status,
       Pageable pageable);
+
+  @Query(
+      """
+      SELECT a FROM AdmissionApplication a
+      WHERE a.instituteId = :instituteId
+        AND a.createdAt >= :fromInclusive
+        AND a.createdAt < :toExclusive
+        AND (:status IS NULL OR a.status = :status)
+      ORDER BY a.createdAt DESC
+      """)
+  List<AdmissionApplication> findInDateRange(
+      @Param("instituteId") Long instituteId,
+      @Param("fromInclusive") Instant fromInclusive,
+      @Param("toExclusive") Instant toExclusive,
+      @Param("status") String status);
 }

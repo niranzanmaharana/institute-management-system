@@ -5,9 +5,11 @@ import com.ims.platform.institute.application.InstituteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.ims.platform.institute.application.InstituteBrandingService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -29,9 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class InstituteController {
 
   private final InstituteService instituteService;
+  private final InstituteBrandingService instituteBrandingService;
 
-  public InstituteController(InstituteService instituteService) {
+  public InstituteController(
+      InstituteService instituteService, InstituteBrandingService instituteBrandingService) {
     this.instituteService = instituteService;
+    this.instituteBrandingService = instituteBrandingService;
   }
 
   public record InitialAdminRequest(
@@ -63,6 +68,21 @@ public class InstituteController {
       @NotBlank @Size(max = 255) String name,
       @Size(max = 64) String timezone,
       @Valid InstituteProfileRequest profile) {}
+
+  public record InitLogoUploadRequest(
+      @NotBlank @Size(max = 255) String fileName,
+      @NotBlank @Size(max = 128) String contentType,
+      @Positive long fileSize) {}
+
+  public record CompleteLogoUploadRequest(@NotBlank @Size(max = 1024) String storageKey) {}
+
+  @GetMapping("/current/branding")
+  @Operation(summary = "Branding for the signed-in user's institute")
+  @PreAuthorize("isAuthenticated()")
+  public InstituteBrandingResponse currentBranding(
+      @AuthenticationPrincipal ImsUserPrincipal principal) {
+    return instituteBrandingService.brandingCurrent(principal);
+  }
 
   @GetMapping
   @Operation(summary = "List institutes (platform: all; institute admin: own only)")
@@ -105,5 +125,26 @@ public class InstituteController {
   @PreAuthorize("hasAuthority('institute:manage')")
   public InstituteResponse suspend(@PathVariable("id") Long id) {
     return instituteService.suspend(id);
+  }
+
+  @PostMapping("/{id}/logo/uploads")
+  @Operation(summary = "Init institute logo upload (presigned PUT)")
+  @PreAuthorize("hasAnyRole('PLATFORM_ADMIN','ADMIN')")
+  public InstituteLogoUploadResponse initLogoUpload(
+      @PathVariable("id") Long id,
+      @Valid @RequestBody InitLogoUploadRequest request,
+      @AuthenticationPrincipal ImsUserPrincipal principal) {
+    return instituteBrandingService.initLogoUpload(
+        id, request.fileName(), request.contentType(), request.fileSize(), principal);
+  }
+
+  @PostMapping("/{id}/logo/complete")
+  @Operation(summary = "Complete institute logo upload and set branding")
+  @PreAuthorize("hasAnyRole('PLATFORM_ADMIN','ADMIN')")
+  public InstituteResponse completeLogoUpload(
+      @PathVariable("id") Long id,
+      @Valid @RequestBody CompleteLogoUploadRequest request,
+      @AuthenticationPrincipal ImsUserPrincipal principal) {
+    return instituteBrandingService.completeLogoUpload(id, request.storageKey(), principal);
   }
 }

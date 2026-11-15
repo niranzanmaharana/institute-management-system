@@ -4,14 +4,14 @@ import { Router, RouterLink } from '@angular/router';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
-import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
 import { StaffService } from './staff.service';
 
 @Component({
   selector: 'app-staff-create-page',
-  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput, ErrorState],
+  imports: [ReactiveFormsModule, RouterLink, UiCard, UiButton, UiInput],
   templateUrl: './staff-create.page.html',
   styleUrl: './staff-create.page.scss',
 })
@@ -20,10 +20,10 @@ export class StaffCreatePage {
   private readonly staffApi = inject(StaffService);
   private readonly codesApi = inject(CodeService);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
 
   readonly submitting = signal(false);
   readonly generating = signal(false);
-  readonly error = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
     staffCode: [''],
@@ -39,7 +39,6 @@ export class StaffCreatePage {
       return;
     }
     this.generating.set(true);
-    this.error.set(null);
     this.codesApi.next('STAFF').subscribe({
       next: (res) => {
         this.form.controls.staffCode.setValue(res.code);
@@ -47,7 +46,7 @@ export class StaffCreatePage {
       },
       error: (err) => {
         this.generating.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not generate staff code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate staff code.'));
       },
     });
   }
@@ -58,7 +57,6 @@ export class StaffCreatePage {
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const v = this.form.getRawValue();
 
     this.staffApi
@@ -79,9 +77,9 @@ export class StaffCreatePage {
           this.submitting.set(false);
           const status = err?.status;
           if (status === 409) {
-            this.error.set('Staff code already exists in this institute.');
+            this.toasts.danger('Staff code already exists in this institute.');
           } else {
-            this.error.set(httpErrorMessage(err, 'Could not create staff.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create staff.'));
           }
         },
       });

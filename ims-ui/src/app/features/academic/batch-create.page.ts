@@ -8,6 +8,7 @@ import { UiInput } from '../../shared/ui-input';
 import { UiDatepicker } from '../../shared/ui-datepicker';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { CodeService } from '../../shared/code.service';
 import { AcademicService, AcademicYear, Course } from './academic.service';
@@ -32,13 +33,12 @@ export class BatchCreatePage implements OnInit {
   private readonly academicApi = inject(AcademicService);
   private readonly codesApi = inject(CodeService);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly loadError = signal<string | null>(null);
   readonly submitting = signal(false);
-  readonly error = signal<string | null>(null);
   readonly yearSubmitting = signal(false);
-  readonly yearError = signal<string | null>(null);
   readonly generatingBatch = signal(false);
   readonly generatingYear = signal(false);
 
@@ -96,7 +96,6 @@ export class BatchCreatePage implements OnInit {
       return;
     }
     this.generatingBatch.set(true);
-    this.error.set(null);
     this.codesApi.next('BATCH').subscribe({
       next: (res) => {
         this.form.controls.code.setValue(res.code);
@@ -104,7 +103,7 @@ export class BatchCreatePage implements OnInit {
       },
       error: (err) => {
         this.generatingBatch.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not generate batch code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate batch code.'));
       },
     });
   }
@@ -114,7 +113,6 @@ export class BatchCreatePage implements OnInit {
       return;
     }
     this.generatingYear.set(true);
-    this.yearError.set(null);
     this.codesApi.next('ACADEMIC_YEAR').subscribe({
       next: (res) => {
         this.yearForm.controls.code.setValue(res.code);
@@ -122,7 +120,7 @@ export class BatchCreatePage implements OnInit {
       },
       error: (err) => {
         this.generatingYear.set(false);
-        this.yearError.set(httpErrorMessage(err, 'Could not generate academic year code.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not generate academic year code.'));
       },
     });
   }
@@ -133,7 +131,6 @@ export class BatchCreatePage implements OnInit {
       return;
     }
     this.yearSubmitting.set(true);
-    this.yearError.set(null);
     const v = this.yearForm.getRawValue();
     this.academicApi
       .createAcademicYear({
@@ -152,9 +149,9 @@ export class BatchCreatePage implements OnInit {
         error: (err) => {
           this.yearSubmitting.set(false);
           if (err?.status === 409) {
-            this.yearError.set('Academic year code already exists.');
+            this.toasts.danger('Academic year code already exists.');
           } else {
-            this.yearError.set(httpErrorMessage(err, 'Could not create academic year.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create academic year.'));
           }
         },
       });
@@ -170,20 +167,19 @@ export class BatchCreatePage implements OnInit {
     const academicYearId = Number(v.academicYearId);
     const capacity = Number(v.capacity);
     if (!Number.isFinite(courseId) || courseId <= 0) {
-      this.error.set('Select a course.');
+      this.toasts.warning('Select a course.');
       return;
     }
     if (!Number.isFinite(academicYearId) || academicYearId <= 0) {
-      this.error.set('Select an academic year.');
+      this.toasts.warning('Select an academic year.');
       return;
     }
     if (!Number.isFinite(capacity) || capacity < 1) {
-      this.error.set('Capacity must be at least 1.');
+      this.toasts.warning('Capacity must be at least 1.');
       return;
     }
 
     this.submitting.set(true);
-    this.error.set(null);
     this.academicApi
       .createBatch({
         courseId,
@@ -202,9 +198,9 @@ export class BatchCreatePage implements OnInit {
         error: (err) => {
           this.submitting.set(false);
           if (err?.status === 409) {
-            this.error.set('Batch code already exists for this course/year.');
+            this.toasts.danger('Batch code already exists for this course/year.');
           } else {
-            this.error.set(httpErrorMessage(err, 'Could not create batch.'));
+            this.toasts.danger(httpErrorMessage(err, 'Could not create batch.'));
           }
         },
       });

@@ -19,6 +19,22 @@ export class ToastService {
     window.setTimeout(() => this.dismiss(id), ttlMs);
   }
 
+  success(message: string, ttlMs = 3500): void {
+    this.show(message, 'success', ttlMs);
+  }
+
+  info(message: string, ttlMs = 3500): void {
+    this.show(message, 'info', ttlMs);
+  }
+
+  warning(message: string, ttlMs = 4500): void {
+    this.show(message, 'warning', ttlMs);
+  }
+
+  danger(message: string, ttlMs = 5000): void {
+    this.show(message, 'danger', ttlMs);
+  }
+
   dismiss(id: number): void {
     this.toasts.update((list) => list.filter((t) => t.id !== id));
   }

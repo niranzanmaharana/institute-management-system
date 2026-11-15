@@ -14,9 +14,13 @@
 
   <aside class="sidebar" id="app-sidebar" aria-label="Main navigation">
     <div class="sidebar__brand">
-      <span class="sidebar__logo">IMS</span>
+      @if (brandLogoUrl(); as logo) {
+        <img class="sidebar__logo-img" [src]="logo" [alt]="brandTitle() + ' logo'" width="36" height="36" />
+      } @else {
+        <span class="sidebar__logo">IMS</span>
+      }
       @if (sidebarOpen() || isMobile()) {
-        <span class="sidebar__title">Skydash IMS</span>
+        <span class="sidebar__title">{{ brandTitle() }}</span>
       }
       @if (isMobile()) {
         <button
@@ -122,6 +126,22 @@
             }
           </a>
         }
+        @if (
+          auth.hasPermission('import:write') &&
+          (auth.hasPermission('student:write') || auth.hasPermission('faculty:write'))
+        ) {
+          <a
+            routerLink="/imports"
+            routerLinkActive="is-active"
+            class="nav-item"
+            (click)="onNavClick()"
+          >
+            <i class="fa-solid fa-file-csv nav-item__icon" aria-hidden="true"></i>
+            @if (sidebarOpen() || isMobile()) {
+              <span>CSV import</span>
+            }
+          </a>
+        }
         @if (auth.hasPermission('course:read')) {
           <a
             routerLink="/courses"
@@ -216,17 +236,99 @@
               <span>Refunds</span>
             }
           </a>
-          <a
-            routerLink="/finance-reports"
-            routerLinkActive="is-active"
-            class="nav-item"
-            (click)="onNavClick()"
-          >
-            <i class="fa-solid fa-chart-column nav-item__icon" aria-hidden="true"></i>
-            @if (sidebarOpen() || isMobile()) {
-              <span>Finance reports</span>
+        }
+        @if (
+          auth.hasPermission('student:read') ||
+          auth.hasPermission('fee:read') ||
+          auth.hasPermission('attendance:mark') ||
+          auth.hasPermission('attendance:unlock') ||
+          auth.hasPermission('exam:mark') ||
+          auth.hasPermission('exam:publish') ||
+          auth.hasPermission('admission:write') ||
+          auth.hasPermission('admission:approve')
+        ) {
+          <div class="nav-group">
+            <button
+              type="button"
+              class="nav-item nav-item--parent"
+              [class.is-active]="reportsRouteActive() && !reportsMenuOpen()"
+              [class.is-open]="reportsMenuOpen()"
+              [attr.aria-expanded]="reportsMenuOpen()"
+              title="Reports"
+              (click)="toggleReportsMenu()"
+            >
+              <i class="fa-solid fa-file-lines nav-item__icon" aria-hidden="true"></i>
+              @if (sidebarOpen() || isMobile()) {
+                <span class="nav-item__label">Reports</span>
+                <i
+                  class="fa-solid nav-item__chevron"
+                  [class.fa-chevron-down]="!reportsMenuOpen()"
+                  [class.fa-chevron-up]="reportsMenuOpen()"
+                  aria-hidden="true"
+                ></i>
+              }
+            </button>
+            @if (reportsMenuOpen() && (sidebarOpen() || isMobile())) {
+              <div class="nav-sub" role="group" aria-label="Report pages">
+                @if (auth.hasPermission('student:read')) {
+                  <a
+                    routerLink="/reports/students"
+                    routerLinkActive="is-active"
+                    class="nav-item nav-item--sub"
+                    (click)="onNavClick()"
+                  >
+                    <span>Students</span>
+                  </a>
+                }
+                @if (
+                  auth.hasPermission('admission:write') ||
+                  auth.hasPermission('admission:approve') ||
+                  auth.hasPermission('student:read')
+                ) {
+                  <a
+                    routerLink="/reports/admissions"
+                    routerLinkActive="is-active"
+                    class="nav-item nav-item--sub"
+                    (click)="onNavClick()"
+                  >
+                    <span>Admissions</span>
+                  </a>
+                }
+                @if (
+                  auth.hasPermission('attendance:mark') || auth.hasPermission('attendance:unlock')
+                ) {
+                  <a
+                    routerLink="/reports/attendance"
+                    routerLinkActive="is-active"
+                    class="nav-item nav-item--sub"
+                    (click)="onNavClick()"
+                  >
+                    <span>Attendance</span>
+                  </a>
+                }
+                @if (auth.hasPermission('exam:mark') || auth.hasPermission('exam:publish')) {
+                  <a
+                    routerLink="/reports/exams"
+                    routerLinkActive="is-active"
+                    class="nav-item nav-item--sub"
+                    (click)="onNavClick()"
+                  >
+                    <span>Exams</span>
+                  </a>
+                }
+                @if (auth.hasPermission('fee:read')) {
+                  <a
+                    routerLink="/finance-reports"
+                    routerLinkActive="is-active"
+                    class="nav-item nav-item--sub"
+                    (click)="onNavClick()"
+                  >
+                    <span>Finance</span>
+                  </a>
+                }
+              </div>
             }
-          </a>
+          </div>
         }
         <div class="nav-section">
           @if (sidebarOpen() || isMobile()) {

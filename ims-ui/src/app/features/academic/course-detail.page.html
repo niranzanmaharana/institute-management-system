@@ -75,8 +75,8 @@
           </table>
         </div>
       }
-      @if (subjectError()) {
-        <app-error-state title="Subject failed" [message]="subjectError()!" />
+      @if (subjectLoadError()) {
+        <app-error-state title="Failed to load" [message]="subjectLoadError()!" />
       }
       <form class="form" [formGroup]="subjectForm" (ngSubmit)="createSubject()">
         <div class="grid">
@@ -133,8 +133,8 @@
 
       @if (categories().length === 0) {
         <p class="hint">Create a fee category before adding a fee plan.</p>
-        @if (categoryError()) {
-          <app-error-state title="Category failed" [message]="categoryError()!" />
+        @if (categoryLoadError()) {
+          <app-error-state title="Failed to load" [message]="categoryLoadError()!" />
         }
         <form class="form" [formGroup]="categoryForm" (ngSubmit)="createCategory()">
           <div class="code-field">
@@ -155,8 +155,8 @@
           </app-ui-button>
         </form>
       } @else {
-        @if (planError()) {
-          <app-error-state title="Fee plan failed" [message]="planError()!" />
+        @if (planLoadError()) {
+          <app-error-state title="Failed to load" [message]="planLoadError()!" />
         }
         <form class="form" [formGroup]="planForm" (ngSubmit)="createFeePlan()">
           <div class="code-field">
@@ -201,9 +201,6 @@
 
         <details class="more">
           <summary>Add another fee category</summary>
-          @if (categoryError()) {
-            <app-error-state title="Category failed" [message]="categoryError()!" />
-          }
           <form class="form" [formGroup]="categoryForm" (ngSubmit)="createCategory()">
             <div class="code-field">
               <app-ui-input

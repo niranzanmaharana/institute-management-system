@@ -1,0 +1,113 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Attendance reports</h1>
+      <p>RP-AT-02 batch summary · RP-AT-03 low attendance</p>
+    </div>
+  </header>
+
+  @if (!canRun) {
+    <app-ui-card>
+      <app-empty-state title="No access" message="attendance:mark or attendance:unlock is required." />
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      <h2 class="section-title">Filters</h2>
+      <form class="filters" [formGroup]="form" (ngSubmit)="run()">
+        <label class="field">
+          <span class="field__label">Batch</span>
+          <select class="field__control" formControlName="batchId">
+            <option value="">Select…</option>
+            @for (b of batches(); track b.id) {
+              <option [value]="b.id">{{ b.code }} — {{ b.name }}</option>
+            }
+          </select>
+        </label>
+        <label class="field" for="att-thr">
+          <span class="field__label">Threshold % (optional)</span>
+          <input
+            id="att-thr"
+            class="field__control"
+            type="number"
+            formControlName="thresholdPercent"
+          />
+        </label>
+        <app-ui-button type="submit" [loading]="loading()">Run</app-ui-button>
+        @if (attendanceSummary()) {
+          <app-ui-button type="button" (click)="exportAttendanceCsv()">Export AT-02 CSV</app-ui-button>
+        }
+        @if (lowAttendance()?.students?.length) {
+          <app-ui-button type="button" (click)="exportLowAttendanceCsv()">Export AT-03 CSV</app-ui-button>
+        }
+      </form>
+
+      @if (loading()) {
+        <app-loading-state />
+      } @else if (attendanceSummary(); as sum) {
+        <p class="meta">
+          Sessions {{ sum.sessionCount }} (draft {{ sum.draftCount }}, submitted {{ sum.submittedCount }},
+          locked {{ sum.lockedCount }})
+        </p>
+        <h3 class="sub-title">Batch summary (RP-AT-02)</h3>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student id</th>
+                <th>Present</th>
+                <th>Absent</th>
+                <th>%</th>
+                <th>Below min</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of sum.students; track r.studentId) {
+                <tr>
+                  <td>{{ r.studentId }}</td>
+                  <td>{{ r.presentEffective }}</td>
+                  <td>{{ r.absent }}</td>
+                  <td>{{ r.percentage }}</td>
+                  <td>{{ r.belowThreshold ? 'Yes' : 'No' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <h3 class="sub-title">
+          Low attendance (RP-AT-03)
+          @if (lowAttendance(); as low) {
+            — threshold {{ low.thresholdPercent }}%
+          }
+        </h3>
+        @if (!lowAttendance()?.students?.length) {
+          <app-empty-state title="None below threshold" message="All counted students meet the threshold." />
+        } @else {
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>%</th>
+                  <th>Present / sessions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (r of lowAttendance()!.students; track r.studentId) {
+                  <tr>
+                    <td>{{ r.studentCode }}</td>
+                    <td>{{ r.studentName }}</td>
+                    <td>{{ r.percentage }}</td>
+                    <td>{{ r.presentEffective }} / {{ r.sessionsCounted }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      } @else {
+        <app-empty-state title="No attendance data" message="Select a batch and run." />
+      }
+    </app-ui-card>
+  }
+</div>

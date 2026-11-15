@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AcademicService, Course } from '../academic/academic.service';
 import { EnquiryService } from './enquiry.service';
@@ -21,11 +22,11 @@ export class EnquiryCreatePage implements OnInit {
   private readonly enquiriesApi = inject(EnquiryService);
   private readonly academicApi = inject(AcademicService);
   private readonly router = inject(Router);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
   readonly loadError = signal<string | null>(null);
-  readonly error = signal<string | null>(null);
   readonly courses = signal<Course[]>([]);
 
   readonly form = this.fb.nonNullable.group({
@@ -57,7 +58,6 @@ export class EnquiryCreatePage implements OnInit {
     const v = this.form.getRawValue();
     const courseId = Number(v.interestedCourseId);
     this.submitting.set(true);
-    this.error.set(null);
     this.enquiriesApi
       .create({
         name: v.name.trim(),
@@ -73,7 +73,7 @@ export class EnquiryCreatePage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not create enquiry.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not create enquiry.'));
         },
       });
   }

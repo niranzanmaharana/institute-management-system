@@ -7,6 +7,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { RoleOption, UsersService } from './users.service';
 
@@ -21,6 +22,7 @@ export class UserEditPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly usersApi = inject(UsersService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
@@ -94,15 +96,14 @@ export class UserEditPage implements OnInit {
     }
     const v = this.form.getRawValue();
     if (v.roles.length === 0) {
-      this.error.set('Select at least one role.');
+      this.toasts.warning('Select at least one role.');
       return;
     }
     if (v.password && v.password.length < 8) {
-      this.error.set('Password must be at least 8 characters.');
+      this.toasts.warning('Password must be at least 8 characters.');
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     this.usersApi
       .update(this.userId, {
         email: v.email.trim(),
@@ -116,7 +117,7 @@ export class UserEditPage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not update user.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not update user.'));
         },
       });
   }

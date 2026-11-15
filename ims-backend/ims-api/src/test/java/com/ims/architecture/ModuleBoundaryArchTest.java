@@ -68,4 +68,34 @@ class ModuleBoundaryArchTest {
           .dependOnClassesThat()
           .resideInAPackage("com.ims.people..infrastructure..")
           .because("operations must use people application services");
+
+  @ArchTest
+  static final ArchRule documentsMustNotDependOnPeoplePersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.documents..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.people..infrastructure..")
+          .because("documents must use people application services");
+
+  @ArchTest
+  static final ArchRule documentsMustNotDependOnAcademicPersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.documents..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.academic..infrastructure..")
+          .because("documents must use academic application services");
+
+  @ArchTest
+  static final ArchRule importsMustNotDependOnPeoplePersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.imports..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.people..infrastructure..")
+          .because("imports must use people application services");
 }

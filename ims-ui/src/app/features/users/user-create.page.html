@@ -10,10 +10,9 @@
   <app-ui-card>
     @if (loading()) {
       <app-loading-state />
+    } @else if (loadError()) {
+      <app-error-state title="Unavailable" [message]="loadError()!" />
     } @else {
-      @if (error()) {
-        <app-error-state title="Error" [message]="error()!" />
-      }
       <form class="form" [formGroup]="form" (ngSubmit)="submit()">
         <app-ui-input label="Username" inputId="user-username" formControlName="username" />
         <app-ui-input label="Email" inputId="user-email" type="email" formControlName="email" />

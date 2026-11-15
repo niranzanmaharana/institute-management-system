@@ -5,6 +5,7 @@ import { UiButton } from '../../shared/ui-button';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { Institute, InstituteService } from './institute.service';
 
@@ -18,6 +19,7 @@ export class InstituteDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly institutesApi = inject(InstituteService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -64,7 +66,7 @@ export class InstituteDetailPage implements OnInit {
         this.suspending.set(false);
       },
       error: (err) => {
-        this.error.set(httpErrorMessage(err, `Could not suspend ${row.code}.`));
+        this.toasts.danger(httpErrorMessage(err, `Could not suspend ${row.code}.`));
         this.suspending.set(false);
       },
     });

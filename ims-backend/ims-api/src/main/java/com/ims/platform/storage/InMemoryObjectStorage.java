@@ -1,6 +1,7 @@
 package com.ims.platform.storage;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class InMemoryObjectStorage implements ObjectStorage {
 
   private final Map<String, StoredObjectMeta> objects = new ConcurrentHashMap<>();
+  private final Map<String, byte[]> payloads = new ConcurrentHashMap<>();
 
   @Override
   public String presignPut(
@@ -36,7 +38,20 @@ public class InMemoryObjectStorage implements ObjectStorage {
   }
 
   @Override
+  public void put(String storageKey, String contentType, byte[] bytes) {
+    byte[] copy = bytes == null ? new byte[0] : Arrays.copyOf(bytes, bytes.length);
+    payloads.put(storageKey, copy);
+    objects.put(storageKey, new StoredObjectMeta(copy.length, contentType));
+  }
+
+  @Override
   public Optional<StoredObjectMeta> head(String storageKey) {
     return Optional.ofNullable(objects.get(storageKey));
+  }
+
+  /** Test helper — returns a copy of stored bytes when present. */
+  public Optional<byte[]> getBytes(String storageKey) {
+    byte[] data = payloads.get(storageKey);
+    return data == null ? Optional.empty() : Optional.of(Arrays.copyOf(data, data.length));
   }
 }

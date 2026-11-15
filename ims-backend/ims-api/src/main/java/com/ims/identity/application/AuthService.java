@@ -60,7 +60,14 @@ public class AuthService {
   public record AuthTokens(String accessToken, String refreshToken, UserView user) {}
 
   public record UserView(
-      Long id, String username, String email, Long instituteId, Set<String> roles, Set<String> permissions) {}
+      Long id,
+      String username,
+      String email,
+      Long instituteId,
+      String instituteName,
+      String instituteCode,
+      Set<String> roles,
+      Set<String> permissions) {}
 
   @Transactional
   public AuthTokens login(
@@ -173,8 +180,24 @@ public class AuthService {
             .flatMap(role -> role.getPermissions().stream())
             .map(Permission::getCode)
             .collect(Collectors.toSet());
+    String instituteName = null;
+    String instituteCode = null;
+    if (user.getInstituteId() != null) {
+      var institute = instituteJpaRepository.findById(user.getInstituteId()).orElse(null);
+      if (institute != null) {
+        instituteName = institute.getName();
+        instituteCode = institute.getCode();
+      }
+    }
     return new UserView(
-        user.getId(), user.getUsername(), user.getEmail(), user.getInstituteId(), roles, permissions);
+        user.getId(),
+        user.getUsername(),
+        user.getEmail(),
+        user.getInstituteId(),
+        instituteName,
+        instituteCode,
+        roles,
+        permissions);
   }
 
   private static String sha256(String value) {

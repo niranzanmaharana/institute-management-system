@@ -13,9 +13,6 @@
   @if (canRefund) {
     <app-ui-card>
       <h2 class="section-title">Request refund</h2>
-      @if (actionError()) {
-        <app-error-state title="Action failed" [message]="actionError()!" />
-      }
       <form class="form" [formGroup]="requestForm" (ngSubmit)="requestRefund()">
         <div class="grid">
           <app-ui-input label="Fee account id" inputId="rf-account" formControlName="feeAccountId" />

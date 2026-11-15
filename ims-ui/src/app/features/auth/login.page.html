@@ -1,14 +1,14 @@
 <div class="login">
   <form class="login__card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
     <div class="login__brand">
-      <span class="login__logo">IMS</span>
+      @if (brandLogoUrl(); as logo) {
+        <img class="login__logo-img" [src]="logo" [alt]="brandName() + ' logo'" width="56" height="56" />
+      } @else {
+        <span class="login__logo">IMS</span>
+      }
       <h1>Sign in</h1>
-      <p>Institute Management System</p>
+      <p>{{ brandName() }}</p>
     </div>
-
-    @if (error()) {
-      <div class="login__error" role="alert">{{ error() }}</div>
-    }
 
     <app-ui-input
       label="Username"

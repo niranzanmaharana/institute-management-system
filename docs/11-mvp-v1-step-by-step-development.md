@@ -268,6 +268,16 @@ flowchart TD
 
 **Phase 5.4 status:** Complete — Operations Angular UI polish: role-gated nav + dashboard shortcuts; loading/empty/error on ops screens; batch filter + labels; status badge tones; table↔cards ≤767px for attendance/exams/rooms; timetable day/agenda already responsive. Viewport smoke checklist: `docs/design/responsive-ops-smoke.md`. Playwright e2e deferred (same pattern as fee spine).
 
+**Phase 6.1 status:** Complete — BONAFIDE + COMPLETION certificates (OpenPDF); stored under `institutes/{id}/certificates/…` via `ObjectStorage.put`; metadata in `generated_documents`; download via signed GET. Permissions `certificate:generate` / `certificate:read`. Flyway `V22__certificates.sql`. UI on student detail. Re-login after V22; MinIO required for generate/download.
+
+**Phase 6.2 status:** Complete — CSV import students + faculty (validate then insert; partial success; error report CSV in response). Templates + multipart upload. Permission `import:write` (ADMIN, ACADEMIC_COORDINATOR) plus `student:write` / `faculty:write`. Flyway `V23__csv_import.sql`. UI `/imports`. Re-login after V23.
+
+**Phase 6.3 status:** Complete — Bulk marks CSV upload (FR-IE-02): exam-scoped template + multipart upload; idempotent upsert per exam+student via existing results API; `import_jobs` with QUEUED→RUNNING→COMPLETED/FAILED; sync when ≤40 rows, `@Async` above that; job status + error-report CSV. Permission `exam:mark`. Flyway `V24__marks_import_jobs.sql`. UI on exam detail (DRAFT_MARKS).
+
+**Phase 6.4 status:** Complete — ★ report screens/exports (FR-RP-01): `/api/v1/reports/*` for ST-01/02/03, FI-07, AT-03, EX-01; AT-01/02 via attendance summary; finance ★ on `/finance-reports` (+ FI-07). UI: sidebar **Reports** submenu — `/reports/students`, `/admissions`, `/attendance`, `/exams`, Finance.
+
+**Phase 6.5 status:** Complete — RP-ST-04 withdrawals (`GET /api/v1/reports/students/withdrawals`) and RP-ST-05 batch roster (`GET /api/v1/reports/students/roster`) with filters + CSV on `/reports/students`.
+
 **Business codes:** Sequence-backed auto-generation (`code_sequences` + `GET /api/v1/codes/next?type=…`). Codes optional on create (blank → auto); UI Generate button. Formats: student `{instituteId}{seq:06}` → `1000001`; course `C{I}-{seq:05}`; fee plan `P{I}-…`; batch `B{I}-…`; year `AY{I}-…`; fee category `FC{I}-…`; admission `A{I}-{seq:06}`; faculty `F{I}-{seq:05}`; staff `S{I}-{seq:05}`; institute `I{seq:05}` (platform).
 
 **View / edit UI:** List rows include View/Edit where APIs allow. Students, courses, batches, fee plans, institutes support edit of mutable fields (codes immutable). Admissions are view + workflow (approve/reject/cancel); enrollments are view + lifecycle. Enquiries convert to applications.
@@ -582,6 +592,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-DC-02–03 |
 | **Test plan** | Authz; tenant path |
 | **Exit criteria** | At least one certificate type downloadable |
+| **Status** | **Complete** |
 
 ### Step 6.2 — CSV import students (+ faculty)
 
@@ -592,6 +603,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-IE-01; doc 10 import |
 | **Test plan** | Bad rows reported; good rows inserted; no cross-tenant |
 | **Exit criteria** | Import usable by ADMIN |
+| **Status** | **Complete** |
 
 ### Step 6.3 — Bulk marks upload
 
@@ -602,6 +614,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-IE-02 |
 | **Test plan** | Re-upload same file safe |
 | **Exit criteria** | Documented job status API/UI |
+| **Status** | **Complete** |
 
 ### Step 6.4 — ★ Report screens & exports
 
@@ -612,6 +625,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-RP-01; RP-* ★ |
 | **Test plan** | Spot-check totals vs known fixture |
 | **Exit criteria** | All ★ rows in doc 10 marked available |
+| **Status** | **Complete** |
 
 ### Step 6.5 — Withdrawal / roster reports
 
@@ -621,6 +635,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **Deliverables** | Filters + export |
 | **Test plan** | Matches enrollment statuses |
 | **Exit criteria** | Coordinator can export roster |
+| **Status** | **Complete** |
 
 ---
 
@@ -691,7 +706,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 
 - [ ] Phases 3–7 exit criteria green  
 - [ ] MVP regression (spine + isolation) still green  
-- [ ] ★ reports available  
+- [x] ★ reports available (incl. ST-04/05 withdrawals + roster)  
 - [ ] Authz matrix capabilities implemented for shipped screens  
 - [ ] Responsive QA signed  
 - [ ] Security + DR + perf baselines stored  
@@ -727,7 +742,10 @@ Use as a build board; do not skip gates.
 - [x] 5.1 → 5.2 → 5.3 → 5.4  
 
 
-- [ ] 6.1 → 6.2 → 6.3 → 6.4 → 6.5  
+- [x] 6.1 → 6.2 → 6.3 → 6.4  
+- [x] 6.5  
+
+
 - [ ] 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 7.6  
 - [ ] **v1 freeze**  
 

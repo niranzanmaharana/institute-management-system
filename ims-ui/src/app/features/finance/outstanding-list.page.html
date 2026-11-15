@@ -40,12 +40,6 @@
     </app-ui-card>
   }
 
-  @if (statementError()) {
-    <app-ui-card>
-      <app-error-state title="Statement download failed" [message]="statementError()!" />
-    </app-ui-card>
-  }
-
   <app-ui-card>
     @if (loading()) {
       <app-loading-state />
@@ -113,9 +107,6 @@
         <p class="muted">
           Account #{{ target.id }} · due {{ target.outstandingAmount }} {{ target.currency }}
         </p>
-        @if (payError()) {
-          <app-error-state title="Payment failed" [message]="payError()!" />
-        }
         <form class="form" [formGroup]="payForm" id="collect-pay-form">
           <app-ui-input
             label="Amount"
@@ -147,9 +138,6 @@
         <p class="muted">
           Account #{{ target.id }} · due {{ target.outstandingAmount }} {{ target.currency }}
         </p>
-        @if (adjustError()) {
-          <app-error-state title="Adjustment failed" [message]="adjustError()!" />
-        }
         @if (adjustments().length > 0) {
           <ul class="adj-list">
             @for (row of adjustments(); track row.id) {
@@ -187,9 +175,6 @@
     @if (paymentsTarget(); as target) {
       <ng-container>
         <p class="muted">Account #{{ target.id }} · due {{ target.outstandingAmount }} {{ target.currency }}</p>
-        @if (paymentsError()) {
-          <app-error-state title="Payments" [message]="paymentsError()!" />
-        }
         @if (payments().length === 0) {
           <app-empty-state title="No payments" message="Collect a payment first." />
         } @else {

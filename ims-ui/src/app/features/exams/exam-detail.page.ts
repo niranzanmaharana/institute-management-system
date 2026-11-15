@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Subscription, switchMap, timer } from 'rxjs';
 import { UiCard } from '../../shared/ui-card';
 import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
@@ -8,10 +9,12 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { BadgeTone, StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
+import { UiFileDropzone } from '../../shared/ui-file-dropzone';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
 import { AcademicService, Batch } from '../academic/academic.service';
-import { Exam, ExamResult, ExamService } from './exam.service';
+import { Exam, ExamResult, ExamService, MarksImportJob } from './exam.service';
 
 @Component({
   selector: 'app-exam-detail-page',
@@ -21,6 +24,7 @@ import { Exam, ExamResult, ExamService } from './exam.service';
     UiCard,
     UiButton,
     UiInput,
+    UiFileDropzone,
     EmptyState,
     LoadingState,
     ErrorState,
@@ -29,12 +33,13 @@ import { Exam, ExamResult, ExamService } from './exam.service';
   templateUrl: './exam-detail.page.html',
   styleUrl: './exam-detail.page.scss',
 })
-export class ExamDetailPage implements OnInit {
+export class ExamDetailPage implements OnInit, OnDestroy {
   private readonly examApi = inject(ExamService);
   private readonly academicApi = inject(AcademicService);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -42,8 +47,11 @@ export class ExamDetailPage implements OnInit {
   readonly results = signal<ExamResult[]>([]);
   readonly grades = signal<string[]>([]);
   readonly batches = signal<Batch[]>([]);
-  readonly actionError = signal<string | null>(null);
   readonly busy = signal(false);
+  readonly importBusy = signal(false);
+  readonly importJob = signal<MarksImportJob | null>(null);
+  readonly selectedMarksFile = signal<File | null>(null);
+  private pollSub: Subscription | null = null;
 
   readonly componentForm = this.fb.nonNullable.group({
     code: ['', Validators.required],
@@ -96,6 +104,115 @@ export class ExamDetailPage implements OnInit {
     this.reload(id);
   }
 
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
+
+  onMarksRejected(message: string): void {
+    this.toasts.warning(message);
+  }
+
+  downloadMarksTemplate(): void {
+    const exam = this.exam();
+    if (!exam || !this.canMark) {
+      return;
+    }
+    this.importBusy.set(true);
+    this.examApi.downloadMarksTemplate(exam.id).subscribe({
+      next: (blob) => {
+        this.importBusy.set(false);
+        this.saveBlob(blob, `exam-${exam.id}-marks-template.csv`);
+      },
+      error: (err) => {
+        this.importBusy.set(false);
+        this.toasts.danger(httpErrorMessage(err, 'Could not download marks template.'));
+      },
+    });
+  }
+
+  uploadMarksCsv(): void {
+    const exam = this.exam();
+    const file = this.selectedMarksFile();
+    if (!exam || !this.marksEditable || this.importBusy() || !file) {
+      this.toasts.warning('Choose a CSV file first.');
+      return;
+    }
+    this.importBusy.set(true);
+    this.pollSub?.unsubscribe();
+    this.examApi.uploadMarksCsv(exam.id, file).subscribe({
+      next: (job) => {
+        this.importJob.set(job);
+        this.selectedMarksFile.set(null);
+        if (job.async || job.status === 'QUEUED' || job.status === 'RUNNING') {
+          this.toasts.info(
+            `Job #${job.id} queued — polling until complete (large files run in the background).`,
+          );
+          this.pollImportJob(job.id, exam.id);
+        } else {
+          this.importBusy.set(false);
+          this.toastImportFinished(job);
+          this.reload(exam.id);
+        }
+      },
+      error: (err) => {
+        this.importBusy.set(false);
+        this.toasts.danger(httpErrorMessage(err, 'Could not upload marks CSV.'));
+      },
+    });
+  }
+
+  downloadImportErrors(): void {
+    const job = this.importJob();
+    if (!job?.errorReportCsv) {
+      return;
+    }
+    const blob = new Blob([job.errorReportCsv], { type: 'text/csv;charset=utf-8' });
+    this.saveBlob(blob, `marks-import-job-${job.id}-errors.csv`);
+  }
+
+  private pollImportJob(jobId: number, examId: number): void {
+    this.pollSub = timer(0, 1500)
+      .pipe(switchMap(() => this.examApi.getMarksImportJob(jobId)))
+      .subscribe({
+        next: (job) => {
+          this.importJob.set(job);
+          if (job.status === 'COMPLETED' || job.status === 'FAILED') {
+            this.pollSub?.unsubscribe();
+            this.importBusy.set(false);
+            if (job.status === 'FAILED') {
+              this.toasts.danger(job.message || 'Import failed.');
+            } else {
+              this.toastImportFinished(job);
+            }
+            this.reload(examId);
+          }
+        },
+        error: (err) => {
+          this.pollSub?.unsubscribe();
+          this.importBusy.set(false);
+          this.toasts.danger(httpErrorMessage(err, 'Could not poll import job.'));
+        },
+      });
+  }
+
+  private toastImportFinished(job: MarksImportJob): void {
+    const message = `Import finished: ${job.successCount} ok, ${job.failedCount} failed.`;
+    if (job.failedCount > 0) {
+      this.toasts.warning(message);
+    } else {
+      this.toasts.success(message);
+    }
+  }
+
+  private saveBlob(blob: Blob, fileName: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   batchLabel(batchId: number): string {
     const batch = this.batches().find((b) => b.id === batchId);
     return batch ? `${batch.code} — ${batch.name}` : `#${batchId}`;
@@ -123,7 +240,6 @@ export class ExamDetailPage implements OnInit {
     }
     this.loading.set(true);
     this.error.set(null);
-    this.actionError.set(null);
     this.examApi.get(id).subscribe({
       next: (exam) => {
         this.exam.set(exam);
@@ -153,12 +269,11 @@ export class ExamDetailPage implements OnInit {
     }
     if (this.componentForm.invalid) {
       this.componentForm.markAllAsTouched();
-      this.actionError.set('Component code, name, max marks, and pass marks are required.');
+      this.toasts.warning('Component code, name, max marks, and pass marks are required.');
       return;
     }
     const v = this.componentForm.getRawValue();
     this.busy.set(true);
-    this.actionError.set(null);
     this.examApi
       .addComponent(exam.id, {
         code: v.code.trim(),
@@ -174,7 +289,7 @@ export class ExamDetailPage implements OnInit {
         },
         error: (err) => {
           this.busy.set(false);
-          this.actionError.set(httpErrorMessage(err, 'Could not add component.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not add component.'));
         },
       });
   }
@@ -218,7 +333,6 @@ export class ExamDetailPage implements OnInit {
       };
     });
     this.busy.set(true);
-    this.actionError.set(null);
     this.examApi.upsertResults(exam.id, payload).subscribe({
       next: () => {
         this.busy.set(false);
@@ -226,7 +340,7 @@ export class ExamDetailPage implements OnInit {
       },
       error: (err) => {
         this.busy.set(false);
-        this.actionError.set(httpErrorMessage(err, 'Could not save marks.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not save marks.'));
       },
     });
   }
@@ -246,11 +360,10 @@ export class ExamDetailPage implements OnInit {
     }
     if (this.unlockReason.invalid) {
       this.unlockReason.markAsTouched();
-      this.actionError.set('Unlock reason is required.');
+      this.toasts.warning('Unlock reason is required.');
       return;
     }
     this.busy.set(true);
-    this.actionError.set(null);
     this.examApi.unlock(exam.id, this.unlockReason.value.trim()).subscribe({
       next: () => {
         this.busy.set(false);
@@ -259,7 +372,7 @@ export class ExamDetailPage implements OnInit {
       },
       error: (err) => {
         this.busy.set(false);
-        this.actionError.set(httpErrorMessage(err, 'Could not unlock exam.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not unlock exam.'));
       },
     });
   }
@@ -273,7 +386,6 @@ export class ExamDetailPage implements OnInit {
       return;
     }
     this.busy.set(true);
-    this.actionError.set(null);
     action(exam.id).subscribe({
       next: () => {
         this.busy.set(false);
@@ -281,7 +393,7 @@ export class ExamDetailPage implements OnInit {
       },
       error: (err) => {
         this.busy.set(false);
-        this.actionError.set(httpErrorMessage(err, fallback));
+        this.toasts.danger(httpErrorMessage(err, fallback));
       },
     });
   }

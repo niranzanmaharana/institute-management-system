@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { FacultyService } from './faculty.service';
 
@@ -20,6 +21,7 @@ export class FacultyEditPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly facultyApi = inject(FacultyService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
@@ -77,7 +79,6 @@ export class FacultyEditPage implements OnInit {
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const v = this.form.getRawValue();
     const addresses =
       v.addressLine1.trim().length > 0 && v.city.trim().length > 0
@@ -109,7 +110,7 @@ export class FacultyEditPage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not save faculty.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not save faculty.'));
         },
       });
   }

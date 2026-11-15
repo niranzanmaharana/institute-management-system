@@ -5,9 +5,11 @@ import { UiButton } from '../../shared/ui-button';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { PersonDocumentsSection } from '../people/person-documents.section';
 import { PersonPhotoComponent } from '../people/person-photo.component';
+import { StudentCertificatesSection } from './student-certificates.section';
 import { Student, StudentService } from './student.service';
 
 @Component({
@@ -21,6 +23,7 @@ import { Student, StudentService } from './student.service';
     StatusBadge,
     PersonDocumentsSection,
     PersonPhotoComponent,
+    StudentCertificatesSection,
   ],
   templateUrl: './student-detail.page.html',
   styleUrl: './student-detail.page.scss',
@@ -29,6 +32,7 @@ export class StudentDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly studentsApi = inject(StudentService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -82,7 +86,7 @@ export class StudentDetailPage implements OnInit {
         this.deactivating.set(false);
       },
       error: (err) => {
-        this.error.set(httpErrorMessage(err, 'Could not deactivate student.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not deactivate student.'));
         this.deactivating.set(false);
       },
     });

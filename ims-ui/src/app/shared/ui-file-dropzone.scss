@@ -1,0 +1,136 @@
+.drop-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.drop-field--compact {
+  gap: 0.3rem;
+}
+
+.drop-field__label {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.dropzone {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  padding: 1.75rem 1.25rem;
+  border: 1.5px dashed var(--ims-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ims-bg) 65%, #fff);
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.dropzone--compact {
+  padding: 1rem 0.85rem;
+}
+
+.dropzone--active {
+  border-color: var(--ims-primary);
+  background: var(--ims-primary-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ims-primary) 35%, transparent);
+}
+
+.dropzone--has-file {
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--ims-primary) 45%, var(--ims-border));
+  background: #fff;
+}
+
+.dropzone--disabled {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.dropzone__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.dropzone__icon {
+  font-size: 1.75rem;
+  color: var(--ims-text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.dropzone--compact .dropzone__icon {
+  font-size: 1.35rem;
+}
+
+.dropzone--active .dropzone__icon,
+.dropzone--has-file .dropzone__icon {
+  color: var(--ims-primary);
+}
+
+.dropzone__title {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ims-text);
+  word-break: break-word;
+}
+
+.dropzone__or {
+  margin: 0;
+  color: var(--ims-text-muted);
+  font-size: 0.9rem;
+}
+
+.dropzone__meta {
+  margin: 0;
+  color: var(--ims-text-muted);
+  font-size: 0.9rem;
+}
+
+.dropzone__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.35rem;
+}
+
+.link-btn {
+  border: 0;
+  background: transparent;
+  color: var(--ims-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.15rem 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.link-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.link-btn--muted {
+  color: var(--ims-text-muted);
+  font-weight: 600;
+}
+
+.drop-field__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--ims-text-muted);
+}
+
+.secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}

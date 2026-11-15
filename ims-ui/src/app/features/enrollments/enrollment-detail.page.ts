@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
+import { ToastService } from '../../shared/toast.service';
 import { StatusBadge, BadgeTone } from '../../shared/status-badge';
 import { AuthService } from '../../core/auth.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
@@ -46,6 +47,7 @@ export class EnrollmentDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly enrollmentsApi = inject(EnrollmentService);
   private readonly academicApi = inject(AcademicService);
+  private readonly toasts = inject(ToastService);
   readonly auth = inject(AuthService);
 
   readonly loading = signal(true);
@@ -118,7 +120,6 @@ export class EnrollmentDetailPage implements OnInit {
     this.capacityOverride = false;
     this.admissionWaiver = false;
     this.targetBatchId = '';
-    this.error.set(null);
   }
 
   closePanel(): void {
@@ -138,15 +139,14 @@ export class EnrollmentDetailPage implements OnInit {
     const row = this.enrollment();
     if (!row || this.acting()) return;
     if (this.capacityOverride && !this.overrideReason.trim()) {
-      this.error.set('Capacity override reason is required.');
+      this.toasts.warning('Capacity override reason is required.');
       return;
     }
     if (this.admissionWaiver && !this.waiverReason.trim()) {
-      this.error.set('Admission waiver reason is required.');
+      this.toasts.warning('Admission waiver reason is required.');
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     this.enrollmentsApi.activate(row.id, this.activateBody(), crypto.randomUUID()).subscribe({
       next: (result) => {
         this.activation.set(result);
@@ -167,11 +167,10 @@ export class EnrollmentDetailPage implements OnInit {
     if (!row || this.acting()) return;
     const reason = this.reason.trim();
     if (!reason) {
-      this.error.set('Reason is required.');
+      this.toasts.warning('Reason is required.');
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     const req =
       kind === 'cancel'
         ? this.enrollmentsApi.cancel(row.id, { reason })
@@ -202,11 +201,10 @@ export class EnrollmentDetailPage implements OnInit {
     const row = this.enrollment();
     if (!row || this.acting()) return;
     if (this.capacityOverride && !this.overrideReason.trim()) {
-      this.error.set('Capacity override reason is required.');
+      this.toasts.warning('Capacity override reason is required.');
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     this.enrollmentsApi.resume(row.id, this.activateBody()).subscribe({
       next: (updated) => {
         this.enrollment.set(updated);
@@ -222,15 +220,14 @@ export class EnrollmentDetailPage implements OnInit {
     if (!row || this.acting()) return;
     const targetBatchId = Number(this.targetBatchId);
     if (!targetBatchId) {
-      this.error.set('Select a target batch.');
+      this.toasts.warning('Select a target batch.');
       return;
     }
     if (this.capacityOverride && !this.overrideReason.trim()) {
-      this.error.set('Capacity override reason is required.');
+      this.toasts.warning('Capacity override reason is required.');
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     this.enrollmentsApi
       .transfer(row.id, {
         targetBatchId,
@@ -250,6 +247,6 @@ export class EnrollmentDetailPage implements OnInit {
 
   private fail(err: unknown, fallback: string): void {
     this.acting.set(false);
-    this.error.set(httpErrorMessage(err, fallback));
+    this.toasts.danger(httpErrorMessage(err, fallback));
   }
 }

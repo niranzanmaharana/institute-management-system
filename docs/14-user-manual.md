@@ -455,6 +455,35 @@ Requires `attendance:mark` / `attendance:unlock` in JWT — **re-login** after m
 5. **Publish results** → students can see them.
 6. **Lock** to freeze. **Unlock** (with reason) returns to draft for corrections.
 
+### Bulk marks upload (CSV)
+
+While status is **DRAFT_MARKS** and you have `exam:mark`:
+
+1. On the exam detail page, open **Bulk marks upload**.
+2. **Download template** — headers include `studentCode`, status/grade fields, and each component code.
+3. Fill rows (`studentCode` required; or `studentId`). Leave blank marks empty for incomplete drafts.
+4. **Upload CSV** — each row upserts that student (re-upload is safe). Small files finish in the request; larger ones show a job status that polls until complete.
+5. If any rows fail, **Download error report**, fix, and re-upload.
+
+Limits: 2 000 rows, 5 MB. Exam must stay **DRAFT_MARKS**.
+
+---
+
+## 10D. ★ Reports & CSV exports
+
+**Where:** Sidebar **Reports** (collapsible) — expand to open Students / Admissions / Attendance / Exams / Finance.
+
+| Report | Screen |
+| --- | --- |
+| RP-ST-01 / ST-02 | Reports → **Students** (list + active counts) |
+| RP-ST-04 / ST-05 | Reports → **Students** (withdrawals + batch roster) |
+| RP-ST-03 | Reports → **Admissions** |
+| RP-AT-02 / AT-03 | Reports → **Attendance** |
+| RP-EX-01 | Reports → **Exams** |
+| RP-FI-01…08 | Reports → **Finance** (includes discounts RP-FI-07) |
+
+On each page: set filters → **Run** → **Export CSV**.
+
 ---
 
 ## 11. Documents & photos
@@ -464,6 +493,39 @@ Requires `attendance:mark` / `attendance:unlock` in JWT — **re-login** after m
 1. Start MinIO (`scripts\start-dev.ps1` or `docker compose up -d minio` in `infra`).
 2. Upload PDF/JPEG/PNG ≤ 5 MB.
 3. Profile photo: Add/Change photo in the header (JPEG/PNG).
+
+---
+
+## 11B. CSV import (students / faculty)
+
+**Who:** ADMIN / ACADEMIC_COORDINATOR with `import:write` (plus `student:write` / `faculty:write`). Re-login after V23.
+
+**Where:** **CSV import** in the Academic nav.
+
+### Steps
+
+1. Download the template for Students or Faculty.
+2. Fill rows (`firstName` + `lastName` required; codes optional — blank = auto).
+3. Upload the CSV → good rows are inserted; failed rows are listed.
+4. Download the **error report CSV** if any rows failed, fix, and re-upload only the failed ones (or the whole file — duplicate codes will fail again).
+
+Limits: 500 rows, 2 MB.
+
+---
+
+## 11A. Certificates (bonafide / completion)
+
+**Who:** ADMIN / ACADEMIC_COORDINATOR (`certificate:generate`). FRONT_DESK / ACCOUNTANT can download (`certificate:read`). Students may download **own** issued certificates. Re-login after V22.
+
+**Where:** Student **detail** → **Certificates**. MinIO must be running (same as documents).
+
+### Steps
+
+1. Open the student → **Certificates**.
+2. Choose template **Bonafide** or **Course completion**.
+3. For completion, pick a **COMPLETED** enrollment (complete the enrollment first if needed).
+4. **Generate PDF** — stored privately under the institute prefix.
+5. **Download** opens a short-lived signed URL.
 
 ---
 
@@ -487,6 +549,12 @@ Requires `attendance:mark` / `attendance:unlock` in JWT — **re-login** after m
 | Need batch weekly schedule | **Timetable** → select batch → Week / day tabs |
 | Need midterm / final marks | **Exams** → create → components → Open marks → Publish → Lock |
 | Published results need a fix | COORD/ADMIN **Unlock** with reason, edit, publish again |
+| Need bonafide / completion letter | Student detail → **Certificates** → Generate → Download |
+| Certificate generate fails | Ensure MinIO is up; re-login after V22; completion needs COMPLETED enrollment |
+| Need to onboard many students/faculty | **CSV import** → template → upload → fix error report |
+| Need to enter many exam marks | Exam detail → **Bulk marks upload** → template → upload (re-upload safe) |
+| Need student / attendance / exam ★ reports | **Reports** → Students / Admissions / Attendance / Exams → Run → CSV |
+| Need fee collection / aging / discounts | **Reports → Finance** (includes RP-FI-07 discounts) |
 | Login menu missing an item | Wrong role — ask ADMIN; or re-login after a permission migration |
 | Document upload fails | Ensure MinIO is running |
 
@@ -513,7 +581,11 @@ Use this table as the maintenance checklist for this manual.
 | 5.2 | Timetable | §10B |
 | 5.3 | Exams & results | §10C |
 | 5.4 | Operations UI polish (responsive lists, filters, dashboard shortcuts) | §§10A–10C |
-| *Next* | Certificates / import / … | Add new § |
+| 6.1 | Certificates (bonafide / completion) | §11A |
+| 6.2 | CSV import students / faculty | §11B |
+| 6.3 | Bulk marks upload (CSV job) | §10C / exam detail |
+| 6.4 | ★ report screens & CSV exports | §10D |
+| 6.5 | Withdrawals / batch roster reports | §10D |
 
 ---
 

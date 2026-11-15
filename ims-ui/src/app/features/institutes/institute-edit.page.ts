@@ -7,8 +7,10 @@ import { UiInput } from '../../shared/ui-input';
 import { UiSelect, UiSelectOption } from '../../shared/ui-select';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
-import { InstituteService } from './institute.service';
+import { InstituteLogoComponent } from './institute-logo.component';
+import { InstituteService, normalizeLogoType } from './institute.service';
 import { DEFAULT_INSTITUTE_TIMEZONE, timezoneSelectOptions } from './timezones';
 
 @Component({
@@ -22,6 +24,7 @@ import { DEFAULT_INSTITUTE_TIMEZONE, timezoneSelectOptions } from './timezones';
     UiSelect,
     ErrorState,
     LoadingState,
+    InstituteLogoComponent,
   ],
   templateUrl: './institute-edit.page.html',
   styleUrl: './institute-edit.page.scss',
@@ -31,9 +34,12 @@ export class InstituteEditPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly institutesApi = inject(InstituteService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
+  readonly logoUploading = signal(false);
+  readonly logoPreviewUrl = signal<string | null>(null);
   readonly error = signal<string | null>(null);
   instituteId = 0;
   code = '';
@@ -51,7 +57,6 @@ export class InstituteEditPage implements OnInit {
     state: [''],
     postalCode: [''],
     country: ['India'],
-    iconUrl: [''],
   });
 
   ngOnInit(): void {
@@ -67,6 +72,7 @@ export class InstituteEditPage implements OnInit {
         this.code = row.code;
         const timezone = row.timezone || DEFAULT_INSTITUTE_TIMEZONE;
         this.timezoneOptions = timezoneSelectOptions(timezone);
+        this.logoPreviewUrl.set(row.iconUrl || null);
         this.form.patchValue({
           name: row.name,
           timezone,
@@ -79,7 +85,6 @@ export class InstituteEditPage implements OnInit {
           state: row.state || '',
           postalCode: row.postalCode || '',
           country: row.country || 'India',
-          iconUrl: row.iconUrl || '',
         });
         this.loading.set(false);
       },
@@ -90,13 +95,36 @@ export class InstituteEditPage implements OnInit {
     });
   }
 
+  async onLogoSelected(file: File): Promise<void> {
+    if (!this.instituteId || this.logoUploading()) {
+      return;
+    }
+    if (!normalizeLogoType(file)) {
+      this.toasts.warning('Logo must be JPEG or PNG.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.toasts.warning('Logo exceeds the maximum size of 5 MB.');
+      return;
+    }
+    this.logoUploading.set(true);
+    try {
+      const updated = await this.institutesApi.uploadLogo(this.instituteId, file);
+      this.logoPreviewUrl.set(updated.iconUrl || null);
+      this.toasts.success('Logo updated.');
+    } catch (err) {
+      this.toasts.danger(logoUploadError(err));
+    } finally {
+      this.logoUploading.set(false);
+    }
+  }
+
   submit(): void {
     if (this.form.invalid || this.submitting() || !this.instituteId) {
       this.form.markAllAsTouched();
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const v = this.form.getRawValue();
     const opt = (s: string) => (s.trim().length > 0 ? s.trim() : undefined);
 
@@ -114,7 +142,6 @@ export class InstituteEditPage implements OnInit {
           state: opt(v.state),
           postalCode: opt(v.postalCode),
           country: opt(v.country),
-          iconUrl: opt(v.iconUrl),
         },
       })
       .subscribe({
@@ -124,8 +151,18 @@ export class InstituteEditPage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not save institute.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not save institute.'));
         },
       });
   }
+}
+
+function logoUploadError(err: unknown): string {
+  if (err instanceof TypeError) {
+    return 'Could not reach object storage. Start MinIO and retry.';
+  }
+  if (err instanceof Error && err.message) {
+    return err.message;
+  }
+  return httpErrorMessage(err, 'Could not upload logo.');
 }

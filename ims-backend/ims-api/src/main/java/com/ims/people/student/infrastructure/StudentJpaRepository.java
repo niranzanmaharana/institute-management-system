@@ -12,6 +12,9 @@ public interface StudentJpaRepository extends JpaRepository<Student, Long> {
 
   boolean existsByInstituteIdAndStudentCodeIgnoreCase(Long instituteId, String studentCode);
 
+  Optional<Student> findByInstituteIdAndStudentCodeIgnoreCaseAndDeletedAtIsNull(
+      Long instituteId, String studentCode);
+
   Optional<Student> findByIdAndInstituteIdAndDeletedAtIsNull(Long id, Long instituteId);
 
   @Query(

@@ -1,0 +1,124 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>CSV import</h1>
+      <p>Bulk onboarding — validate then insert; download an error report for failed rows</p>
+    </div>
+  </header>
+
+  @if (!canAny) {
+    <app-ui-card>
+      <app-error-state
+        title="Forbidden"
+        message="You need import:write plus student:write and/or faculty:write. Ask an ADMIN, or re-login after migration V23."
+      />
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      <div class="tabs" role="tablist" aria-label="Import type">
+        @if (canStudents) {
+          <button
+            type="button"
+            class="tab"
+            role="tab"
+            [class.is-active]="kind() === 'students'"
+            (click)="setKind('students')"
+          >
+            Students
+          </button>
+        }
+        @if (canFaculties) {
+          <button
+            type="button"
+            class="tab"
+            role="tab"
+            [class.is-active]="kind() === 'faculties'"
+            (click)="setKind('faculties')"
+          >
+            Faculty
+          </button>
+        }
+      </div>
+
+      <p class="hint">
+        @if (kind() === 'students') {
+          Columns: <code>studentCode,firstName,lastName,phone,email</code> (codes optional —
+          auto-generated when blank).
+        } @else {
+          Columns:
+          <code>facultyCode,firstName,lastName,phone,email,department</code> (codes optional).
+        }
+        Max 500 rows / 2 MB.
+      </p>
+
+      <div class="toolbar">
+        <app-ui-button type="button" (click)="downloadTemplate()">Download template</app-ui-button>
+      </div>
+
+      <app-ui-file-dropzone
+        class="import-dropzone"
+        label="Attach CSV"
+        accept=".csv,text/csv"
+        acceptedHint="Accepted file types: .csv only · max 2 MB"
+        readyMeta="CSV ready to import"
+        ariaLabel="Choose CSV file"
+        [maxBytes]="maxBytes"
+        [(file)]="selectedFile"
+        (rejected)="onRejected($event)"
+      />
+
+      <div class="actions">
+        <app-ui-button
+          type="button"
+          [loading]="uploading()"
+          [disabled]="!selectedFile()"
+          (click)="upload()"
+        >
+          Upload &amp; import
+        </app-ui-button>
+      </div>
+    </app-ui-card>
+
+    @if (result(); as res) {
+      <app-ui-card>
+        <h2 class="section-title">Result</h2>
+        <dl class="facts">
+          <div><dt>Type</dt><dd>{{ res.entityType }}</dd></div>
+          <div><dt>Total rows</dt><dd>{{ res.totalRows }}</dd></div>
+          <div><dt>Inserted</dt><dd>{{ res.inserted }}</dd></div>
+          <div><dt>Failed</dt><dd>{{ res.failed }}</dd></div>
+        </dl>
+
+        @if (res.failed === 0) {
+          <app-empty-state title="All rows imported" message="No error report needed." />
+        } @else {
+          <div class="actions">
+            <app-ui-button type="button" (click)="downloadErrorReport()">
+              Download error report CSV
+            </app-ui-button>
+          </div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Row</th>
+                  <th>Field</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (err of res.errors; track err.rowNumber + err.message) {
+                  <tr>
+                    <td>{{ err.rowNumber }}</td>
+                    <td>{{ err.field }}</td>
+                    <td>{{ err.message }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </app-ui-card>
+    }
+  }
+</div>

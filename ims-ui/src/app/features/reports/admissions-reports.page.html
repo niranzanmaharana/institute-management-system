@@ -1,0 +1,66 @@
+<div class="page">
+  <header class="page__header">
+    <div>
+      <h1>Admission reports</h1>
+      <p>RP-ST-03 new admissions in a date range</p>
+    </div>
+  </header>
+
+  @if (!canRun) {
+    <app-ui-card>
+      <app-empty-state title="No access" message="Admission or student read permission is required." />
+    </app-ui-card>
+  } @else {
+    <app-ui-card>
+      <h2 class="section-title">New admissions (RP-ST-03)</h2>
+      <form class="filters" [formGroup]="form" (ngSubmit)="run()">
+        <app-ui-datepicker label="From" inputId="adm-from" formControlName="from" />
+        <app-ui-datepicker label="To" inputId="adm-to" formControlName="to" />
+        <label class="field">
+          <span class="field__label">Status</span>
+          <select class="field__control" formControlName="status">
+            <option value="">All</option>
+            <option value="SUBMITTED">SUBMITTED</option>
+            <option value="APPROVED">APPROVED</option>
+            <option value="REJECTED">REJECTED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        </label>
+        <app-ui-button type="submit" [loading]="loading()">Run</app-ui-button>
+        @if (admissions().length) {
+          <app-ui-button type="button" (click)="exportCsv()">Export CSV</app-ui-button>
+        }
+      </form>
+      @if (loading()) {
+        <app-loading-state />
+      } @else if (admissions().length === 0) {
+        <app-empty-state title="No rows" message="No applications in this date range." />
+      } @else {
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Application</th>
+                <th>Applicant</th>
+                <th>Course</th>
+                <th>Status</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of admissions(); track r.applicationId) {
+                <tr>
+                  <td>{{ r.applicationNo }}</td>
+                  <td>{{ r.applicantName }}</td>
+                  <td>{{ r.courseCode || r.courseId }}</td>
+                  <td>{{ r.status }}</td>
+                  <td>{{ r.createdAt.substring(0, 10) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </app-ui-card>
+  }
+</div>

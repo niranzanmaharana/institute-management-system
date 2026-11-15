@@ -7,6 +7,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { Observable } from 'rxjs';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { AuthService } from '../../core/auth.service';
@@ -30,12 +31,12 @@ import { FinanceService, RefundRequestRow } from './finance.service';
 export class RefundsListPage implements OnInit {
   private readonly financeApi = inject(FinanceService);
   private readonly auth = inject(AuthService);
+  private readonly toasts = inject(ToastService);
   private readonly fb = inject(FormBuilder);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
   readonly rows = signal<RefundRequestRow[]>([]);
-  readonly actionError = signal<string | null>(null);
   readonly busyId = signal<number | null>(null);
   readonly requesting = signal(false);
 
@@ -77,7 +78,6 @@ export class RefundsListPage implements OnInit {
     const feeAccountId = Number(v.feeAccountId);
     const amount = Number(v.amount);
     this.requesting.set(true);
-    this.actionError.set(null);
     this.financeApi.requestRefund(feeAccountId, { amount, reason: v.reason.trim() }).subscribe({
       next: () => {
         this.requesting.set(false);
@@ -86,7 +86,7 @@ export class RefundsListPage implements OnInit {
       },
       error: (err) => {
         this.requesting.set(false);
-        this.actionError.set(httpErrorMessage(err, 'Could not request refund.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not request refund.'));
       },
     });
   }
@@ -126,7 +126,6 @@ export class RefundsListPage implements OnInit {
 
   private run(id: number, call: () => Observable<unknown>): void {
     this.busyId.set(id);
-    this.actionError.set(null);
     call().subscribe({
       next: () => {
         this.busyId.set(null);
@@ -134,7 +133,7 @@ export class RefundsListPage implements OnInit {
       },
       error: (err) => {
         this.busyId.set(null);
-        this.actionError.set(httpErrorMessage(err, 'Refund action failed.'));
+        this.toasts.danger(httpErrorMessage(err, 'Refund action failed.'));
       },
     });
   }

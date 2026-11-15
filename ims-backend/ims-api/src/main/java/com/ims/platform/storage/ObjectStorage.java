@@ -15,6 +15,9 @@ public interface ObjectStorage {
   String presignGet(
       String storageKey, String fileName, String contentType, Duration expiry, boolean attachment);
 
+  /** Server-side write (e.g. generated certificate PDFs). */
+  void put(String storageKey, String contentType, byte[] bytes);
+
   Optional<StoredObjectMeta> head(String storageKey);
 
   record StoredObjectMeta(long contentLength, String contentType) {}

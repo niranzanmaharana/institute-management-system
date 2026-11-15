@@ -5,6 +5,7 @@ import { UiButton } from '../../shared/ui-button';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { PersonDocumentsSection } from '../people/person-documents.section';
 import { PersonPhotoComponent } from '../people/person-photo.component';
@@ -29,6 +30,7 @@ export class StaffDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly staffApi = inject(StaffService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
@@ -82,7 +84,7 @@ export class StaffDetailPage implements OnInit {
         this.deactivating.set(false);
       },
       error: (err) => {
-        this.error.set(httpErrorMessage(err, 'Could not deactivate staff.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not deactivate staff.'));
         this.deactivating.set(false);
       },
     });

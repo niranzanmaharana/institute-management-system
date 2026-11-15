@@ -106,6 +106,14 @@ public class Institute {
     this.state = blankToNull(state);
     this.postalCode = blankToNull(postalCode);
     this.country = blankToNull(country);
+    // null = leave existing logo; blank string clears it
+    if (iconUrl != null) {
+      this.iconUrl = blankToNull(iconUrl);
+    }
+    this.updatedAt = Instant.now();
+  }
+
+  public void setIconUrl(String iconUrl) {
     this.iconUrl = blankToNull(iconUrl);
     this.updatedAt = Instant.now();
   }

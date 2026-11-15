@@ -47,6 +47,22 @@ export interface ExamResult {
   componentMarks: ComponentMark[];
 }
 
+export interface MarksImportJob {
+  id: number;
+  examId: number;
+  status: string;
+  fileName?: string | null;
+  totalRows: number;
+  successCount: number;
+  failedCount: number;
+  errorReportCsv: string;
+  message?: string | null;
+  async: boolean;
+  createdAt?: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class ExamService {
   private readonly http = inject(HttpClient);
@@ -123,5 +139,21 @@ export class ExamService {
 
   unlock(examId: number, reason: string): Observable<Exam> {
     return this.http.post<Exam>(`${this.base}/exams/${examId}/unlock`, { reason });
+  }
+
+  downloadMarksTemplate(examId: number): Observable<Blob> {
+    return this.http.get(`${this.base}/exams/${examId}/marks-import/template`, {
+      responseType: 'blob',
+    });
+  }
+
+  uploadMarksCsv(examId: number, file: File): Observable<MarksImportJob> {
+    const form = new FormData();
+    form.append('file', file, file.name);
+    return this.http.post<MarksImportJob>(`${this.base}/exams/${examId}/marks-import`, form);
+  }
+
+  getMarksImportJob(jobId: number): Observable<MarksImportJob> {
+    return this.http.get<MarksImportJob>(`${this.base}/marks-import-jobs/${jobId}`);
   }
 }

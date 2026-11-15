@@ -25,9 +25,6 @@
     } @else if (years().length === 0) {
       <app-ui-card>
         <h2 class="section-title">Create academic year first</h2>
-        @if (yearError()) {
-          <app-error-state title="Year failed" [message]="yearError()!" />
-        }
         <form class="form" [formGroup]="yearForm" (ngSubmit)="createYear()">
           <div class="code-field">
             <app-ui-input label="Year code (optional)" inputId="ay-code" formControlName="code" />
@@ -47,9 +44,6 @@
       </app-ui-card>
     } @else {
       <app-ui-card>
-        @if (error()) {
-          <app-error-state title="Create failed" [message]="error()!" />
-        }
         <form class="form" [formGroup]="form" (ngSubmit)="submit()">
           <div class="grid">
             <label class="field" for="batch-course">
@@ -97,9 +91,6 @@
 
         <details class="more">
           <summary>Add another academic year</summary>
-          @if (yearError()) {
-            <app-error-state title="Year failed" [message]="yearError()!" />
-          }
           <form class="form" [formGroup]="yearForm" (ngSubmit)="createYear()">
             <div class="code-field">
               <app-ui-input label="Year code (optional)" inputId="ay2-code" formControlName="code" />

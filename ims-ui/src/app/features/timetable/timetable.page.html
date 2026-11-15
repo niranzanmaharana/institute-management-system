@@ -6,12 +6,6 @@
     </div>
   </header>
 
-  @if (actionError()) {
-    <app-ui-card>
-      <app-error-state title="Action failed" [message]="actionError()!" />
-    </app-ui-card>
-  }
-
   <app-ui-card>
     <h2 class="section-title">Rooms</h2>
     @if (canWrite) {

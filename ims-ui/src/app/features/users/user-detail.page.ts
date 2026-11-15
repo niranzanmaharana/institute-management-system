@@ -5,6 +5,7 @@ import { UiButton } from '../../shared/ui-button';
 import { LoadingState } from '../../shared/loading-state';
 import { ErrorState } from '../../shared/error-state';
 import { StatusBadge, BadgeTone } from '../../shared/status-badge';
+import { ToastService } from '../../shared/toast.service';
 import { AuthService } from '../../core/auth.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { ManagedUser, UsersService } from './users.service';
@@ -19,6 +20,7 @@ export class UserDetailPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly usersApi = inject(UsersService);
+  private readonly toasts = inject(ToastService);
   readonly auth = inject(AuthService);
 
   readonly loading = signal(true);
@@ -68,7 +70,6 @@ export class UserDetailPage implements OnInit {
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     this.usersApi.deactivate(row.id).subscribe({
       next: (updated) => {
         this.user.set(updated);
@@ -76,7 +77,7 @@ export class UserDetailPage implements OnInit {
       },
       error: (err) => {
         this.acting.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not deactivate user.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not deactivate user.'));
       },
     });
   }
@@ -87,7 +88,6 @@ export class UserDetailPage implements OnInit {
       return;
     }
     this.acting.set(true);
-    this.error.set(null);
     this.usersApi.activate(row.id).subscribe({
       next: (updated) => {
         this.user.set(updated);
@@ -95,7 +95,7 @@ export class UserDetailPage implements OnInit {
       },
       error: (err) => {
         this.acting.set(false);
-        this.error.set(httpErrorMessage(err, 'Could not activate user.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not activate user.'));
       },
     });
   }

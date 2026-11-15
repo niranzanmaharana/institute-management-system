@@ -35,18 +35,21 @@ public class InstituteService {
   private final RoleRepository roleRepository;
   private final PasswordEncoder passwordEncoder;
   private final CodeGeneratorService codeGeneratorService;
+  private final InstituteBrandingService instituteBrandingService;
 
   public InstituteService(
       InstituteJpaRepository instituteJpaRepository,
       UserAccountRepository userAccountRepository,
       RoleRepository roleRepository,
       PasswordEncoder passwordEncoder,
-      CodeGeneratorService codeGeneratorService) {
+      CodeGeneratorService codeGeneratorService,
+      InstituteBrandingService instituteBrandingService) {
     this.instituteJpaRepository = instituteJpaRepository;
     this.userAccountRepository = userAccountRepository;
     this.roleRepository = roleRepository;
     this.passwordEncoder = passwordEncoder;
     this.codeGeneratorService = codeGeneratorService;
+    this.instituteBrandingService = instituteBrandingService;
   }
 
   @Transactional(readOnly = true)
@@ -220,6 +223,6 @@ public class InstituteService {
         institute.getState(),
         institute.getPostalCode(),
         institute.getCountry(),
-        institute.getIconUrl());
+        instituteBrandingService.resolveDisplayUrl(institute.getIconUrl()));
   }
 }

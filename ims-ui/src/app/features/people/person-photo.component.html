@@ -1,21 +1,41 @@
 <div class="photo">
-  @if (url(); as src) {
-    <img class="photo__img" [src]="src" [alt]="alt" width="96" height="96" />
-  } @else {
-    <span class="photo__fallback" aria-hidden="true">{{ initials }}</span>
-  }
   @if (canWrite) {
-    <label class="photo__change">
-      <span class="photo__change-label">{{ uploading() ? 'Uploading…' : url() ? 'Change' : 'Add photo' }}</span>
-      <input
-        type="file"
-        accept=".jpg,.jpeg,.png,image/jpeg,image/png"
-        [disabled]="uploading()"
-        (change)="onFile($event)"
-      />
-    </label>
-  }
-  @if (error()) {
-    <p class="photo__error">{{ error() }}</p>
+    <button
+      type="button"
+      class="photo__avatar"
+      [class.photo__avatar--busy]="uploading()"
+      [disabled]="uploading()"
+      [attr.aria-label]="url() ? 'Change profile photo' : 'Add profile photo'"
+      (click)="openPicker()"
+    >
+      @if (url(); as src) {
+        <img class="photo__img" [src]="src" [alt]="alt" width="96" height="96" />
+      } @else {
+        <span class="photo__fallback" aria-hidden="true">{{ initials }}</span>
+      }
+      <span class="photo__camera" aria-hidden="true">
+        @if (uploading()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        } @else {
+          <i class="fa-solid fa-camera"></i>
+        }
+      </span>
+    </button>
+    <input
+      #fileInput
+      class="photo__input"
+      type="file"
+      accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+      [disabled]="uploading()"
+      (change)="onFileChange($event)"
+    />
+  } @else {
+    <div class="photo__avatar photo__avatar--readonly">
+      @if (url(); as src) {
+        <img class="photo__img" [src]="src" [alt]="alt" width="96" height="96" />
+      } @else {
+        <span class="photo__fallback" aria-hidden="true">{{ initials }}</span>
+      }
+    </div>
   }
 </div>

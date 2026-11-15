@@ -1,0 +1,42 @@
+<div class="logo">
+  @if (editable()) {
+    <button
+      type="button"
+      class="logo__avatar"
+      [class.logo__avatar--busy]="uploading()"
+      [disabled]="disabled() || uploading()"
+      [attr.aria-label]="previewUrl() ? 'Change institute logo' : 'Upload institute logo'"
+      (click)="openPicker()"
+    >
+      @if (previewUrl(); as src) {
+        <img class="logo__img" [src]="src" [alt]="(name() || 'Institute') + ' logo'" width="96" height="96" />
+      } @else {
+        <span class="logo__fallback" aria-hidden="true">{{ initials }}</span>
+      }
+      <span class="logo__camera" aria-hidden="true">
+        @if (uploading()) {
+          <i class="fa-solid fa-spinner fa-spin"></i>
+        } @else {
+          <i class="fa-solid fa-camera"></i>
+        }
+      </span>
+    </button>
+    <input
+      #fileInput
+      class="logo__input"
+      type="file"
+      accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+      [disabled]="disabled() || uploading()"
+      (change)="onFileChange($event)"
+    />
+    <p class="logo__hint">JPEG or PNG · max 5 MB</p>
+  } @else {
+    <div class="logo__avatar logo__avatar--readonly">
+      @if (previewUrl(); as src) {
+        <img class="logo__img" [src]="src" [alt]="(name() || 'Institute') + ' logo'" width="96" height="96" />
+      } @else {
+        <span class="logo__fallback" aria-hidden="true">{{ initials }}</span>
+      }
+    </div>
+  }
+</div>

@@ -1,7 +1,18 @@
-import { Component, Input, OnChanges, effect, inject, signal, untracked } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  Input,
+  OnChanges,
+  ViewChild,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../core/auth.service';
 import { httpErrorMessage } from '../../core/http-error';
+import { ToastService } from '../../shared/toast.service';
 import { PersonDocumentService, PersonOwnerType } from './person-document.service';
 
 @Component({
@@ -12,15 +23,18 @@ import { PersonDocumentService, PersonOwnerType } from './person-document.servic
 export class PersonPhotoComponent implements OnChanges {
   private readonly api = inject(PersonDocumentService);
   private readonly auth = inject(AuthService);
+  private readonly toasts = inject(ToastService);
 
   @Input({ required: true }) ownerType!: PersonOwnerType;
   @Input({ required: true }) ownerId!: number;
   @Input() firstName = '';
   @Input() lastName = '';
 
+  @ViewChild('fileInput') private fileInput?: ElementRef<HTMLInputElement>;
+
+  readonly maxBytes = 5 * 1024 * 1024;
   readonly url = signal<string | null>(null);
   readonly uploading = signal(false);
-  readonly error = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -56,7 +70,6 @@ export class PersonPhotoComponent implements OnChanges {
   }
 
   load(): void {
-    this.error.set(null);
     this.api.photo(this.ownerType, this.ownerId).subscribe({
       next: (res) => this.url.set(res.downloadUrl),
       error: (err) => {
@@ -64,27 +77,55 @@ export class PersonPhotoComponent implements OnChanges {
         if (err instanceof HttpErrorResponse && err.status === 404) {
           return;
         }
-        this.error.set(httpErrorMessage(err, 'Could not load photo.'));
+        this.toasts.danger(httpErrorMessage(err, 'Could not load photo.'));
       },
     });
   }
 
-  async onFile(event: Event): Promise<void> {
+  openPicker(): void {
+    if (!this.canWrite || this.uploading()) {
+      return;
+    }
+    this.fileInput?.nativeElement.click();
+  }
+
+  async onFileChange(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+    const file = input.files?.[0] ?? null;
     input.value = '';
     if (!file || !this.canWrite || this.uploading()) {
       return;
     }
+    if (!this.isImageFile(file)) {
+      this.toasts.warning('Please choose a JPEG or PNG image.');
+      return;
+    }
+    if (file.size > this.maxBytes) {
+      this.toasts.warning('Photo exceeds the maximum size of 5 MB.');
+      return;
+    }
+
     this.uploading.set(true);
-    this.error.set(null);
     try {
       await this.api.uploadFile(this.ownerType, this.ownerId, file, 'PHOTO');
+      this.toasts.success('Photo updated.');
     } catch (err) {
-      this.error.set(uploadError(err));
+      this.toasts.danger(uploadError(err));
     } finally {
       this.uploading.set(false);
     }
+  }
+
+  private isImageFile(file: File): boolean {
+    const name = file.name.toLowerCase();
+    const type = (file.type || '').toLowerCase();
+    return (
+      type === 'image/jpeg' ||
+      type === 'image/png' ||
+      name.endsWith('.jpg') ||
+      name.endsWith('.jpeg') ||
+      name.endsWith('.png')
+    );
   }
 }
 

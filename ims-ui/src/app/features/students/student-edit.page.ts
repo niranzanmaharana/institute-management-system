@@ -6,6 +6,7 @@ import { UiButton } from '../../shared/ui-button';
 import { UiInput } from '../../shared/ui-input';
 import { ErrorState } from '../../shared/error-state';
 import { LoadingState } from '../../shared/loading-state';
+import { ToastService } from '../../shared/toast.service';
 import { httpErrorMessage, httpLoadError } from '../../core/http-error';
 import { StudentService } from './student.service';
 
@@ -20,6 +21,7 @@ export class StudentEditPage implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly studentsApi = inject(StudentService);
+  private readonly toasts = inject(ToastService);
 
   readonly loading = signal(true);
   readonly submitting = signal(false);
@@ -82,7 +84,6 @@ export class StudentEditPage implements OnInit {
       return;
     }
     this.submitting.set(true);
-    this.error.set(null);
     const v = this.form.getRawValue();
     const guardians =
       v.guardianName.trim().length > 0
@@ -125,7 +126,7 @@ export class StudentEditPage implements OnInit {
         },
         error: (err) => {
           this.submitting.set(false);
-          this.error.set(httpErrorMessage(err, 'Could not save student.'));
+          this.toasts.danger(httpErrorMessage(err, 'Could not save student.'));
         },
       });
   }
