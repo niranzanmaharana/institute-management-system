@@ -99,3 +99,4 @@ import:write
 - [x] Multi-tenant isolation for all institute roles (ADR 0004)
 - [x] Institute ADMIN UI/API to create users and assign roles (`user:manage`)
 - [x] FRONT_DESK can enroll via `enrollment:write` (not full `course:write` / catalog)
+- [x] FRONT_DESK can list/get/cancel APPLIED enrollments via `enrollment:write`; transfer/withdraw remain `course:write` (matrix R for FRONT_DESK)

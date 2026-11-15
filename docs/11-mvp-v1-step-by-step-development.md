@@ -163,13 +163,13 @@ flowchart TD
 
 ### Step 1.2 — Auth APIs
 
-| | |
-| --- | --- |
-| **Goal** | Login/refresh/logout/me |
-| **Deliverables** | JWT access (claims: `sub`, roles/permissions, **`institute_id`**); refresh; password hash; login audit |
-| **FR/BR** | FR-ID-01–02, FR-ID-06; ADR 0003/0004 |
-| **Test plan** | Success/fail login; refresh; locked user; JWT contains institute_id for institute users |
-| **Exit criteria** | OpenAPI for auth published; ≥ critical path tests green |
+|                   |                                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------------------ |
+| **Goal**          | Login/refresh/logout/me                                                                                |
+| **Deliverables**  | JWT access (claims: `sub`, roles/permissions, `**institute_id`**); refresh; password hash; login audit |
+| **FR/BR**         | FR-ID-01–02, FR-ID-06; ADR 0003/0004                                                                   |
+| **Test plan**     | Success/fail login; refresh; locked user; JWT contains institute_id for institute users                |
+| **Exit criteria** | OpenAPI for auth published; ≥ critical path tests green                                                |
 
 ### Step 1.3 — Institute platform APIs
 
@@ -186,12 +186,13 @@ flowchart TD
 | | |
 | --- | --- |
 | **Goal** | Single entry; traces and logs correlate |
-| **Deliverables** | Routes `/api/v1/**` → app; CORS; strip spoofed tenant headers; W3C `traceparent` + `X-Request-Id`; rate-limit login; access logs with `traceId`/`spanId`/`requestId` on gateway **and** app |
+| **Deliverables** | Routes `/api/v1/`** → app; CORS; strip spoofed tenant headers; W3C `traceparent` + `X-Request-Id`; rate-limit login; access logs with `traceId`/`spanId`/`requestId` on gateway **and** app |
 | **FR/BR** | Doc 07 §6; doc 09 §6; doc 02 §5.7 |
 | **Test plan** | Login via gateway; both consoles show matching `traceId`; Jaeger shows gateway → app spans |
 | **Exit criteria** | Happy path does not require hitting app port directly; one `traceId` ties gateway + app logs |
 
 **Logging/tracing status (2026-08-09):** Implemented — shared console MDC pattern; `RequestLoggingGlobalFilter` / `RequestLoggingFilter`; `CorrelationIds`; OTLP to Jaeger; login/institute/student activity logs.
+
 ### Step 1.5 — Angular auth + responsive shell
 
 | | |
@@ -240,7 +241,7 @@ flowchart TD
 
 **Phase 3.1 status:** Complete — faculty/staff CRUD; student/faculty/staff list search + status filter + pagination; role-gated nav (permission-aware). Manual sample seed: `ims-backend/scripts/seed-demo-people-pagination.sql` (not Flyway).
 
-**Phase 3.2 status:** Complete — enrollment lifecycle APIs + detail UX: cancel / activate (admission waiver + capacity override) / suspend / resume / withdraw / complete / transfer (same course). Audits: `ENROLLMENT_*`, `CAPACITY_OVERRIDE`, `ADMISSION_WAIVER`. Flyway `V11__enrollment_lifecycle.sql`.
+**Phase 3.2 status:** Complete — enrollment lifecycle APIs + detail UX: cancel / activate (admission waiver + capacity override) / suspend / resume / withdraw / complete / transfer (same course). Audits: `ENROLLMENT_`*, `CAPACITY_OVERRIDE`, `ADMISSION_WAIVER`. Flyway `V11__enrollment_lifecycle.sql`.
 
 **Users & roles status:** Complete — institute ADMIN (`user:manage`) can list/create/edit/activate/deactivate login users and assign roles via `/api/v1/users`, `/api/v1/roles` + UI **Users & roles**. Distinct from Staff master data. Cannot assign `PLATFORM_ADMIN`; cannot deactivate self or remove the last ACTIVE ADMIN.
 
@@ -274,7 +275,7 @@ flowchart TD
 
 **Phase 6.3 status:** Complete — Bulk marks CSV upload (FR-IE-02): exam-scoped template + multipart upload; idempotent upsert per exam+student via existing results API; `import_jobs` with QUEUED→RUNNING→COMPLETED/FAILED; sync when ≤40 rows, `@Async` above that; job status + error-report CSV. Permission `exam:mark`. Flyway `V24__marks_import_jobs.sql`. UI on exam detail (DRAFT_MARKS).
 
-**Phase 6.4 status:** Complete — ★ report screens/exports (FR-RP-01): `/api/v1/reports/*` for ST-01/02/03, FI-07, AT-03, EX-01; AT-01/02 via attendance summary; finance ★ on `/finance-reports` (+ FI-07). UI: sidebar **Reports** submenu — `/reports/students`, `/admissions`, `/attendance`, `/exams`, Finance.
+**Phase 6.4 status:** Complete — ★ report screens/exports (FR-RP-01): `/api/v1/reports/`* for ST-01/02/03, FI-07, AT-03, EX-01; AT-01/02 via attendance summary; finance ★ on `/finance-reports` (+ FI-07). UI: sidebar **Reports** submenu — `/reports/students`, `/admissions`, `/attendance`, `/exams`, Finance.
 
 **Phase 6.5 status:** Complete — RP-ST-04 withdrawals (`GET /api/v1/reports/students/withdrawals`) and RP-ST-05 batch roster (`GET /api/v1/reports/students/roster`) with filters + CSV on `/reports/students`.
 
@@ -396,7 +397,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | --- | --- | --- |
 | §8 demo script on `DEMO_A` (+ isolation glance on `DEMO_B`) | MVP freeze | Manual stakeholder walkthrough |
 | Playwright e2e for fee spine | Step 2.6 | Deferred polish |
-| Responsive smoke checkboxes (375 / 768 / 1440) | Phase 1 | `docs/design/responsive-phase1-smoke.md` still ☐ |
+| Responsive smoke checkboxes (375 / 768 / 1440) | Phase 1 | Done in Step 7.4 — see `docs/responsive-qa.md` |
 | Real-phone LAN access verify | Phase 1 | `docs/design/mobile-localhost-access.md` |
 | Manual Jaeger + login rate-limit proof | Step 1.4 | OTLP wired; UI verify pending |
 | Angular 22 upgrade | Phase 1 | Blocked until Node ≥ 22.22.3 |
@@ -650,6 +651,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | Doc 08 |
 | **Test plan** | Isolation regression; permission matrix spot checks |
 | **Exit criteria** | Critical vulns = 0; checklist filed |
+| **Status** | **Complete** — checklist [security/7.1-security-pass-checklist.md](./security/7.1-security-pass-checklist.md); Dependabot + `-Pdependency-check`; login lockout + auth rate limit (login/refresh); secrets `.env.example` + prod JWT reject; OpenAPI off in prod; enrollment `enrollment:write` list/get/cancel; `SliceIsolationIT` covers enrollment/fee-account |
 
 ### Step 7.2 — Backup / DR drill doc
 
@@ -660,6 +662,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | Doc 09 |
 | **Test plan** | Restore to scratch env succeeds |
 | **Exit criteria** | RPO/RTO notes accepted |
+| **Status** | **Complete** — [ops/7.2-backup-and-dr.md](./ops/7.2-backup-and-dr.md); drill PASS [ops/7.2-restore-drill-log.md](./ops/7.2-restore-drill-log.md) (51 tables / 9 objects → scratch); scripts in `scripts/backup/`; RPO ≤24h / RTO ≤8h accepted |
 
 ### Step 7.3 — Performance baseline
 
@@ -669,6 +672,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **Deliverables** | Indexes verified; k6/JMeter smoke on login, outstanding list, student search |
 | **Test plan** | Targets recorded under `/docs/perf` (or agreed path) |
 | **Exit criteria** | Baseline report stored |
+| **Status** | **Complete** — [perf/7.3-performance-baseline.md](./perf/7.3-performance-baseline.md); V26 outstanding/student indexes; k6 p95 login **185ms** / outstanding **23ms** / student search **31ms** (local DEMO_A) |
 
 ### Step 7.4 — Full responsive QA matrix
 
@@ -679,6 +683,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-UX-01; doc 01 §3.13 |
 | **Test plan** | Playwright projects + manual for timetable/exams |
 | **Exit criteria** | `/docs/responsive-qa.md` signed off |
+| **Status** | **Complete** — [responsive-qa.md](./responsive-qa.md); Playwright `npm run e2e:responsive` (375/768/1440); P0 cards + timetable agenda ≤1023 |
 
 ### Step 7.5 — OpenAPI / contract gate in CI
 
@@ -689,6 +694,7 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | Doc 07 |
 | **Test plan** | Intentional break fails CI |
 | **Exit criteria** | Gate enabled on main |
+| **Status** | **Complete** — [api/7.5-openapi-contract-gate.md](./api/7.5-openapi-contract-gate.md); contract [`api/openapi.json`](./api/openapi.json); workflow `openapi-contract.yml`; `OpenApiContractIT` + `verify-gate.ps1` |
 
 ### Step 7.6 — Notification email MVP
 
@@ -699,18 +705,19 @@ Parked **2026-08-09** so Phase 3 can proceed. Revisit before calling MVP “stak
 | **FR/BR** | FR-NT-*; BR-NT-* |
 | **Test plan** | Fake/smtp sink; retry recorded |
 | **Exit criteria** | At least two triggers deliver in local/staging |
+| **Status** | **Complete** — [ops/7.6-notification-email-mvp.md](./ops/7.6-notification-email-mvp.md); Flyway V27; logging sink + SMTP option; `ADMISSION_APPROVED` + `PAYMENT_RECEIVED` → `SENT` locally |
 
 ---
 
 ## v1 freeze checklist
 
-- [ ] Phases 3–7 exit criteria green  
-- [ ] MVP regression (spine + isolation) still green  
+- [x] Phases 3–7 exit criteria green  
+- [x] MVP regression (spine + isolation) still green  
 - [x] ★ reports available (incl. ST-04/05 withdrawals + roster)  
-- [ ] Authz matrix capabilities implemented for shipped screens  
-- [ ] Responsive QA signed  
-- [ ] Security + DR + perf baselines stored  
-- [ ] OpenAPI gate on  
+- [x] Authz matrix capabilities implemented for shipped screens  
+- [x] Responsive QA signed  
+- [x] Security + DR + perf baselines stored  
+- [x] OpenAPI gate on  
 - [ ] Post-v1 Phase 8 explicitly **not** blocking release  
 
 ---
@@ -741,12 +748,15 @@ Use as a build board; do not skip gates.
 - [x] 4.1 → 4.2 → 4.3 → 4.4 → 4.5  
 - [x] 5.1 → 5.2 → 5.3 → 5.4  
 
-
 - [x] 6.1 → 6.2 → 6.3 → 6.4  
 - [x] 6.5  
 
-
-- [ ] 7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 7.6  
+- [x] 7.1  
+- [x] 7.2  
+- [x] 7.3
+- [x] 7.4
+- [x] 7.5
+- [x] 7.6
 - [ ] **v1 freeze**  
 
 ---
@@ -755,15 +765,15 @@ Use as a build board; do not skip gates.
 
 Environment: Gateway + app + MySQL; browsers at laptop and phone width.
 
-1. PLATFORM_ADMIN shows DEMO_A and DEMO_B exist (or create a third institute).  
-2. Log in as DEMO_A ADMIN.  
-3. Create student (with guardian).  
-4. Create course → fee plan (category + installments) → batch.  
-5. Create/approve admission (or waiver) → enroll & activate.  
-6. Show invoices and outstanding = total.  
-7. Collect partial payment → receipt number → outstanding decreased.  
-8. Collect remaining → outstanding zero.  
-9. Log in as DEMO_B ADMIN; show DEMO_A student id returns not found / empty.  
+1. PLATFORM_ADMIN shows DEMO_A and DEMO_B exist (or create a third institute).
+2. Log in as DEMO_A ADMIN.
+3. Create student (with guardian).
+4. Create course → fee plan (category + installments) → batch.
+5. Create/approve admission (or waiver) → enroll & activate.
+6. Show invoices and outstanding = total.
+7. Collect partial payment → receipt number → outstanding decreased.
+8. Collect remaining → outstanding zero.
+9. Log in as DEMO_B ADMIN; show DEMO_A student id returns not found / empty.
 10. Optional: resize to mobile; open nav drawer; open outstanding list as cards.
 
 **Pass:** Spine + isolation demonstrated without SQL intervention.
@@ -792,3 +802,9 @@ Environment: Gateway + app + MySQL; browsers at laptop and phone width.
 | Version | Date | Notes |
 | --- | --- | --- |
 | 1.0 | 2026-08-08 | Initial MVP (0–2) / v1 (3–7) step-by-step roadmap from locked decisions |
+| 1.1 | 2026-11-15 | Step 7.1 security pass complete (checklist + hardening) |
+| 1.2 | 2026-11-15 | Step 7.2 backup/DR runbook + restore drill recorded |
+| 1.3 | 2026-11-15 | Step 7.3 performance baseline (indexes + k6 p95) |
+| 1.4 | 2026-11-15 | Step 7.4 full responsive QA matrix signed off |
+| 1.5 | 2026-11-15 | Step 7.5 OpenAPI contract gate in CI |
+| 1.6 | 2026-11-15 | Step 7.6 notification email MVP (admission + payment) |

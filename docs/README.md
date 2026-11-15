@@ -12,6 +12,11 @@
 | [06-authorization-matrix.md](./06-authorization-matrix.md) | Roles × capabilities |
 | [07-api-guidelines.md](./07-api-guidelines.md) | OpenAPI-first, versioning, idempotency |
 | [08-security-and-privacy.md](./08-security-and-privacy.md) | Auth, PII, documents, audit |
+| [security/](./security/) | Step 7.1 security pass checklist + dependency scan snapshot |
+| [ops/](./ops/) | Step 7.2 backup/DR; Step 7.6 notification email MVP |
+| [perf/](./perf/) | Step 7.3 performance baseline (indexes + k6/p95) |
+| [responsive-qa.md](./responsive-qa.md) | Step 7.4 full responsive QA matrix (375 / 768 / 1440) |
+| [api/](./api/) | Step 7.5 OpenAPI contract (`openapi.json`) + CI gate notes |
 | [09-deployment-and-operations.md](./09-deployment-and-operations.md) | Environments, CI/CD, backup/DR, health |
 | [10-reporting-requirements.md](./10-reporting-requirements.md) | Reports that influence indexes & APIs |
 | [11-mvp-v1-step-by-step-development.md](./11-mvp-v1-step-by-step-development.md) | **Authoritative MVP & v1 build order** (testable steps) |

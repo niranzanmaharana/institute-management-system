@@ -17,7 +17,7 @@
     } @else if (rows().length === 0) {
       <app-empty-state title="No batches" message="Create the first batch for this institute." />
     } @else {
-      <div class="table-wrap">
+      <div class="table-wrap ops-table">
         <table class="table">
           <thead>
             <tr>
@@ -56,6 +56,32 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">{{ row.code }}</p>
+              <app-status-badge
+                [label]="row.status"
+                [tone]="row.status === 'OPEN' || row.status === 'ACTIVE' ? 'success' : 'neutral'"
+              />
+            </div>
+            <p class="ops-card__meta">
+              {{ row.name }} · Course #{{ row.courseId }} · Year #{{ row.academicYearId }} · Cap
+              {{ row.capacity }}
+            </p>
+            <div class="ops-card__actions">
+              <a [routerLink]="['/batches', row.id]">
+                <app-ui-button type="button">View</app-ui-button>
+              </a>
+              <a [routerLink]="['/batches', row.id, 'edit']">
+                <app-ui-button type="button">Edit</app-ui-button>
+              </a>
+            </div>
+          </article>
+        }
       </div>
     }
   </app-ui-card>

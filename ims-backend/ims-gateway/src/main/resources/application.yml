@@ -56,6 +56,8 @@ management:
 
 ims:
   gateway:
+    # Applies to POST /api/v1/auth/login and /api/v1/auth/refresh (per client IP).
+    # Replace in-memory store with Redis for multi-instance production.
     login-rate-limit:
       max-attempts: 20
       window-seconds: 60

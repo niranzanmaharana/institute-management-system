@@ -67,6 +67,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
       border: 1px solid var(--ims-border);
       border-radius: 8px;
       padding: 0.7rem 0.85rem;
+      min-height: 44px;
       font: inherit;
       color: var(--ims-text);
       background: #fff;

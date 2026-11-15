@@ -1,0 +1,15 @@
+# Activate with SPRING_PROFILES_ACTIVE=prod
+# Requires IMS_SECURITY_JWT_SECRET (and DB/storage secrets) from the environment / secret manager.
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+ims:
+  security:
+    expose-openapi: false
+    reject-insecure-jwt-secret: true
+    max-failed-logins: 5
+    lock-minutes: 15

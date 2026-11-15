@@ -31,7 +31,7 @@
       <app-empty-state title="No faculty" message="Create the first faculty member for this institute." />
     } @else {
       <p class="meta">{{ totalElements() }} total</p>
-      <div class="table-wrap">
+      <div class="table-wrap ops-table">
         <table class="table">
           <thead>
             <tr>
@@ -65,6 +65,28 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">{{ row.facultyCode }}</p>
+              <app-status-badge [label]="row.status" [tone]="row.status === 'ACTIVE' ? 'success' : 'neutral'" />
+            </div>
+            <p class="ops-card__meta">{{ row.firstName }} {{ row.lastName }} · {{ row.department || '—' }}</p>
+            <div class="ops-card__actions">
+              <a [routerLink]="['/faculty', row.id]">
+                <app-ui-button type="button">View</app-ui-button>
+              </a>
+              @if (auth.hasPermission('faculty:write') && row.status === 'ACTIVE') {
+                <a [routerLink]="['/faculty', row.id, 'edit']">
+                  <app-ui-button type="button">Edit</app-ui-button>
+                </a>
+              }
+            </div>
+          </article>
+        }
       </div>
       <app-ui-pagination
         [page]="page()"

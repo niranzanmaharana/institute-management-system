@@ -15,6 +15,7 @@
 | UI | http://localhost:4200/login |
 | Demo institute admin | username `admin` · password `Password@123` · institute `DEMO_A` or `DEMO_B` |
 | Platform operator | username `platform` · password `Password@123` · **leave institute blank** |
+| Lockout | After several failed passwords the account is temporarily locked (generic “Invalid credentials”); wait or ask an admin |
 
 After database migrations that add permissions, **log out and log in again** so your JWT includes the new rights.
 

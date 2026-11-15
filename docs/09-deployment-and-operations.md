@@ -1,6 +1,6 @@
 # 09 — Deployment & operations
 
-**Status:** Draft after architecture review
+**Status:** Active — Step 7.2 backup/DR runbook accepted ([ops/7.2-backup-and-dr.md](./ops/7.2-backup-and-dr.md))
 
 ---
 
@@ -31,13 +31,15 @@ Developer laptop (docker-compose)
 - Unit/integration tests  
 - Lint/format  
 - Flyway validate  
-- OpenAPI diff / breaking check  
+- OpenAPI diff / breaking check — [api/7.5-openapi-contract-gate.md](./api/7.5-openapi-contract-gate.md); workflow `.github/workflows/openapi-contract.yml`  
 - Optional Playwright smoke on compose  
 - Container image tagged by git SHA  
 - Migrations run as release step **before** switching traffic  
 - Rollback: previous image + **forward-fix** migrations (no reliance on down scripts for prod)  
 
-**Who deploys prod:** designated releaser; secrets via vault/CI secrets.
+**Who deploys prod:** designated releaser; secrets via vault/CI secrets.  
+Local template: root `.env.example`. Production: `SPRING_PROFILES_ACTIVE=prod` (rejects default JWT secret; OpenAPI off).  
+Dependency alerts: GitHub Dependabot (Maven + npm); optional `mvn -Pdependency-check verify` with NVD API key.
 
 ---
 
@@ -66,20 +68,24 @@ Optional: Redis for rate-limit/session later.
 
 ## 5. Backup & disaster recovery
 
+**Authoritative runbook:** [ops/7.2-backup-and-dr.md](./ops/7.2-backup-and-dr.md)  
+**Latest scratch drill:** [ops/7.2-restore-drill-log.md](./ops/7.2-restore-drill-log.md)  
+**Scripts:** `scripts/backup/` (`backup-mysql`, `backup-minio`, `restore-*-scratch`, `run-restore-drill`)
+
 | Asset | Backup | Retention (initial proposal) |
 | --- | --- | --- |
 | MySQL | Daily full + binlog/PITR if hosted | 30 days |
 | Object storage | Versioning + cross-region/copy | 30+ days |
 | Secrets | Vault backup procedure | — |
 
-| Target | Initial |
+| Target | v1 accepted |
 | --- | --- |
 | RPO | ≤ 24h (improve with PITR) |
 | RTO | ≤ 8h for v1 multi-tenant deployment |
 
-- Restore procedure documented and **tested quarterly**  
-- Backups encrypted at rest  
-- Financial + document restores verified in drill  
+- Restore procedure documented and **tested quarterly** (Step 7.2 scratch drill recorded)  
+- Backups encrypted at rest (prod)  
+- Financial + document restores verified in drill (MySQL tables + MinIO object count)
 
 ---
 
@@ -108,3 +114,7 @@ Optional: Redis for rate-limit/session later.
 - Structured logs shipped centrally (JSON encoder can replace plain console pattern later)  
 - Traces sampled in prod (lower probability)  
 - Alerts: error rate, payment failures, disk, backup job failure  
+
+### Performance baseline (v1)
+
+Local/smoke p95 for login, outstanding list, and student search is recorded under [perf/7.3-performance-baseline.md](./perf/7.3-performance-baseline.md). Re-run with `.\scripts\perf\run-k6-baseline.ps1` (API `:8080`) before release; gateway login rate-limit will skew concurrent login tests on `:8088`.

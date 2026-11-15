@@ -32,7 +32,11 @@ import com.ims.finance.infrastructure.RefundRequestJpaRepository;
 import com.ims.finance.infrastructure.ReceiptJpaRepository;
 import com.ims.finance.infrastructure.StudentFeeAccountJpaRepository;
 import com.ims.identity.security.ImsUserPrincipal;
+import com.ims.notification.application.NotificationEvents;
+import com.ims.people.student.api.StudentResponse;
+import com.ims.people.student.application.StudentService;
 import com.ims.platform.audit.application.AuditService;
+import com.ims.platform.institute.application.InstituteService;
 import com.ims.platform.tenancy.infrastructure.TenantFilterEnabler;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -44,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -68,6 +73,9 @@ public class FinanceService {
   private final AcademicCatalogService academicCatalogService;
   private final TenantFilterEnabler tenantFilterEnabler;
   private final AuditService auditService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final StudentService studentService;
+  private final InstituteService instituteService;
 
   public FinanceService(
       StudentFeeAccountJpaRepository studentFeeAccountJpaRepository,
@@ -80,7 +88,10 @@ public class FinanceService {
       RefundRequestJpaRepository refundRequestJpaRepository,
       AcademicCatalogService academicCatalogService,
       TenantFilterEnabler tenantFilterEnabler,
-      AuditService auditService) {
+      AuditService auditService,
+      ApplicationEventPublisher eventPublisher,
+      StudentService studentService,
+      InstituteService instituteService) {
     this.studentFeeAccountJpaRepository = studentFeeAccountJpaRepository;
     this.invoiceJpaRepository = invoiceJpaRepository;
     this.paymentJpaRepository = paymentJpaRepository;
@@ -92,6 +103,9 @@ public class FinanceService {
     this.academicCatalogService = academicCatalogService;
     this.tenantFilterEnabler = tenantFilterEnabler;
     this.auditService = auditService;
+    this.eventPublisher = eventPublisher;
+    this.studentService = studentService;
+    this.instituteService = instituteService;
   }
 
   public record CollectPaymentCommand(
@@ -282,6 +296,29 @@ public class FinanceService {
             "receiptNo",
             receipt.getReceiptNo()),
         null);
+    StudentResponse student = studentService.get(account.getStudentId());
+    String studentName =
+        ((student.firstName() == null ? "" : student.firstName())
+                + " "
+                + (student.lastName() == null ? "" : student.lastName()))
+            .trim();
+    String instituteName =
+        instituteService.listVisible(instituteId).stream()
+            .findFirst()
+            .map(i -> i.name())
+            .orElse("Institute");
+    eventPublisher.publishEvent(
+        new NotificationEvents.PaymentReceived(
+            instituteId,
+            payment.getId(),
+            account.getId(),
+            studentName.isBlank() ? "Student" : studentName,
+            student.email(),
+            payment.getPaymentNo(),
+            receipt.getReceiptNo(),
+            amount,
+            account.getCurrency() == null ? "INR" : account.getCurrency(),
+            instituteName));
     return new PaymentResultResponse(toPayment(payment), toReceipt(receipt), toFeeAccount(account));
   }
 

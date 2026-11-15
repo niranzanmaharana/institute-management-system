@@ -65,14 +65,16 @@ public class EnrollmentController {
 
   @GetMapping
   @Operation(summary = "List enrollments")
-  @PreAuthorize("hasAnyAuthority('course:write', 'course:read', 'fee:collect')")
+  @PreAuthorize(
+      "hasAnyAuthority('course:write', 'course:read', 'enrollment:write', 'fee:collect')")
   public List<EnrollmentResponse> list() {
     return enrollmentService.list();
   }
 
   @GetMapping("/{id}")
   @Operation(summary = "Get enrollment")
-  @PreAuthorize("hasAnyAuthority('course:write', 'course:read', 'fee:collect')")
+  @PreAuthorize(
+      "hasAnyAuthority('course:write', 'course:read', 'enrollment:write', 'fee:collect')")
   public EnrollmentResponse get(@PathVariable("id") Long id) {
     return enrollmentService.get(id);
   }
@@ -98,7 +100,7 @@ public class EnrollmentController {
 
   @PostMapping("/{id}/cancel")
   @Operation(summary = "Cancel APPLIED enrollment")
-  @PreAuthorize("hasAuthority('course:write')")
+  @PreAuthorize("hasAnyAuthority('course:write', 'enrollment:write')")
   public EnrollmentResponse cancel(
       @PathVariable("id") Long id, @Valid @RequestBody ReasonRequest request) {
     return enrollmentService.cancel(id, new ReasonCommand(request.reason()));

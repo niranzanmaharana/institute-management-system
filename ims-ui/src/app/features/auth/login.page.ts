@@ -30,7 +30,7 @@ export class LoginPage implements OnInit {
   readonly brandLogoUrl = signal<string | null>(null);
 
   readonly form = this.fb.nonNullable.group({
-    username: ['admin', Validators.required],
+    username: ['admin-a', Validators.required],
     password: ['Password@123', Validators.required],
     instituteCode: ['DEMO_A'],
   });

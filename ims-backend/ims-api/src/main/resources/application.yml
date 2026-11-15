@@ -16,6 +16,14 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: your-smtp-user
+    password: your-smtp-password
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
 
 server:
   port: 8080
@@ -49,9 +57,14 @@ springdoc:
 
 ims:
   security:
+    # Override via IMS_SECURITY_JWT_SECRET in non-local environments.
     jwt-secret: ims-dev-jwt-secret-change-me-32chars-min!!
     access-token-minutes: 30
     refresh-token-days: 14
+    max-failed-logins: 5
+    lock-minutes: 15
+    expose-openapi: true
+    reject-insecure-jwt-secret: false
   storage:
     type: s3
     endpoint: http://localhost:9000
@@ -65,6 +78,15 @@ ims:
     cors-origins:
       - http://localhost:4200
       - http://127.0.0.1:4200
+  notification:
+    enabled: true
+    # logging = in-memory sink (local/CI); smtp = JavaMail (set spring.mail.*)
+    channel: logging
+    from: niranzan.in@gmail.com
+    max-attempts: 5
+    initial-retry-seconds: 30
+    backoff-multiplier: 2.0
+    retry-poll-ms: 15000
 
 logging:
   level:

@@ -20,7 +20,16 @@ public class JwtService {
 
   public JwtService(
       @Value("${ims.security.jwt-secret}") String secret,
-      @Value("${ims.security.access-token-minutes:30}") long accessTokenMinutes) {
+      @Value("${ims.security.access-token-minutes:30}") long accessTokenMinutes,
+      @Value("${ims.security.reject-insecure-jwt-secret:false}") boolean rejectInsecureJwtSecret) {
+    if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+      throw new IllegalStateException("ims.security.jwt-secret must be at least 32 bytes");
+    }
+    if (rejectInsecureJwtSecret
+        && (secret.contains("change-me") || secret.contains("ims-dev-jwt-secret"))) {
+      throw new IllegalStateException(
+          "ims.security.jwt-secret must be replaced for production (reject-insecure-jwt-secret=true)");
+    }
     this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     this.accessTokenMinutes = accessTokenMinutes;
   }

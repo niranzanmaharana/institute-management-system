@@ -15,6 +15,8 @@ docker compose ps
 
 Person documents and swapping MinIO for cloud S3: **[docs/13-object-storage.md](../docs/13-object-storage.md)**.
 
+Backup / restore (MySQL + MinIO) and DR drill: **[docs/ops/7.2-backup-and-dr.md](../docs/ops/7.2-backup-and-dr.md)** — run `.\scripts\backup\run-restore-drill.ps1`.
+
 Docker Desktop must be running before Compose. Start **only MinIO** if MySQL is already local:
 
 ```bash

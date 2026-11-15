@@ -1,10 +1,13 @@
 .page {
   display: grid;
   gap: 1rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .page__header {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 1rem;
 }
@@ -91,6 +94,8 @@
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .week__day {
@@ -132,7 +137,8 @@
   display: none;
 }
 
-@media (max-width: 900px) {
+/* Align with shell mobile/tablet gate: week grid only on ≥1024 */
+@media (max-width: 1023px) {
   .week--desktop {
     display: none;
   }

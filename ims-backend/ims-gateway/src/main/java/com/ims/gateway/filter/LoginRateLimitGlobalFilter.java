@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +23,16 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
- * In-memory sliding-window rate limit for login (local/dev friendly; replace with Redis in prod).
+ * In-memory sliding-window rate limit for auth endpoints (local/dev friendly; replace with Redis in
+ * prod).
  */
 @Component
 public class LoginRateLimitGlobalFilter implements GlobalFilter, Ordered {
 
   private static final Logger log = LoggerFactory.getLogger(LoginRateLimitGlobalFilter.class);
+
+  private static final Set<String> RATE_LIMITED_PATHS =
+      Set.of("/api/v1/auth/login", "/api/v1/auth/refresh");
 
   private final int maxAttempts;
   private final Duration window;
@@ -44,11 +49,11 @@ public class LoginRateLimitGlobalFilter implements GlobalFilter, Ordered {
   public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
     ServerHttpRequest request = exchange.getRequest();
     if (request.getMethod() != HttpMethod.POST
-        || !"/api/v1/auth/login".equals(request.getURI().getPath())) {
+        || !RATE_LIMITED_PATHS.contains(request.getURI().getPath())) {
       return chain.filter(exchange);
     }
 
-    String key = clientKey(request);
+    String key = clientKey(request) + "|" + request.getURI().getPath();
     long now = System.currentTimeMillis();
     long cutoff = now - window.toMillis();
     Deque<Long> queue = attemptsByKey.computeIfAbsent(key, k -> new ArrayDeque<>());
@@ -57,7 +62,7 @@ public class LoginRateLimitGlobalFilter implements GlobalFilter, Ordered {
         queue.pollFirst();
       }
       if (queue.size() >= maxAttempts) {
-        log.warn("Login rate-limited clientKey={}", key);
+        log.warn("Auth rate-limited path={} clientKey={}", request.getURI().getPath(), key);
         return tooManyRequests(exchange);
       }
       queue.addLast(now);
@@ -70,7 +75,7 @@ public class LoginRateLimitGlobalFilter implements GlobalFilter, Ordered {
     exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
     byte[] body =
         """
-        {"status":429,"code":"RATE_LIMITED","message":"Too many login attempts. Try again shortly."}
+        {"status":429,"code":"RATE_LIMITED","message":"Too many auth attempts. Try again shortly."}
         """
             .getBytes(StandardCharsets.UTF_8);
     DataBuffer buffer = exchange.getResponse().bufferFactory().wrap(body);

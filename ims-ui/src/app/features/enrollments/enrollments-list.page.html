@@ -21,7 +21,7 @@
     } @else if (rows().length === 0) {
       <app-empty-state title="No enrollments" message="Create an enrollment to get started." />
     } @else {
-      <div class="table-wrap">
+      <div class="table-wrap ops-table">
         <table class="table">
           <thead>
             <tr>
@@ -52,6 +52,23 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">Enrollment #{{ row.id }}</p>
+              <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+            </div>
+            <p class="ops-card__meta">
+              Student #{{ row.studentId }} · Batch #{{ row.batchId }} · Course #{{ row.courseId }}
+            </p>
+            <a [routerLink]="['/enrollments', row.id]">
+              <app-ui-button type="button">View</app-ui-button>
+            </a>
+          </article>
+        }
       </div>
     }
   </app-ui-card>

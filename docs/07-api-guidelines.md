@@ -13,6 +13,7 @@ Design OpenAPI contract → review → implement → CI fails on undocumented/br
 
 - Each module publishes paths under `/api/v1/...`
 - springdoc generates/validates against committed OpenAPI (or commit YAML as source of truth — pick one in Phase 0; **recommendation: code annotations → generate artifact, plus breaking-change check**)
+- **v1 gate (Step 7.5):** committed [`api/openapi.json`](./api/openapi.json); CI oasdiff fails on breaking drift without `info.version` bump — see [api/7.5-openapi-contract-gate.md](./api/7.5-openapi-contract-gate.md)
 - Angular clients: **prefer generated** TypeScript client from OpenAPI for module APIs
 
 ---

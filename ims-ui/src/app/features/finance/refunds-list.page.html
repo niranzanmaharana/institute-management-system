@@ -32,7 +32,7 @@
     } @else if (rows().length === 0) {
       <app-empty-state title="No refunds" message="Completed and in-flight refunds appear here." />
     } @else {
-      <div class="table-wrap">
+      <div class="table-wrap ops-table">
         <table class="table">
           <thead>
             <tr>
@@ -71,6 +71,31 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">Refund #{{ row.id }}</p>
+              <app-status-badge
+                [label]="row.status"
+                [tone]="row.status === 'COMPLETED' ? 'success' : row.status === 'FAILED' || row.status === 'REJECTED' ? 'warning' : 'neutral'"
+              />
+            </div>
+            <p class="ops-card__meta">Account #{{ row.feeAccountId }} · {{ row.amount }} · {{ row.reason }}</p>
+            <div class="ops-card__actions">
+              @if (canRefund && row.status === 'REQUESTED') {
+                <app-ui-button type="button" [loading]="busyId() === row.id" (click)="approve(row)">Approve</app-ui-button>
+                <app-ui-button type="button" [loading]="busyId() === row.id" (click)="reject(row)">Reject</app-ui-button>
+              }
+              @if (canRefund && row.status === 'APPROVED') {
+                <app-ui-button type="button" [loading]="busyId() === row.id" (click)="process(row, true)">Complete</app-ui-button>
+                <app-ui-button type="button" [loading]="busyId() === row.id" (click)="process(row, false)">Fail</app-ui-button>
+              }
+            </div>
+          </article>
+        }
       </div>
     }
   </app-ui-card>

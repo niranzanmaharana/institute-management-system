@@ -29,3 +29,7 @@ postman/openapi.json
 
 # Docker
 infra/**/data/
+
+# Local backups / DR artifacts (keep scripts + docs only)
+backups/**
+!backups/.gitkeep

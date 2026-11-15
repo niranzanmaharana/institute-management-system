@@ -98,4 +98,24 @@ class ModuleBoundaryArchTest {
           .dependOnClassesThat()
           .resideInAPackage("com.ims.people..infrastructure..")
           .because("imports must use people application services");
+
+  @ArchTest
+  static final ArchRule admissionsMustNotDependOnNotificationPersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.admissions..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.notification..infrastructure..")
+          .because("admissions publishes events; notification owns delivery persistence");
+
+  @ArchTest
+  static final ArchRule financeMustNotDependOnNotificationPersistence =
+      noClasses()
+          .that()
+          .resideInAPackage("com.ims.finance..")
+          .should()
+          .dependOnClassesThat()
+          .resideInAPackage("com.ims.notification..infrastructure..")
+          .because("finance publishes events; notification owns delivery persistence");
 }

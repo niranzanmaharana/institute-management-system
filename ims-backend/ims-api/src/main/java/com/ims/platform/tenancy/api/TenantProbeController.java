@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RestController
 @RequestMapping("/api/v1/tenant-probes")
 @Tag(name = "Tenant Probes", description = "Phase 0 isolation harness endpoints")
+@PreAuthorize("hasAnyRole('ADMIN', 'PLATFORM_ADMIN')")
 public class TenantProbeController {
 
   private final TenantProbeService tenantProbeService;

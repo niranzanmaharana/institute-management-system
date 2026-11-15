@@ -4,6 +4,7 @@ import com.ims.common.error.ApiError;
 import com.ims.common.tracing.CorrelationIds;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,29 +28,30 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(
-      HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper)
+      HttpSecurity http,
+      JwtAuthenticationFilter jwtAuthenticationFilter,
+      ObjectMapper objectMapper,
+      @Value("${ims.security.expose-openapi:true}") boolean exposeOpenapi)
       throws Exception {
     http.csrf(csrf -> csrf.disable())
         // CORS is handled only by ims-gateway to avoid duplicate ACAO headers in the browser.
         .cors(cors -> cors.disable())
         .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers(HttpMethod.OPTIONS, "/**")
-                    .permitAll()
-                    .requestMatchers(
-                        "/actuator/health",
-                        "/actuator/health/**",
-                        "/v3/api-docs/**",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/v1/public/institutes/*/branding")
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated())
+            auth -> {
+              auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+              auth.requestMatchers("/actuator/health", "/actuator/health/**").permitAll();
+              if (exposeOpenapi) {
+                auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                    .permitAll();
+              }
+              auth.requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh")
+                  .permitAll()
+                  .requestMatchers(HttpMethod.GET, "/api/v1/public/institutes/*/branding")
+                  .permitAll()
+                  .anyRequest()
+                  .authenticated();
+            })
         .exceptionHandling(
             ex ->
                 ex.authenticationEntryPoint(

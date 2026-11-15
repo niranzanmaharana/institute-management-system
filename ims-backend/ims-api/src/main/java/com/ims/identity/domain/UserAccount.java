@@ -46,6 +46,12 @@ public class UserAccount {
   @Column(name = "last_login_at")
   private Instant lastLoginAt;
 
+  @Column(name = "failed_login_count", nullable = false)
+  private int failedLoginCount = 0;
+
+  @Column(name = "locked_until")
+  private Instant lockedUntil;
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
 
@@ -111,11 +117,33 @@ public class UserAccount {
 
   public void markLogin() {
     this.lastLoginAt = Instant.now();
+    this.failedLoginCount = 0;
+    this.lockedUntil = null;
     this.updatedAt = Instant.now();
   }
 
   public boolean isActive() {
     return "ACTIVE".equals(status) && deletedAt == null;
+  }
+
+  public boolean isLocked() {
+    return lockedUntil != null && lockedUntil.isAfter(Instant.now());
+  }
+
+  public void registerFailedLogin(int maxFailedLogins, long lockMinutes) {
+    this.failedLoginCount++;
+    if (this.failedLoginCount >= maxFailedLogins) {
+      this.lockedUntil = Instant.now().plusSeconds(Math.max(1, lockMinutes) * 60);
+    }
+    this.updatedAt = Instant.now();
+  }
+
+  public int getFailedLoginCount() {
+    return failedLoginCount;
+  }
+
+  public Instant getLockedUntil() {
+    return lockedUntil;
   }
 
   public void updateEmail(String email) {

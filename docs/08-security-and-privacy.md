@@ -1,16 +1,17 @@
 # 08 — Security & privacy
 
-**Status:** Draft after architecture review (multi-tenant Option B)
+**Status:** Active for v1 — Step 7.1 checklist filed under [security/7.1-security-pass-checklist.md](./security/7.1-security-pass-checklist.md)
 
 ---
 
 ## 1. Authentication & session
 
-- BCrypt/Argon2 password hashes  
+- BCrypt password hashes  
 - Short-lived access JWT; rotatable refresh tokens hashed at rest  
 - JWT claims include **`institute_id`** (mandatory for institute users)  
-- Lock account after N failed logins (configurable)  
+- Lock account after N failed logins (configurable: `ims.security.max-failed-logins`, `ims.security.lock-minutes`)  
 - Generic login error messages to clients; detailed login_audit internally  
+- **Token transport (v1):** Bearer access JWT + refresh token in JSON body; UI stores tokens in `localStorage`. Spring CSRF is disabled because auth is not cookie-based. If refresh moves to HttpOnly cookies, add an explicit CSRF strategy before enabling.  
 
 ---
 
@@ -81,8 +82,12 @@ Fields: **institute_id**, actor, action, entity, before, after, reason, trace/re
 ## 6. Application security baseline
 
 - HTTPS only at edge  
-- Secrets in env/secret manager — never git  
-- Dependency scanning in CI  
+- Secrets in env/secret manager — never git (see root `.env.example`; prod profile rejects default JWT secret)  
+- Dependency scanning: Dependabot + Maven profile `-Pdependency-check` (`failBuildOnCVSS=9`); snapshot in [security/7.1-dependency-scan.md](./security/7.1-dependency-scan.md)  
 - SQL via parameterized ORM/queries  
-- CSRF strategy documented for cookie refresh choice  
-- Automated test: two tenants, same numeric id patterns, zero leakage  
+- CSRF: not applicable for Bearer/localStorage v1; document before any cookie-session change (see §1)  
+- Automated test: two tenants, same numeric id patterns, zero leakage (`TenantIsolationIT`, `SliceIsolationIT`)  
+- Gateway rate-limits `POST /auth/login` and `/auth/refresh`; prefer Redis in multi-instance prod  
+- OpenAPI/Swagger public only when `ims.security.expose-openapi=true` (off in `prod` profile)  
+
+**v1 gate artifact:** [security/7.1-security-pass-checklist.md](./security/7.1-security-pass-checklist.md)

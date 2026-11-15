@@ -39,6 +39,8 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final long refreshTokenDays;
+  private final int maxFailedLogins;
+  private final long lockMinutes;
 
   public AuthService(
       UserAccountRepository userAccountRepository,
@@ -47,7 +49,9 @@ public class AuthService {
       LoginAuditRepository loginAuditRepository,
       PasswordEncoder passwordEncoder,
       JwtService jwtService,
-      @Value("${ims.security.refresh-token-days:14}") long refreshTokenDays) {
+      @Value("${ims.security.refresh-token-days:14}") long refreshTokenDays,
+      @Value("${ims.security.max-failed-logins:5}") int maxFailedLogins,
+      @Value("${ims.security.lock-minutes:15}") long lockMinutes) {
     this.userAccountRepository = userAccountRepository;
     this.instituteJpaRepository = instituteJpaRepository;
     this.refreshTokenRepository = refreshTokenRepository;
@@ -55,6 +59,8 @@ public class AuthService {
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
     this.refreshTokenDays = refreshTokenDays;
+    this.maxFailedLogins = Math.max(1, maxFailedLogins);
+    this.lockMinutes = Math.max(1, lockMinutes);
   }
 
   public record AuthTokens(String accessToken, String refreshToken, UserView user) {}
@@ -73,8 +79,23 @@ public class AuthService {
   public AuthTokens login(
       String username, String password, String instituteCode, String ip, String userAgent) {
     UserAccount user = resolveUser(username, instituteCode);
+    if (user != null && user.isActive() && user.isLocked()) {
+      loginAuditRepository.save(new LoginAudit(user.getId(), username, false, ip, userAgent));
+      log.warn(
+          "Login blocked (locked) userId={} username={} instituteId={} ip={}",
+          user.getId(),
+          username,
+          user.getInstituteId() == null ? "-" : user.getInstituteId(),
+          ip == null ? "-" : ip);
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+    }
     if (user == null || !user.isActive() || !passwordEncoder.matches(password, user.getPasswordHash())) {
-      loginAuditRepository.save(new LoginAudit(null, username, false, ip, userAgent));
+      if (user != null && user.isActive()) {
+        user.registerFailedLogin(maxFailedLogins, lockMinutes);
+        userAccountRepository.save(user);
+      }
+      loginAuditRepository.save(
+          new LoginAudit(user == null ? null : user.getId(), username, false, ip, userAgent));
       log.warn(
           "Login failed username={} instituteCode={} ip={}",
           username,

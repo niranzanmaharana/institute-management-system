@@ -34,7 +34,7 @@
       <app-empty-state title="No enquiries" message="Capture an enquiry or create an application directly." />
     } @else {
       <p class="meta">{{ totalElements() }} total</p>
-      <div class="table-wrap">
+      <div class="table-wrap ops-table">
         <table class="table">
           <thead>
             <tr>
@@ -68,6 +68,27 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">{{ row.name }}</p>
+              <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+            </div>
+            <p class="ops-card__meta">
+              {{ row.phone || '—' }}
+              @if (row.email) {
+                · {{ row.email }}
+              }
+              · {{ courseLabel(row.interestedCourseId) }}
+            </p>
+            <a [routerLink]="['/enquiries', row.id]">
+              <app-ui-button type="button">View</app-ui-button>
+            </a>
+          </article>
+        }
       </div>
       <app-ui-pagination
         [page]="page()"

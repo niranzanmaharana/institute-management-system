@@ -44,6 +44,8 @@ class AuthControllerIT {
     registry.add("spring.datasource.username", MYSQL::getUsername);
     registry.add("spring.datasource.password", MYSQL::getPassword);
     registry.add("ims.security.jwt-secret", () -> "ims-test-jwt-secret-change-me-32chars-min!");
+    registry.add("ims.security.max-failed-logins", () -> "3");
+    registry.add("ims.security.lock-minutes", () -> "15");
   }
 
   @Autowired private MockMvc mockMvc;
@@ -168,6 +170,38 @@ class AuthControllerIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"refreshToken\":\"" + newRefresh + "\"}"))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void shouldLockAccountAfterMaxFailedLogins() throws Exception {
+    String bad =
+        """
+        {"username":"admin","password":"wrong","instituteCode":"DEMO_A"}
+        """;
+    for (int i = 0; i < 3; i++) {
+      mockMvc
+          .perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(bad))
+          .andExpect(status().isUnauthorized());
+    }
+    mockMvc
+        .perform(
+            post("/api/v1/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"username":"admin","password":"Password@123","instituteCode":"DEMO_A"}
+                    """))
+        .andExpect(status().isUnauthorized());
+
+    Long instituteId = instituteJpaRepository.findByCode("DEMO_A").orElseThrow().getId();
+    UserAccount user =
+        userAccountRepository
+            .findByUsernameAndInstituteIdAndDeletedAtIsNull("admin", instituteId)
+            .orElseThrow();
+    assertThat(user.isLocked()).isTrue();
+    // Clear lock so other tests in this class remain usable if order changes.
+    user.markLogin();
+    userAccountRepository.save(user);
   }
 
   @Test

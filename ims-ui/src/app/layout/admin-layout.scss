@@ -257,6 +257,9 @@
 
 .content {
   padding: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 .backdrop {

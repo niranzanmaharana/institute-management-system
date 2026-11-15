@@ -11,9 +11,11 @@ import com.ims.common.tenancy.TenantContext;
 import com.ims.people.student.api.StudentResponse;
 import com.ims.people.student.application.StudentService;
 import com.ims.people.student.application.StudentService.CreateStudentCommand;
+import com.ims.notification.application.NotificationEvents;
 import com.ims.platform.audit.application.AuditService;
 import com.ims.platform.codes.application.CodeGeneratorService;
 import com.ims.platform.codes.domain.CodeEntityType;
+import com.ims.platform.institute.application.InstituteService;
 import com.ims.platform.tenancy.infrastructure.TenantFilterEnabler;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +45,8 @@ public class AdmissionService {
   private final TenantFilterEnabler tenantFilterEnabler;
   private final AuditService auditService;
   private final CodeGeneratorService codeGeneratorService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final InstituteService instituteService;
 
   public AdmissionService(
       AdmissionApplicationJpaRepository admissionApplicationJpaRepository,
@@ -50,7 +55,9 @@ public class AdmissionService {
       StudentService studentService,
       TenantFilterEnabler tenantFilterEnabler,
       AuditService auditService,
-      CodeGeneratorService codeGeneratorService) {
+      CodeGeneratorService codeGeneratorService,
+      ApplicationEventPublisher eventPublisher,
+      InstituteService instituteService) {
     this.admissionApplicationJpaRepository = admissionApplicationJpaRepository;
     this.enquiryJpaRepository = enquiryJpaRepository;
     this.academicCatalogService = academicCatalogService;
@@ -58,6 +65,8 @@ public class AdmissionService {
     this.tenantFilterEnabler = tenantFilterEnabler;
     this.auditService = auditService;
     this.codeGeneratorService = codeGeneratorService;
+    this.eventPublisher = eventPublisher;
+    this.instituteService = instituteService;
   }
 
   public record CreateAdmissionCommand(
@@ -197,6 +206,19 @@ public class AdmissionService {
         null,
         Map.of("studentId", studentId, "status", app.getStatus()),
         command.reason());
+    String instituteName =
+        instituteService.listVisible(app.getInstituteId()).stream()
+            .findFirst()
+            .map(i -> i.name())
+            .orElse("Institute");
+    eventPublisher.publishEvent(
+        new NotificationEvents.AdmissionApproved(
+            app.getInstituteId(),
+            app.getId(),
+            app.getApplicationNo(),
+            app.getApplicantName(),
+            app.getEmail(),
+            instituteName));
     return toResponse(app);
   }
 

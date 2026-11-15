@@ -17,7 +17,7 @@
     } @else if (rows().length === 0) {
       <app-empty-state title="No users" message="Create the first institute user." />
     } @else {
-      <div class="table-wrap">
+      <div class="table-wrap ops-table">
         <table class="table">
           <thead>
             <tr>
@@ -49,6 +49,26 @@
             }
           </tbody>
         </table>
+      </div>
+
+      <div class="ops-cards">
+        @for (row of rows(); track row.id) {
+          <article class="ops-card">
+            <div class="ops-card__row">
+              <p class="ops-card__title">{{ row.username }}</p>
+              <app-status-badge [label]="row.status" [tone]="tone(row.status)" />
+            </div>
+            <p class="ops-card__meta">{{ row.email }} · {{ row.roles.join(', ') }}</p>
+            <div class="ops-card__actions">
+              <a [routerLink]="['/users', row.id]">
+                <app-ui-button type="button">View</app-ui-button>
+              </a>
+              <a [routerLink]="['/users', row.id, 'edit']">
+                <app-ui-button type="button">Edit</app-ui-button>
+              </a>
+            </div>
+          </article>
+        }
       </div>
     }
   </app-ui-card>

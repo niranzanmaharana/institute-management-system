@@ -1,0 +1,29 @@
+﻿{
+    "capturedAtUtc":  "2026-11-15T09:39:06.6899303Z",
+    "baseUrl":  "http://127.0.0.1:8080",
+    "username":  "admin-a",
+    "institute":  "DEMO_A",
+    "login":  {
+                  "max":  236.48,
+                  "avg":  120.98,
+                  "p95":  164.88,
+                  "n":  40
+              },
+    "outstanding":  {
+                        "max":  36.45,
+                        "avg":  19.24,
+                        "p95":  26.13,
+                        "n":  60
+                    },
+    "studentSearch":  {
+                          "max":  43.25,
+                          "avg":  22.1,
+                          "p95":  33.59,
+                          "n":  60
+                      },
+    "targetsMs":  {
+                      "studentSearchP95":  500,
+                      "outstandingP95":  500,
+                      "loginP95":  800
+                  }
+}

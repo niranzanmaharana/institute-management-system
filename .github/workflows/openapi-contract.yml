@@ -1,0 +1,62 @@
+# Step 7.5 — OpenAPI contract gate (breaking changes require info.version bump)
+name: OpenAPI contract
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  breaking-vs-base:
+    name: Breaking changes vs base
+    runs-on: ubuntu-latest
+    # On push to main there is no PR base; skip compare (IT + export keep the contract honest).
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch base ref
+        run: git fetch --depth=1 origin "${{ github.base_ref }}"
+
+      - name: Ensure base contract exists
+        id: base_contract
+        run: |
+          if git cat-file -e "origin/${{ github.base_ref }}:docs/api/openapi.json" 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No docs/api/openapi.json on base branch yet — skipping oasdiff (bootstrap)."
+          fi
+
+      - name: oasdiff breaking (fail without version bump)
+        if: steps.base_contract.outputs.exists == 'true'
+        uses: oasdiff/oasdiff-action/breaking@v0.1.24
+        with:
+          base: origin/${{ github.base_ref }}:docs/api/openapi.json
+          revision: HEAD:docs/api/openapi.json
+          fail-on: MISSING-VERSION-BUMP
+          review: false
+
+  contract-matches-code:
+    name: Contract matches springdoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: OpenApiContractIT
+        working-directory: ims-backend
+        run: mvn -pl ims-api -am test -Dtest=OpenApiContractIT -Dsurefire.failIfNoSpecifiedTests=false

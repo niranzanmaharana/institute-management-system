@@ -30,6 +30,7 @@ Users & roles: `/api/v1/users`, `/api/v1/roles` — requires `user:manage` (inst
 - App Swagger: http://localhost:8080/swagger-ui.html
 - **Preferred entry:** Gateway http://localhost:8088 (UI uses this)
 - OpenAPI JSON: http://localhost:8080/v3/api-docs
+- Committed contract (Step 7.5): `docs/api/openapi.json` — export with `../scripts/openapi/export-openapi.ps1`; CI oasdiff gate in `.github/workflows/openapi-contract.yml`
 - Jaeger (OTLP traces): http://localhost:16686 — look up services `ims-gateway` and `ims-api`
 - Postman: import `../postman/ims-api.postman_collection.json` or regenerate via `../scripts/generate-postman.ps1`
 
